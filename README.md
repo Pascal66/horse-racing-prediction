@@ -102,8 +102,8 @@ This project is designed to be launched quickly via **Docker** (recommended). Ma
 
 1.  **Cloning the project:**
     ```bash
-    git clone <repo-url>
-    cd <project-name>
+    git clone https://github.com/mathis-dumont/horse-racing-prediction
+    cd horse-racing-prediction
     ```
 
 2.  **Environment variables:**
