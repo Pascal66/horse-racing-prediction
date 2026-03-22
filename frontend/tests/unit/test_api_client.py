@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 import requests
 from unittest.mock import MagicMock, patch
-from frontend.api.api_client import APIClient, fetch_daily_races, fetch_predictions
+from api.api_client import APIClient, fetch_daily_races, fetch_predictions
 
 class TestAPIClient:
     """
@@ -45,7 +45,7 @@ class TestAPIClient:
         
         assert result is None
 
-    @patch('frontend.api.api_client.client._get')
+    @patch('api.api_client.client._get')
     def test_fetch_daily_races_returns_dataframe(self, mock_get):
         """Test that list of dicts converts to DataFrame."""
         mock_get.return_value = [{"race_id": 1}, {"race_id": 2}]
@@ -58,7 +58,7 @@ class TestAPIClient:
         assert len(df) == 2
         assert "race_id" in df.columns
 
-    @patch('frontend.api.api_client.client._get')
+    @patch('api.api_client.client._get')
     def test_fetch_predictions_empty_on_failure(self, mock_get):
         """Test that API returning None results in empty DataFrame."""
         mock_get.return_value = None

@@ -1,6 +1,6 @@
 import streamlit as st
-import frontend.state.store as store
-from frontend.ui.analysis import render_analysis_view
+import state.store as store
+from ui.analysis import render_analysis_view
 
 
 def render_race_grid():

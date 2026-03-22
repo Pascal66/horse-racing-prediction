@@ -3,7 +3,7 @@ import sys
 from datetime import datetime, timedelta
 import schedule
 
-from backend.src.cli.etl import etl_daily, etl_liveodds
+from src.cli.etl import etl_daily, etl_liveodds
 
 # tasks.scan.triggers=daily:7h30
 # tasks.scan.dayoffsets=-1,0,1
