@@ -3,6 +3,7 @@ import logging
 import pandas as pd
 import numpy as np
 from typing import List, Dict, Any
+pd.set_option('display.max_columns', None)
 
 class RacePredictor:
     """
@@ -53,6 +54,9 @@ class RacePredictor:
             # 1. Convert to DataFrame
             # The pipeline expects raw columns (it will handle cleaning itself)
             df = pd.DataFrame(participants)
+
+            # print(df.columns)
+            # print(df.head())
 
             # 2. Predictions
             # The pipeline executes in order:

@@ -8,6 +8,12 @@ from src.cli.etl import etl_daily, etl_liveodds
 
 logger = logging.getLogger("Scheduler")
 
+# Global scheduler instance to allow querying status from API
+_scheduler = None
+
+def get_scheduler():
+    return _scheduler
+
 def cronjobs():
     """
     Initializes and starts the background scheduler for ETL tasks.
@@ -17,14 +23,19 @@ def cronjobs():
     # tasks.better.triggers=-5m
     # tasks.finish.triggers=+30m,+1h*
     """
-    scheduler = BackgroundScheduler()
+    global _scheduler
+    if _scheduler is not None:
+        return
+
+    _scheduler = BackgroundScheduler()
+    scheduler = _scheduler
 
     # Define common dates for the daily ETL
     # Note: These are recalculated each time the job runs if we pass them as arguments,
     # but since etl_daily takes them as fixed strings, we wrap it.
 
     def daily_job_wrapper():
-        start_date = (datetime.today() - timedelta(days=2)).strftime("%d%m%Y")
+        start_date = (datetime.today() - timedelta(days=1)).strftime("%d%m%Y")
         end_date = (datetime.today() + timedelta(days=1)).strftime("%d%m%Y")
         logger.info(f"Triggering daily ETL for range {start_date} to {end_date}")
         etl_daily(start_date, end_date)

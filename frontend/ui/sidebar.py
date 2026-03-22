@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime
-from api.api_client import fetch_daily_races
+from api.api_client import fetch_daily_races, client
 import state.store as store
 
 def render_sidebar():
@@ -8,6 +8,16 @@ def render_sidebar():
         st.title("🏇 Turf Analytics")
         st.markdown("---")
         
+        # System Health (Short)
+        health = client._get("/")
+        if health:
+            cols = st.columns(2)
+            with cols[0]:
+                st.caption(f"🧠 AI: {'🟢' if health['ml_engine'] == 'loaded' else '🔴'}")
+            with cols[1]:
+                st.caption(f"📅 Job: {'🟢' if health.get('scheduler', {}).get('status') == 'running' else '🔴'}")
+
+        st.markdown("---")
         st.subheader("📅 Schedule")
         
         # 1. Date Selection

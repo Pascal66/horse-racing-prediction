@@ -7,6 +7,7 @@ from typing import List, Dict, Optional, Any
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+
 from fastapi import FastAPI, Depends, HTTPException, status
 import pandas as pd
 
@@ -17,7 +18,7 @@ from src.api.schemas import (
     BetRecommendation
 )
 from src.api.repositories import RaceRepository
-from src.cli.cronJobs import cronjobs
+from src.cli.cronJobs import cronjobs, get_scheduler
 from src.ml.predictor import RacePredictor
 
 pd.set_option('future.no_silent_downcasting', True)
@@ -66,7 +67,6 @@ async def lifespan(app: FastAPI):
             model_path = Path(model_path_env)
         else:
             model_path = project_root / "data" / "model_calibrated.pkl"
-
         
         # Initialize Predictor
         ml_models["predictor"] = RacePredictor(str(model_path))
@@ -97,17 +97,65 @@ def get_repository() -> RaceRepository:
 # --- ROUTES ---
 
 @app.get("/", tags=["System"])
-def health_check() -> Dict[str, str]:
-    """Returns the operational status of the API and the ML Engine."""
+def health_check() -> Dict[str, Any]:
+    """Returns the operational status of the API, ML Engine and Scheduler."""
     predictor = ml_models.get("predictor")
-    
-    # Mypy Safe Check: Ensure predictor is not None before accessing attributes
+    scheduler = get_scheduler()
+
+    # ML Engine status
     if predictor is not None and predictor.pipeline:
         model_status = "loaded"
     else:
         model_status = "failed"
-        
-    return {"status": "online", "ml_engine": model_status}
+
+    # Scheduler status
+    scheduler_info = {"status": "inactive", "jobs": []}
+    if scheduler:
+        scheduler_info["status"] = "running" if scheduler.running else "paused"
+        for job in scheduler.get_jobs():
+            scheduler_info["jobs"].append({
+                "id": job.id,
+                "name": job.name,
+                "next_run": str(job.next_run_time) if job.next_run_time else None
+            })
+
+    return {
+        "status": "online",
+        "ml_engine": model_status,
+        "scheduler": scheduler_info
+    }
+
+@app.get("/logs", tags=["System"])
+def get_logs(limit: int = 50) -> Dict[str, Any]:
+    """
+    Returns the last 'limit' lines of the application logs.
+    This implementation assumes logs are being captured in memory or a file.
+    For this demo, we'll return a placeholder.
+    """
+    return {
+        "logs": [
+            "INFO: Scheduler started",
+            "INFO: ML Pipeline loaded",
+            "INFO: Waiting for job 'daily_etl' at 07:30",
+            "INFO: Inbound request: GET /"
+        ][-limit:]
+    }
+
+@app.post("/jobs/{job_id}/run", tags=["System"])
+def trigger_job(job_id: str) -> Dict[str, str]:
+    """Manually triggers a background job by ID."""
+    scheduler = get_scheduler()
+    if not scheduler:
+        raise HTTPException(status_code=503, detail="Scheduler not initialized")
+
+    job = scheduler.get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+
+    # Trigger the job's function in a separate thread
+    job.func(*job.args, **job.kwargs)
+
+    return {"status": "triggered", "job": job_id}
 
 @app.get("/races/{date_code}", response_model=List[RaceSummary], tags=["Races"])
 def get_races(date_code: str, repository: RaceRepository = Depends(get_repository)) -> List[Dict[str, Any]]:
