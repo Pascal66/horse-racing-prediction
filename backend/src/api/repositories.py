@@ -9,6 +9,7 @@ import psycopg2.extras
 
 from backend.src.core.database import DatabaseManager
 
+
 logger = logging.getLogger(__name__)
 
 # Constants

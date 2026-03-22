@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from frontend.api.api_client import fetch_predictions, fetch_participants
 
+
 def render_analysis_view(race_id: int):
     """
     Renders the detailed prediction tables and cards for a specific race.

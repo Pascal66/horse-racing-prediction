@@ -170,8 +170,3 @@ def etl_liveodds(start_hour=10, end_hour=20) -> None:
 
 if __name__ == "__main__":
     main()
-    #
-    # TODAY = datetime.today().strftime("%d%m%Y")
-    # START_DATE = (datetime.today() - timedelta(days=2)).strftime("%d%m%Y")
-    #
-    # job = schedule.every().day.at('07:30').do(etl_daily, START_DATE, TODAY).tag('daily-tasks', 'Orchestrator')

@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from backend.src.core.config import PERF_URL_TEMPLATE, HEADERS, MAX_WORKERS
 from backend.src.ingestion.base import BaseIngestor, IngestStatus
 
+
 class PerformancesIngestor(BaseIngestor):
     """
     Ingests historical performance data (past races) for horses found in the current program.

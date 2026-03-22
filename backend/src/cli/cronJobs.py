@@ -18,14 +18,3 @@ def cronjobs():
 
     job1 = schedule.every().day.at('07:30').do(etl_daily, START_DATE, END_DATE).tag('daily-tasks', 'Orchestrator')
     job2 = schedule.every(15).minutes.do(etl_liveodds).tag('odds-tasks', 'Orchestrator')
-
-if __name__ == "__main__":
-    pass
-    # TODAY = datetime.today().strftime("%d%m%Y")
-    # START_DATE = (datetime.today() - timedelta(days=2)).strftime("%d%m%Y")
-    # END_DATE = (datetime.today() + timedelta(days=1)).strftime("%d%m%Y")
-    #
-    # job = schedule.every().day.at('07:30').do(etl_daily, START_DATE, END_DATE).tag('daily-tasks', 'Orchestrator')
-    #
-    # print(f'job {schedule.get_jobs()} {START_DATE} to {END_DATE}')
-    # schedule.run_all()

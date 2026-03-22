@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from backend.src.core.config import REPORTS_URL_TEMPLATE, HEADERS, BET_TYPE_MAP, MAX_WORKERS
 from backend.src.ingestion.base import BaseIngestor, IngestStatus
 
+
 class ReportsIngestor(BaseIngestor):
     """
     Ingests betting reports (dividends/odds) for races.

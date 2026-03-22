@@ -4,6 +4,7 @@ import requests
 from backend.src.core.config import PROGRAMME_URL_TEMPLATE, HEADERS, STATUS_MAP, TRACK_MAP
 from backend.src.ingestion.base import BaseIngestor
 
+
 class ProgramIngestor(BaseIngestor):
     """
     Ingests the daily race program, including meetings (reunions) and races (courses).

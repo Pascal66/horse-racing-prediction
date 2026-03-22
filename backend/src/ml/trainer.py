@@ -177,7 +177,7 @@ class XGBoostTrainer:
 
 if __name__ == "__main__":
     import sys
-    root_path = "F:\\git\\horse-racing-prediction"  #sys.path[1]
+    root_path = "F:\\git\\horse-racing-prediction"
     trainer = XGBoostTrainer(root_path+"\\data\\model_calibrated.pkl")
 
     trainer.train()

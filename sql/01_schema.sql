@@ -5,6 +5,7 @@
 --           to minimize storage footprint on large historical datasets.
 -- =============================================================================
 
+
 -- Root entity representing a calendar day of racing events.
 CREATE TABLE daily_program (
     program_id SERIAL PRIMARY KEY,

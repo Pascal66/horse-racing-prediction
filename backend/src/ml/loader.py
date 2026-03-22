@@ -4,6 +4,7 @@ import pandas as pd
 from sqlalchemy import create_engine, Engine
 from backend.src.core.config import DB_URL
 
+
 class DataLoader:
     """
     Robust Data Manager using SQLAlchemy.

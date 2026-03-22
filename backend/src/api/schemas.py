@@ -5,6 +5,7 @@ Defines the data contract for race summaries, participants, and betting recommen
 from typing import Optional
 from pydantic import BaseModel, Field
 
+
 class RaceSummary(BaseModel):
     """
     Represents a high-level summary of a horse race.

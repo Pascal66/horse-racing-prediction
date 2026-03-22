@@ -3,6 +3,7 @@ import pandas as pd
 from frontend.api.api_client import get_sniper_bets
 import frontend.state.store as store
 
+
 def render_sniper_section():
     date_code = store.get_date_code()
     

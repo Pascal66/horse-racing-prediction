@@ -8,6 +8,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from backend.src.core.database import DatabaseManager
 
+
 class IngestStatus(Enum):
     """Enumeration for the result status of an ingestion task."""
     SUCCESS = "SUCCESS"
