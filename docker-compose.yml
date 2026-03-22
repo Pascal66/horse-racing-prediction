@@ -7,11 +7,7 @@ services:
 
     volumes:
       - ./backend:/app
-
-      - /app/__pycache__
-      - /app/.pytest_cache
-      - /app/.venv
-      - /app/failures
+      - ./data:/data
         
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -30,10 +26,6 @@ services:
     
     volumes:
       - ./frontend:/app
-      
-      - /app/__pycache__
-      - /app/.pytest_cache
-      - /app/.venv
       
     ports:
       - "8501:8501"

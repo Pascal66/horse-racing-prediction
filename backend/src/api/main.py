@@ -11,15 +11,15 @@ from pathlib import Path
 from fastapi import FastAPI, Depends, HTTPException, status
 import pandas as pd
 
-from backend.src.api.schemas import (
+from src.api.schemas import (
     RaceSummary, 
     ParticipantSummary, 
     PredictionResult, 
     BetRecommendation
 )
-from backend.src.api.repositories import RaceRepository
-from backend.src.cli.cronJobs import cronjobs
-from backend.src.ml.predictor import RacePredictor
+from src.api.repositories import RaceRepository
+from src.cli.cronJobs import cronjobs
+from src.ml.predictor import RacePredictor
 
 pd.set_option('future.no_silent_downcasting', True)
 
@@ -47,13 +47,20 @@ async def lifespan(app: FastAPI):
     """
     logger.info("Initializing ML Pipeline...")
     try:
-        # current_file = Path(__file__).resolve()
-        # project_root = current_file.parent.parent.parent
-        # model_path = project_root / "data" / "model_calibrated.pkl"
-        # print(model_path)
-        import sys
-        root_path = "F:\\git\\horse-racing-prediction"  #sys.path[1]
-        model_path = root_path + "\\data\\model_calibrated.pkl"
+        current_file = Path(__file__).resolve()
+        # Adjusted path: main.py is in backend/src/api/
+        # data is in root/data (mapped to /data in some contexts, but let's assume it's next to backend/)
+        # Actually in Docker, /app is backend/, and data/ should be in /app/../data?
+        # Looking at docker-compose, ./backend is mapped to /app.
+        # But data/ is not mapped. Ah, I see a "data/" in project root in list_files.
+        # In Docker, we might need to mount it.
+
+        # Let's check how the model is intended to be accessed.
+        # In backend/src/ml/predictor.py, default is "data/model_calibrated.pkl".
+        # If /app is backend/, then /app/../data/model_calibrated.pkl should work if mounted.
+
+        project_root = current_file.parent.parent.parent.parent # backend/src/api/main.py -> backend/
+        model_path = project_root / "data" / "model_calibrated.pkl"
         
         # Initialize Predictor
         ml_models["predictor"] = RacePredictor(str(model_path))

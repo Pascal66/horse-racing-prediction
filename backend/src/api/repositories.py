@@ -7,7 +7,7 @@ import logging
 from typing import List, Dict, Any
 import psycopg2.extras
 
-from backend.src.core.database import DatabaseManager
+from src.core.database import DatabaseManager
 
 
 logger = logging.getLogger(__name__)

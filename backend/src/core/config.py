@@ -3,8 +3,23 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 
-env_path = Path(__file__).resolve().parent.parent.parent.parent / ".env"
-load_dotenv(dotenv_path=env_path)
+# Try multiple locations for .env:
+# 1. Project root (parent of backend/)
+# 2. Current backend/ directory
+# 3. Docker environment (will be ignored if not found, but system env takes over)
+env_paths = [
+    Path(__file__).resolve().parent.parent.parent.parent / ".env", # Root from src/core/
+    Path.cwd() / ".env",
+    Path.cwd().parent / ".env"
+]
+
+for path in env_paths:
+    if path.exists():
+        load_dotenv(dotenv_path=path)
+        break
+else:
+    # If no .env file found, it might be already in the environment (Docker)
+    load_dotenv()
 
 DB_URL = os.getenv("DB_URL")
 MAX_WORKERS = 4

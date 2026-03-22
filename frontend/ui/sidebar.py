@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime
-from frontend.api.api_client import fetch_daily_races
-import frontend.state.store as store
+from api.api_client import fetch_daily_races
+import state.store as store
 
 
 def render_sidebar():
