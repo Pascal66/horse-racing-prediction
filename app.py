@@ -5,7 +5,6 @@ from frontend.ui.sidebar import render_sidebar
 from frontend.ui.sniper import render_sniper_section
 from frontend.ui.race import render_race_grid
 from frontend.ui.admin import render_admin_dashboard
-from frontend.ui.admin import render_admin_dashboard
 from frontend.state.store import init_session
 
 # --- CONFIGURATION ---

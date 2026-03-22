@@ -262,7 +262,20 @@ class ParticipantsIngestor(BaseIngestor):
                 time_achieved_s, reduction_km
             )
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (race_id, pmu_number) DO NOTHING;
+            ON CONFLICT (race_id, pmu_number) DO UPDATE SET
+                trainer_id = EXCLUDED.trainer_id,
+                driver_jockey_id = EXCLUDED.driver_jockey_id,
+                shoeing_id = EXCLUDED.shoeing_id,
+                incident_id = EXCLUDED.incident_id,
+                career_races_count = EXCLUDED.career_races_count,
+                career_winnings = EXCLUDED.career_winnings,
+                reference_odds = EXCLUDED.reference_odds,
+                live_odds = EXCLUDED.live_odds,
+                raw_performance_string = EXCLUDED.raw_performance_string,
+                trainer_advice = EXCLUDED.trainer_advice,
+                finish_rank = EXCLUDED.finish_rank,
+                time_achieved_s = EXCLUDED.time_achieved_s,
+                reduction_km = EXCLUDED.reduction_km;
             """,
             (
                 race_id, horse_id, p_num, participant_data.get("age"), clean_sex,
