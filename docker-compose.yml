@@ -1,17 +1,14 @@
 services:
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: pmu_backend
     env_file:
       - .env
 
     volumes:
-      - ./backend:/app
-
-      - /app/__pycache__
-      - /app/.pytest_cache
-      - /app/.venv
-      - /app/failures
+      - .:/app
         
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -20,7 +17,9 @@ services:
     restart: on-failure
 
   frontend:
-    build: ./frontend
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
     container_name: pmu_frontend
     depends_on:
       - backend
@@ -29,11 +28,7 @@ services:
       - PYTHONUNBUFFERED=1
     
     volumes:
-      - ./frontend:/app
-      
-      - /app/__pycache__
-      - /app/.pytest_cache
-      - /app/.venv
+      - .:/app
       
     ports:
       - "8501:8501"

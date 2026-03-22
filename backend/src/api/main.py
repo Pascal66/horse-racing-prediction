@@ -47,13 +47,18 @@ async def lifespan(app: FastAPI):
     """
     logger.info("Initializing ML Pipeline...")
     try:
-        # current_file = Path(__file__).resolve()
-        # project_root = current_file.parent.parent.parent
-        # model_path = project_root / "data" / "model_calibrated.pkl"
-        # print(model_path)
-        import sys
-        root_path = "F:\\git\\horse-racing-prediction"  #sys.path[1]
-        model_path = root_path + "\\data\\model_calibrated.pkl"
+        # Resolve the project root dynamically relative to this file
+        # main.py is in backend/src/api/
+        current_file = Path(__file__).resolve()
+        project_root = current_file.parents[3] # backend/src/api/ -> backend/src/ -> backend/ -> root/
+
+        # In Docker, we might want to override this via environment variable if mounted elsewhere
+        import os
+        model_path_env = os.getenv("MODEL_PATH")
+        if model_path_env:
+            model_path = Path(model_path_env)
+        else:
+            model_path = project_root / "data" / "model_calibrated.pkl"
         
         # Initialize Predictor
         ml_models["predictor"] = RacePredictor(str(model_path))
