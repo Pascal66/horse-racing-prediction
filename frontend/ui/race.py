@@ -22,7 +22,11 @@ def render_race_grid():
 
     # Header
     racetrack_name = meeting_races.iloc[0]['racetrack_code']
-    st.markdown(f"## 🏟️ Meeting {selected_meeting} : {racetrack_name}")
+    date_str = store.get_date_code()
+    # Format date for better display (DD/MM/YYYY)
+    formatted_date = f"{date_str[:2]}/{date_str[2:4]}/{date_str[4:]}"
+
+    st.markdown(f"## 🏟️ Meeting {selected_meeting} : {racetrack_name} ({formatted_date})")
 
     # Create Tabs
     race_labels = [f"C{r['race_number']}" for _, r in meeting_races.iterrows()]

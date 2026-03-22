@@ -4,6 +4,8 @@ import streamlit as st
 from frontend.ui.sidebar import render_sidebar
 from frontend.ui.sniper import render_sniper_section
 from frontend.ui.race import render_race_grid
+from frontend.ui.admin import render_admin_dashboard
+from frontend.ui.admin import render_admin_dashboard
 from frontend.state.store import init_session
 
 # --- CONFIGURATION ---
@@ -37,9 +39,20 @@ def main():
     # 2. Render Sidebar (Handling Inputs)
     render_sidebar()
     
-    # 3. Render Main Content (Reading State)
-    render_sniper_section()
-    render_race_grid()
+    # Navigation logic in sidebar or tabs?
+    # Let's add simple navigation in sidebar
+    with st.sidebar:
+        st.markdown("---")
+        st.subheader("🛠️ Navigation")
+        page = st.radio("Go to:", ["🏇 Predictor", "⚙️ Admin & Sched"])
+
+    if page == "🏇 Predictor":
+        # 3. Render Main Content (Reading State)
+        render_sniper_section()
+        render_race_grid()
+    else:
+        # 3. Render Admin
+        render_admin_dashboard()
 
 if __name__ == "__main__":
     main()
