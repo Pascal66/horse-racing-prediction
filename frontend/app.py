@@ -1,10 +1,10 @@
 import logging
 import streamlit as st
 
-from frontend.ui.sidebar import render_sidebar
-from frontend.ui.sniper import render_sniper_section
-from frontend.ui.race import render_race_grid
-from frontend.state.store import init_session
+from ui.sidebar import render_sidebar
+from ui.sniper import render_sniper_section
+from ui.race import render_race_grid
+from state.store import init_session
 
 # --- CONFIGURATION ---
 logging.basicConfig(level=logging.INFO)
@@ -29,8 +29,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def main():
-
-
     # 1. Initialize State
     init_session()
     

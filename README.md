@@ -208,7 +208,7 @@ pip install -r requirements.txt
 export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 # Launch application
-streamlit run app_moved.py --server.port 8501
+streamlit run app.py --server.port 8501
 ```
 
 ---
@@ -294,7 +294,7 @@ The file organization follows industry standards to ensure maintainability and s
 │
 ├── frontend/               # Streamlit Interface
 │   ├── Dockerfile
-│   ├── app_moved.py              # Application entry point
+│   ├── app.py              # Application entry point
 │   ├── ui/                 # Visual components (Sidebar, Grids, Analysis)
 │   ├── state/              # Session state management
 │   ├── api/                # Internal HTTP client to Backend

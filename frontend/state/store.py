@@ -1,7 +1,6 @@
 import streamlit as st
 from datetime import datetime
 
-
 # State Keys
 KEY_DATE = "date_code"
 KEY_MEETING_ID = "selected_meeting_id"

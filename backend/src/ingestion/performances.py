@@ -5,9 +5,8 @@ import random
 import threading
 import psycopg2.extras
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from backend.src.core.config import PERF_URL_TEMPLATE, HEADERS, MAX_WORKERS
-from backend.src.ingestion.base import BaseIngestor, IngestStatus
-
+from src.core.config import PERF_URL_TEMPLATE, HEADERS, MAX_WORKERS
+from src.ingestion.base import BaseIngestor, IngestStatus
 
 class PerformancesIngestor(BaseIngestor):
     """

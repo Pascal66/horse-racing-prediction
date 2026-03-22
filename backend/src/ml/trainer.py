@@ -14,8 +14,8 @@ from pathlib import Path
 # Ensure python finds the source modules
 sys.path.append(str(Path(__file__).parent.parent))
 
-from backend.src.ml.loader import DataLoader
-from backend.src.ml.features import PmuFeatureEngineer
+from src.ml.loader import DataLoader
+from src.ml.features import PmuFeatureEngineer
 
 # Set up logging to stdout for Docker
 logging.basicConfig(

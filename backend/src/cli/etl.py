@@ -4,14 +4,12 @@ import logging
 from datetime import datetime, timedelta
 from typing import List
 
-import schedule
-
 # Import BaseIngestor for Type Hinting
-from backend.src.ingestion.base import BaseIngestor
-from backend.src.ingestion.program import ProgramIngestor
-from backend.src.ingestion.participants import ParticipantsIngestor
-from backend.src.ingestion.performances import PerformancesIngestor
-from backend.src.ingestion.rapports import ReportsIngestor
+from src.ingestion.base import BaseIngestor
+from src.ingestion.program import ProgramIngestor
+from src.ingestion.participants import ParticipantsIngestor
+from src.ingestion.performances import PerformancesIngestor
+from src.ingestion.rapports import ReportsIngestor
 
 # Constants for date formatting to avoid magic strings
 DATE_FORMAT_INPUT = "%d%m%Y"  # e.g., 05112025

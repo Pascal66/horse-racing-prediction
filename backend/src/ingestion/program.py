@@ -1,9 +1,8 @@
 import datetime as dt
 import logging
 import requests
-from backend.src.core.config import PROGRAMME_URL_TEMPLATE, HEADERS, STATUS_MAP, TRACK_MAP
-from backend.src.ingestion.base import BaseIngestor
-
+from src.core.config import PROGRAMME_URL_TEMPLATE, HEADERS, STATUS_MAP, TRACK_MAP
+from src.ingestion.base import BaseIngestor
 
 class ProgramIngestor(BaseIngestor):
     """

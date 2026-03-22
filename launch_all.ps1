@@ -4,7 +4,7 @@
 #}
 #
 #Start-Job -Name frontend -ScriptBlock {
-#    & C:\Users\hmaro\AppData\Roaming\Python\Scripts\uv.exe run streamlit run app_moved.py --server.port 8501 |
+#    & C:\Users\hmaro\AppData\Roaming\Python\Scripts\uv.exe run streamlit run app.py --server.port 8501 |
 #        ForEach-Object { "[FRONTEND] $_" }
 #}
 #
@@ -15,5 +15,5 @@
 #    Receive-Job -Name frontend -Keep
 #    Start-Sleep -Milliseconds 2000
 #}
-Start-Process powershell.exe -ArgumentList '-NoExit', '-Command', 'C:\Users\hmaro\AppData\Roaming\Python\Scripts\uv.exe run uvicorn backend.src.api.main:app --reload --host 192.168.1.156 --port 8000'
-Start-Process powershell.exe -ArgumentList '-NoExit', '-Command', 'C:\Users\hmaro\AppData\Roaming\Python\Scripts\uv.exe run streamlit run app.py --server.port 8501'
+Start-Process powershell.exe -ArgumentList '-NoExit', '-Command', 'cd .\backend; C:\Users\hmaro\AppData\Roaming\Python\Scripts\uv.exe run uvicorn src.api.main:app --reload --host 192.168.1.156 --port 8000'
+Start-Process powershell.exe -ArgumentList '-NoExit', '-Command', 'cd .\frontend; C:\Users\hmaro\AppData\Roaming\Python\Scripts\uv.exe run streamlit run app.py --server.port 8501'

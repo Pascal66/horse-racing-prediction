@@ -7,21 +7,22 @@ from typing import List, Dict, Optional, Any
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-
 from fastapi import FastAPI, Depends, HTTPException, status
 import pandas as pd
 
-from backend.src.api.schemas import (
+from src.api.schemas import (
     RaceSummary, 
     ParticipantSummary, 
     PredictionResult, 
     BetRecommendation
 )
-from backend.src.api.repositories import RaceRepository
-from backend.src.cli.cronJobs import cronjobs
-from backend.src.ml.predictor import RacePredictor
+from src.api.repositories import RaceRepository
+from src.cli.cronJobs import cronjobs
+from src.ml.predictor import RacePredictor
 
 pd.set_option('future.no_silent_downcasting', True)
+
+cronjobs()
 
 # --- CONFIGURATION: SNIPER STRATEGY ---
 MIN_EDGE = 0.05       # Minimum expected value (5%)
@@ -52,7 +53,7 @@ async def lifespan(app: FastAPI):
         # model_path = project_root / "data" / "model_calibrated.pkl"
         # print(model_path)
         import sys
-        root_path = "F:\\git\\horse-racing-prediction"  #sys.path[1]
+        root_path = "F:\\git\\horse-racing-prediction"
         model_path = root_path + "\\data\\model_calibrated.pkl"
         
         # Initialize Predictor
@@ -74,7 +75,6 @@ async def lifespan(app: FastAPI):
     logger.info("ML Pipeline shut down.")
 
 app = FastAPI(title="PMU Predictor API", lifespan=lifespan)
-cronjobs()
 
 # --- DEPENDENCY INJECTION ---
 def get_repository() -> RaceRepository:

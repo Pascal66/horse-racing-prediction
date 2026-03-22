@@ -2,8 +2,7 @@ import os
 import logging
 import pandas as pd
 from sqlalchemy import create_engine, Engine
-from backend.src.core.config import DB_URL
-
+from src.core.config import DB_URL
 
 class DataLoader:
     """
