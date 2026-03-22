@@ -22,8 +22,6 @@ from src.ml.predictor import RacePredictor
 
 pd.set_option('future.no_silent_downcasting', True)
 
-cronjobs()
-
 # --- CONFIGURATION: SNIPER STRATEGY ---
 MIN_EDGE = 0.05       # Minimum expected value (5%)
 MIN_ODDS = 2.5 #5.0        # Minimum decimal odds
@@ -52,9 +50,23 @@ async def lifespan(app: FastAPI):
         # project_root = current_file.parent.parent.parent
         # model_path = project_root / "data" / "model_calibrated.pkl"
         # print(model_path)
-        import sys
-        root_path = "F:\\git\\horse-racing-prediction"
-        model_path = root_path + "\\data\\model_calibrated.pkl"
+#        import sys
+#        root_path = "F:\\git\\horse-racing-prediction"
+#        model_path = root_path + "\\data\\model_calibrated.pkl"
+
+        # Resolve the project root dynamically relative to this file
+        # main.py is in backend/src/api/
+        current_file = Path(__file__).resolve()
+        project_root = current_file.parents[3] # backend/src/api/ -> backend/src/ -> backend/ -> root/
+
+        # In Docker, we might want to override this via environment variable if mounted elsewhere
+        import os
+        model_path_env = os.getenv("MODEL_PATH")
+        if model_path_env:
+            model_path = Path(model_path_env)
+        else:
+            model_path = project_root / "data" / "model_calibrated.pkl"
+
         
         # Initialize Predictor
         ml_models["predictor"] = RacePredictor(str(model_path))
@@ -75,6 +87,7 @@ async def lifespan(app: FastAPI):
     logger.info("ML Pipeline shut down.")
 
 app = FastAPI(title="PMU Predictor API", lifespan=lifespan)
+cronjobs()
 
 # --- DEPENDENCY INJECTION ---
 def get_repository() -> RaceRepository:
