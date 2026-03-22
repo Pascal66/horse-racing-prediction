@@ -4,12 +4,14 @@ import logging
 from datetime import datetime, timedelta
 from typing import List
 
+import schedule
+
 # Import BaseIngestor for Type Hinting
-from src.ingestion.base import BaseIngestor
-from src.ingestion.program import ProgramIngestor
-from src.ingestion.participants import ParticipantsIngestor
-from src.ingestion.performances import PerformancesIngestor
-from src.ingestion.reports import ReportsIngestor
+from backend.src.ingestion.base import BaseIngestor
+from backend.src.ingestion.program import ProgramIngestor
+from backend.src.ingestion.participants import ParticipantsIngestor
+from backend.src.ingestion.performances import PerformancesIngestor
+from backend.src.ingestion.rapports import ReportsIngestor
 
 # Constants for date formatting to avoid magic strings
 DATE_FORMAT_INPUT = "%d%m%Y"  # e.g., 05112025
@@ -136,5 +138,40 @@ def main() -> None:
         
     logger.info("All jobs completed.")
 
+def etl_daily(start_date, end_date) -> None:
+    dates_to_process = generate_date_range(start_date, end_date)
+    total_days = len(dates_to_process)
+    logger.info(f"Job started. Processing {total_days} day(s). Mode: all")
+
+    # Enumerate starting at 1 for user-friendly progress logging
+    for i, date_code in enumerate(dates_to_process, 1):
+        logger.info(f"Progress: [{i}/{total_days}] Processing {date_code}")
+        process_date(date_code, "all")
+
+    logger.info("All jobs completed.")
+
+def etl_liveodds(start_hour=10, end_hour=20) -> None:
+    NOW = datetime.now()
+    FROM = NOW.replace(hour=start_hour, minute=0)
+    TO = NOW.replace(hour=end_hour, minute=30)
+    TODAY = datetime.today()
+    if NOW < FROM or NOW > TO:
+        return
+    dates_to_process = [TODAY.strftime("%d%m%Y")]
+    total_days = len(dates_to_process)
+    logger.info(f"Job started. Processing {total_days} day(s). Mode: participants")
+
+    # Enumerate starting at 1 for user-friendly progress logging
+    for i, date_code in enumerate(dates_to_process, 1):
+        # logger.info(f"Progress: [{i}/{total_days}] Processing {date_code}")
+        process_date(date_code, "participants")
+
+    # logger.info("All jobs completed.")
+
 if __name__ == "__main__":
     main()
+    #
+    # TODAY = datetime.today().strftime("%d%m%Y")
+    # START_DATE = (datetime.today() - timedelta(days=2)).strftime("%d%m%Y")
+    #
+    # job = schedule.every().day.at('07:30').do(etl_daily, START_DATE, TODAY).tag('daily-tasks', 'Orchestrator')

@@ -1,0 +1,1 @@
+* * 6 * * C:\Users\hmaro\AppData\Roaming\Python\Scripts\uv.exe run F:\git\horse-racing-prediction\.venv\Scripts\python.exe F:\git\horse-racing-prediction\backend\src\cli\etl.py --range 20032026 21032026--type all

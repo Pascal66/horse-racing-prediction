@@ -5,8 +5,8 @@ import random
 import threading
 import psycopg2
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from src.core.config import PARTICIPANTS_URL_TEMPLATE, HEADERS, INCIDENT_MAP, SHOE_MAP, MAX_WORKERS
-from src.ingestion.base import BaseIngestor, IngestStatus
+from backend.src.core.config import PARTICIPANTS_URL_TEMPLATE, HEADERS, INCIDENT_MAP, SHOE_MAP, MAX_WORKERS
+from backend.src.ingestion.base import BaseIngestor, IngestStatus
 
 class ParticipantsIngestor(BaseIngestor):
     """
@@ -98,7 +98,7 @@ class ParticipantsIngestor(BaseIngestor):
         try:
             with tmp_conn:
                 with tmp_conn.cursor() as tmp_cur:
-                    # Try to insert; if conflict, do nothing
+                    # Try to insert; if conflicted, do nothing
                     tmp_cur.execute(
                         "INSERT INTO horse (horse_name, sex, birth_year) VALUES (%s, %s, %s) "
                         "ON CONFLICT (horse_name) DO NOTHING RETURNING horse_id;",

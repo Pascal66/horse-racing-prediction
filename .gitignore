@@ -52,8 +52,8 @@ logs/
 *.log
 
 # Data dumps
-data/raw/
-data/tmp/
+backend/data/raw/
+backend/data/tmp/
 *.json
 dump/
 
@@ -74,7 +74,7 @@ htmlcov/
 failures/
 
 #data
-data/
+backend/data/
 *.parquet
 *.csv
 

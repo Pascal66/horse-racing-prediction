@@ -5,8 +5,8 @@ import pandas as pd
 import datetime as dt
 
 # Import the FastAPI app
-from src.api.main import app
-from src.core.database import DatabaseManager
+from backend.src.api.main import app
+from backend.src.core.database import DatabaseManager
 
 @pytest.fixture(scope="session")
 def mock_db_manager():

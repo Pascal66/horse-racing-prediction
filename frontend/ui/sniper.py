@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
-from api.api_client import get_sniper_bets
-import state.store as store
+from frontend.api.api_client import get_sniper_bets
+import frontend.state.store as store
 
 def render_sniper_section():
     date_code = store.get_date_code()
@@ -17,7 +17,7 @@ def render_sniper_section():
         bet_rows = []
         for bet in sniper_bets:
             bet_rows.append({
-                "Race": f"C{bet.get('race_num', '?')}", 
+                "Race": f"{bet.get('race_id')} R{bet.get('meeting_num', '?')}C{bet.get('race_num', '?')}",
                 "Horse": f"#{bet.get('program_number', '?')} {bet.get('horse_name', 'Unknown')}",
                 "Odds": f"{bet.get('odds', 0):.1f}",
                 "AI Prob": f"{bet.get('win_probability', 0)*100:.1f}%",

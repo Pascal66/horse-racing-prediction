@@ -1,7 +1,7 @@
 import psycopg2
 from psycopg2 import pool
 from typing import Optional, Any
-from src.core.config import DB_URL, MAX_WORKERS
+from backend.src.core.config import DB_URL, MAX_WORKERS
 
 class DatabaseManager:
     _instance: Optional['DatabaseManager'] = None

@@ -14,7 +14,7 @@ class APIClient:
     Uses requests.Session for connection pooling.
     """
     def __init__(self):
-        self.base_url = os.getenv("API_URL", "http://127.0.0.1:8000")
+        self.base_url = os.getenv("API_URL", "http://192.168.1.156:8000")
         self.session = requests.Session()
         self.timeout = 10
 

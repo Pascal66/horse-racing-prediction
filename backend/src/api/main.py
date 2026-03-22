@@ -10,18 +10,21 @@ from pathlib import Path
 from fastapi import FastAPI, Depends, HTTPException, status
 import pandas as pd
 
-from src.api.schemas import (
+from backend.src.api.schemas import (
     RaceSummary, 
     ParticipantSummary, 
     PredictionResult, 
     BetRecommendation
 )
-from src.api.repositories import RaceRepository
-from src.ml.predictor import RacePredictor
+from backend.src.api.repositories import RaceRepository
+from backend.src.cli.cronJobs import cronjobs
+from backend.src.ml.predictor import RacePredictor
+
+pd.set_option('future.no_silent_downcasting', True)
 
 # --- CONFIGURATION: SNIPER STRATEGY ---
 MIN_EDGE = 0.05       # Minimum expected value (5%)
-MIN_ODDS = 5.0        # Minimum decimal odds
+MIN_ODDS = 2.5 #5.0        # Minimum decimal odds
 MAX_ODDS = 20.0       # Maximum decimal odds (to avoid longshots)
 DEFAULT_ODDS_IF_MISSING = 1.1
 
@@ -43,9 +46,13 @@ async def lifespan(app: FastAPI):
     """
     logger.info("Initializing ML Pipeline...")
     try:
-        current_file = Path(__file__).resolve()
-        project_root = current_file.parent.parent.parent
-        model_path = project_root / "data" / "model_calibrated.pkl"
+        # current_file = Path(__file__).resolve()
+        # project_root = current_file.parent.parent.parent
+        # model_path = project_root / "data" / "model_calibrated.pkl"
+        # print(model_path)
+        import sys
+        root_path = "F:\\git\\horse-racing-prediction"  #sys.path[1]
+        model_path = root_path + "\\data\\model_calibrated.pkl"
         
         # Initialize Predictor
         ml_models["predictor"] = RacePredictor(str(model_path))
@@ -66,6 +73,7 @@ async def lifespan(app: FastAPI):
     logger.info("ML Pipeline shut down.")
 
 app = FastAPI(title="PMU Predictor API", lifespan=lifespan)
+cronjobs()
 
 # --- DEPENDENCY INJECTION ---
 def get_repository() -> RaceRepository:
@@ -148,6 +156,7 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
     )
     
     candidates = df[sniper_mask].copy()
+    # print(candidates.columns.tolist())
 
     recommendations = []
     
@@ -157,6 +166,7 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
         
         recommendations.append({
             "race_id": int(best_bet['race_id']),
+            "meeting_num": 99,#, int(best_bet['meeting_number']),
             "race_num": int(best_bet['race_number']),
             "horse_name": best_bet['horse_name'],
             "program_number": int(best_bet['program_number']),

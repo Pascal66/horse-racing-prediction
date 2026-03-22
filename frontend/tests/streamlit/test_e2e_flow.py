@@ -14,11 +14,11 @@ class TestAppE2E:
         Ensures the app loads without error and displays the title.
         """
         # Patching where the function is used
-        with patch("ui.sidebar.fetch_daily_races") as mock_fetch:
+        with patch("frontend.ui.sidebar.fetch_daily_races") as mock_fetch:
             mock_fetch.return_value = pd.DataFrame(mock_races_data)
             
             # Load the app
-            at = AppTest.from_file("app.py")
+            at = AppTest.from_file("app_moved.py")
             at.run(timeout=20)
             
             # Check for no exceptions
@@ -31,10 +31,10 @@ class TestAppE2E:
         """
         Test selecting a meeting from the sidebar.
         """
-        with patch("ui.sidebar.fetch_daily_races") as mock_fetch:
+        with patch("frontend.ui.sidebar.fetch_daily_races") as mock_fetch:
             mock_fetch.return_value = pd.DataFrame(mock_races_data)
             
-            at = AppTest.from_file("app.py")
+            at = AppTest.from_file("app_moved.py")
             at.run(timeout=20)
             
             # Simulate changing the meeting radio button.

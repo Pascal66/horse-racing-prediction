@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch, ANY
-from src.ingestion.program import ProgramIngestor
+from backend.src.ingestion.program import ProgramIngestor
 
 # --- FIXTURES ---
 

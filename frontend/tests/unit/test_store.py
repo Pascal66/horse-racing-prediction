@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime
-from state import store
+from frontend.state import store
 
 class TestStore:
     """

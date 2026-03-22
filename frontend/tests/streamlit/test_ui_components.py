@@ -1,10 +1,10 @@
 import pytest
 from unittest.mock import patch, MagicMock
 import pandas as pd
-from ui.sidebar import render_sidebar
-from ui.sniper import render_sniper_section
-from ui.race import render_race_grid
-from state import store
+from frontend.ui.sidebar import render_sidebar
+from frontend.ui.sniper import render_sniper_section
+from frontend.ui.race import render_race_grid
+from frontend.state import store
 
 @pytest.mark.usefixtures("mock_session_state")
 class TestUIComponents:
@@ -13,8 +13,8 @@ class TestUIComponents:
     Mocks streamlit commands and API calls to verify logic flow and state updates.
     """
 
-    @patch('ui.sidebar.st')
-    @patch('ui.sidebar.fetch_daily_races')
+    @patch('frontend.ui.sidebar.st')
+    @patch('frontend.ui.sidebar.fetch_daily_races')
     def test_sidebar_logic(self, mock_fetch, mock_st, mock_races_data):
         """
         Verify sidebar sets date and fetches data.
@@ -37,8 +37,8 @@ class TestUIComponents:
         # Check that UI elements were called
         mock_st.title.assert_called()
 
-    @patch('ui.sniper.st')
-    @patch('ui.sniper.get_sniper_bets')
+    @patch('frontend.ui.sniper.st')
+    @patch('frontend.ui.sniper.get_sniper_bets')
     def test_sniper_section_rendering(self, mock_get_bets, mock_st, mock_sniper_bets):
         """
         Verify sniper section renders dataframe when bets exist.
@@ -51,8 +51,8 @@ class TestUIComponents:
         mock_st.success.assert_called()
         mock_st.dataframe.assert_called_once()
 
-    @patch('ui.sniper.st')
-    @patch('ui.sniper.get_sniper_bets')
+    @patch('frontend.ui.sniper.st')
+    @patch('frontend.ui.sniper.get_sniper_bets')
     def test_sniper_section_empty(self, mock_get_bets, mock_st):
         """
         Verify sniper section handles no bets gracefully.
@@ -65,7 +65,7 @@ class TestUIComponents:
         mock_st.info.assert_called_with("ℹ️ No 'Sniper' bets found today. The market is efficient right now.")
         mock_st.dataframe.assert_not_called()
 
-    @patch('ui.race.st')
+    @patch('frontend.ui.race.st')
     def test_race_grid_no_selection(self, mock_st):
         """
         Verify warning when no meeting is selected.
@@ -77,8 +77,8 @@ class TestUIComponents:
         
         mock_st.info.assert_called()
 
-    @patch('ui.race.render_analysis_view')
-    @patch('ui.race.st')
+    @patch('frontend.ui.race.render_analysis_view')
+    @patch('frontend.ui.race.st')
     def test_race_grid_render_tabs(self, mock_st, mock_render_analysis, mock_races_data):
         """
         Integration Test: Verify race grid rendering logic.

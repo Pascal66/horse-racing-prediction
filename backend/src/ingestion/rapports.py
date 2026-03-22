@@ -3,15 +3,15 @@ import logging
 import time
 import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from src.core.config import REPORTS_URL_TEMPLATE, HEADERS, BET_TYPE_MAP, MAX_WORKERS
-from src.ingestion.base import BaseIngestor, IngestStatus
+from backend.src.core.config import REPORTS_URL_TEMPLATE, HEADERS, BET_TYPE_MAP, MAX_WORKERS
+from backend.src.ingestion.base import BaseIngestor, IngestStatus
 
 class ReportsIngestor(BaseIngestor):
     """
     Ingests betting reports (dividends/odds) for races.
     """
 
-    def _fetch_reports_json(self, session, meeting, race):
+    def _fetch_rapports_json(self, session, meeting, race):
         """Fetches the betting reports JSON from the external API."""
         url = REPORTS_URL_TEMPLATE.format(date=self.date_code, meeting=meeting, race=race)
         try:
@@ -73,7 +73,7 @@ class ReportsIngestor(BaseIngestor):
         res = cursor.fetchone()
         return res[0] if res else None
 
-    def _insert_bet_report(self, cursor, bet_id, report_data):
+    def _insert_bet_rapport(self, cursor, bet_id, report_data):
         """Inserts the specific dividend/combination details for a bet."""
         if not bet_id:
             return
@@ -99,7 +99,7 @@ class ReportsIngestor(BaseIngestor):
         """Worker method to process bets for a single race."""
         time.sleep(random.uniform(0.1, 0.3))
         session = self._get_http_session()
-        bets, status_code = self._fetch_reports_json(session, meeting_num, race_num)
+        bets, status_code = self._fetch_rapports_json(session, meeting_num, race_num)
         
         if status_code in [204, 404]:
             return 0, IngestStatus.SKIPPED
@@ -118,7 +118,7 @@ class ReportsIngestor(BaseIngestor):
                         bet_id = self._insert_race_bet(cursor, race_id, bet)
                         count_bets += 1
                         for report in bet.get("rapports", []):
-                            self._insert_bet_report(cursor, bet_id, report)
+                            self._insert_bet_rapport(cursor, bet_id, report)
             return count_bets, IngestStatus.SUCCESS
         except Exception as e:
             self.logger.error(f"DB Error Bets R{meeting_num}C{race_num}: {e}")
@@ -153,7 +153,7 @@ class ReportsIngestor(BaseIngestor):
     def ingest(self):
         """Main entry point for parallel betting reports ingestion."""
         self.db_manager.initialize_pool()
-        self.logger.info(f"Starting PARALLEL REPORTS ingestion for {self.date_code}")
+        self.logger.info(f"Starting PARALLEL RAPPORTS ingestion for {self.date_code}")
         races = self._get_races()
         self.logger.info(f"Processing {len(races)} races.")
 

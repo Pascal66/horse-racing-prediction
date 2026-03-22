@@ -1,6 +1,6 @@
 import pytest
 import logging
-from src.ingestion.base import BaseIngestor
+from backend.src.ingestion.base import BaseIngestor
 
 class ConcreteIngestor(BaseIngestor):
     """Minimal concrete implementation for testing abstract base class logic."""

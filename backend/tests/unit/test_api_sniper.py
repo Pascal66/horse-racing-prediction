@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from src.api.main import get_sniper_bets, ml_models  # Import the global dict
+from backend.src.api.main import get_sniper_bets, ml_models  # Import the global dict
 
 # --- FIXTURE SETUP ---
 @pytest.fixture

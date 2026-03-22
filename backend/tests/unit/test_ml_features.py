@@ -2,7 +2,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-from src.ml.features import PmuFeatureEngineer
+from backend.src.ml.features import PmuFeatureEngineer
 
 @pytest.fixture
 def feature_engineer():

@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import MagicMock, patch  # <--- Import patch
-from src.api.main import app, get_repository, ml_models
+from backend.src.api.main import app, get_repository, ml_models
 
 # --- MOCKS ---
 

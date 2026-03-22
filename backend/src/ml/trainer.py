@@ -14,8 +14,8 @@ from pathlib import Path
 # Ensure python finds the source modules
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.ml.loader import DataLoader
-from src.ml.features import PmuFeatureEngineer
+from backend.src.ml.loader import DataLoader
+from backend.src.ml.features import PmuFeatureEngineer
 
 # Set up logging to stdout for Docker
 logging.basicConfig(
@@ -26,6 +26,7 @@ logging.basicConfig(
 
 class XGBoostTrainer:
     def __init__(self, model_path: str = "data/model_calibrated.pkl") -> None:
+
         self.logger = logging.getLogger("ML.Trainer")
         self.model_path = model_path
         self.loader = DataLoader()
@@ -133,8 +134,32 @@ class XGBoostTrainer:
             auc = roc_auc_score(y_test, probs)
         except ValueError:
             auc = 0.5
-        
+
+        # print(test_df.columns)
+        eval_df = test_df.copy()
+        eval_df['probability'] = probs
+        # Rank horses by probability within each race
+        # method='min' means if there's a tie, they get the same rank (e.g. 1, 2, 2, 4)
+        eval_df['model_rank'] = eval_df.groupby('race_id')['probability'].rank(ascending=False, method='min')
+        # Calculate Hit Rate
+        winners = eval_df[eval_df['is_winner'] == 1]
+        top3_hits = (winners['model_rank'] <= 3).sum()
+        total_races = winners['race_id'].nunique()
+        if total_races == 0:
+            print("Warning: No races found in test set (or no winners flagged).")
+            # return
+
+        hit_rate = top3_hits / total_races
+
+        print(f"-" * 30)
+        print(f"EVALUATION RESULTS")
+        print(f"-" * 30)
+        print(f"Total Races in Test Set: {total_races}")
+        print(f"Top 3 Hit Rate:          {hit_rate:.2%}")
+        print(f"-" * 30)
+
         self.logger.info(f"FINAL METRICS -> LogLoss: {loss:.4f} | AUC: {auc:.4f}")
+
 
         # 8. Save Pipeline
         # Note: We pass 'engineer' as a step. It must implement fit/transform.
@@ -151,5 +176,8 @@ class XGBoostTrainer:
         self.logger.info(f"SUCCESS: Model saved to {self.model_path}")
 
 if __name__ == "__main__":
-    trainer = XGBoostTrainer()
+    import sys
+    root_path = "F:\\git\\horse-racing-prediction"  #sys.path[1]
+    trainer = XGBoostTrainer(root_path+"\\data\\model_calibrated.pkl")
+
     trainer.train()
