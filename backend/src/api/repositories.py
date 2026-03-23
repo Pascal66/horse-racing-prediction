@@ -51,7 +51,7 @@ class RaceRepository:
                 r.start_timestamp,
                 r.timezone_offset,
                 r.prize_money,
-                r.specialty
+                r.speciality
             FROM race r
             JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
             JOIN daily_program dp ON rm.program_id = dp.program_id

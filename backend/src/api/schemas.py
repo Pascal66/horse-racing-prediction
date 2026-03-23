@@ -22,7 +22,7 @@ class RaceSummary(BaseModel):
     start_timestamp: Optional[int] = None
     timezone_offset: Optional[int] = None
     prize_money: Optional[float] = None
-    specialty: Optional[str] = None
+    speciality: Optional[str] = None
 
 class ParticipantSummary(BaseModel):
     """

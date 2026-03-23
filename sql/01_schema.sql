@@ -32,7 +32,7 @@ CREATE TABLE race (
     race_id SERIAL PRIMARY KEY,
     meeting_id INT NOT NULL,
     race_number SMALLINT NOT NULL,
-    discipline VARCHAR(10),
+    discipline VARCHAR(30),
     race_category VARCHAR(50),
     distance_m SMALLINT, -- 2 bytes: Sufficient for race distances (up to 32km).
     track_type VARCHAR(5),
@@ -40,14 +40,14 @@ CREATE TABLE race (
     penetrometer REAL,   -- 4 bytes: Floating point precision sufficient for track readings.
     declared_runners_count SMALLINT,
     conditions_text TEXT, 
-    race_status VARCHAR(10),
+    race_status VARCHAR(30),
     race_duration_s INT,
     race_status_category VARCHAR(30),
     -- new
     start_timestamp BIGINT,
     timezone_offset BIGINT,
     prize_money REAL,
-    specialty VARCHAR(30),
+    speciality VARCHAR(30),
     CONSTRAINT fk_meeting FOREIGN KEY (meeting_id) REFERENCES race_meeting (meeting_id),
     CONSTRAINT uq_meeting_race_number UNIQUE (meeting_id, race_number)
 );
