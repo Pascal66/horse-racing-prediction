@@ -96,6 +96,10 @@ class ProgramIngestor(BaseIngestor):
         # Convert milliseconds to seconds
         race_duration_s = int(duration_raw) // 1000 if duration_raw else None
 
+        start_timestamp = race_data.get("heureDepart")
+        timezone_offset = race_data.get("timezoneOffset")
+        prize_money = race_data.get("montantPrix")
+        specialty = self._safe_truncate("specialty", race_data.get("specialite"), 30)
         # ON CONFLICT (meeting_id, race_number) DO NOTHING;
         cursor.execute(
             """
@@ -103,24 +107,18 @@ class ProgramIngestor(BaseIngestor):
                 meeting_id, race_number, discipline, race_category,
                 distance_m, track_type, terrain_label, penetrometer,
                 declared_runners_count, conditions_text, race_status,
-                race_duration_s, race_status_category
+                race_duration_s, race_status_category,
+                start_timestamp, timezone_offset, prize_money, specialty
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            
-            ON CONFLICT (meeting_id, race_number) DO UPDATE SET
-                terrain_label = EXCLUDED.terrain_label,
-                penetrometer = EXCLUDED.penetrometer,
-                declared_runners_count = EXCLUDED.declared_runners_count, 
-                conditions_text = EXCLUDED.conditions_text, 
-                race_status = EXCLUDED.race_status,
-                race_duration_s = EXCLUDED.race_duration_s, 
-                race_status_category = EXCLUDED.race_status_category;
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (meeting_id, race_number) DO NOTHING;
             """,
             (
                 meeting_id, race_number, discipline, race_category,
                 distance_m, track_type, terrain_label, penetrometer_value,
                 declared_runners, conditions, race_status,
-                race_duration_s, race_status_category
+                race_duration_s, race_status_category,
+                start_timestamp, timezone_offset, prize_money, specialty
             ),
         )
 

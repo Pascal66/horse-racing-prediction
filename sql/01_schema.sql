@@ -42,7 +42,12 @@ CREATE TABLE race (
     conditions_text TEXT, 
     race_status VARCHAR(10),
     race_duration_s INT,
-    race_status_category VARCHAR(30), 
+    race_status_category VARCHAR(30),
+    -- new
+    start_timestamp BIGINT,
+    timezone_offset BIGINT,
+    prize_money REAL,
+    specialty VARCHAR(30),
     CONSTRAINT fk_meeting FOREIGN KEY (meeting_id) REFERENCES race_meeting (meeting_id),
     CONSTRAINT uq_meeting_race_number UNIQUE (meeting_id, race_number)
 );

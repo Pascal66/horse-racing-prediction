@@ -5,6 +5,7 @@ Defines the data contract for race summaries, participants, and betting recommen
 from typing import Optional
 from pydantic import BaseModel, Field
 
+
 class RaceSummary(BaseModel):
     """
     Represents a high-level summary of a horse race.
@@ -17,6 +18,11 @@ class RaceSummary(BaseModel):
     racetrack_code: Optional[str] = None
     name: Optional[str] = None
     declared_runners_count: Optional[int] = Field(None, description="Number of declared runners.")
+    # new
+    start_timestamp: Optional[int] = None
+    timezone_offset: Optional[int] = None
+    prize_money: Optional[float] = None
+    specialty: Optional[str] = None
 
 class ParticipantSummary(BaseModel):
     """
