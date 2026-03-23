@@ -58,17 +58,17 @@ async def lifespan(app: FastAPI):
         if model_path_env:
             model_path = Path(model_path_env)
         else:
-            model_path = project_root / "data" / "model_calibrated.pkl"
+            model_path = project_root / "data"
         
         # Initialize Predictor
         ml_models["predictor"] = RacePredictor(str(model_path))
         
         # Safe access to check pipeline existence
         predictor = ml_models["predictor"]
-        if predictor and predictor.pipeline:
-            logger.info(f"Model successfully loaded from {model_path}")
+        if predictor and predictor.models:
+            logger.info(f"Loaded {len(predictor.models)} models from {model_path}")
         else:
-            logger.warning("Model file found, but the pipeline is empty/invalid.")
+            logger.warning("No models found in the data directory.")
             
     except Exception as exc:
         logger.error(f"CRITICAL: Failed to load ML model ({exc}). Inference endpoints will fail.")
@@ -95,10 +95,11 @@ def health_check() -> Dict[str, Any]:
     scheduler = get_scheduler()
 
     # ML Engine status
-    if predictor is not None and predictor.pipeline:
+    model_status = "failed"
+    available_models = []
+    if predictor is not None and predictor.models:
         model_status = "loaded"
-    else:
-        model_status = "failed"
+        available_models = list(predictor.models.keys())
 
     # Scheduler status
     scheduler_info = {"status": "inactive", "jobs": []}
@@ -114,6 +115,7 @@ def health_check() -> Dict[str, Any]:
     return {
         "status": "online",
         "ml_engine": model_status,
+        "available_models": available_models,
         "scheduler": scheduler_info
     }
 

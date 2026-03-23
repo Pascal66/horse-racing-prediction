@@ -25,10 +25,10 @@ logging.basicConfig(
 )
 
 class XGBoostTrainer:
-    def __init__(self, model_path: str = "data/model_calibrated.pkl") -> None:
+    def __init__(self, model_dir: str = "data") -> None:
 
         self.logger = logging.getLogger("ML.Trainer")
-        self.model_path = model_path
+        self.model_dir = Path(model_dir)
         self.loader = DataLoader()
         
         self.categorical_features = [
@@ -44,11 +44,10 @@ class XGBoostTrainer:
         ]
 
     def train(self, test_days: int = 60, val_days: int = 30) -> None:
-        self.logger.info("--- STARTING TRAINING PIPELINE ---")
+        self.logger.info("--- STARTING MULTI-MODEL TRAINING PIPELINE ---")
         
         # 1. Loading
         try:
-            # We assume get_training_data returns a DataFrame with 'is_winner' and 'program_date'
             raw_df = self.loader.get_training_data()
             self.logger.info(f"Data Loaded: {raw_df.shape} rows")
         except Exception as e:
@@ -59,11 +58,30 @@ class XGBoostTrainer:
             self.logger.error("No data returned by the loader.")
             return
 
-        # 2. Feature Engineering (Fit once to get global stats if needed)
-        self.logger.info("Engineering features...")
+        # 2. Global Training (Fallback Model)
+        self.logger.info("--- Training GLOBAL (Fallback) Model ---")
+        self._train_and_save(raw_df, "global", test_days, val_days)
+
+        # 3. Specialty Training (per Discipline)
+        if 'discipline' in raw_df.columns:
+            disciplines = raw_df['discipline'].unique()
+            for discipline in disciplines:
+                if pd.isna(discipline) or str(discipline).strip() == "":
+                    continue
+
+                self.logger.info(f"--- Training Specialty Model: {discipline} ---")
+                discipline_df = raw_df[raw_df['discipline'] == discipline].copy()
+
+                if len(discipline_df) < 500: # Minimum threshold for specialty training
+                    self.logger.warning(f"Insufficient data for {discipline} ({len(discipline_df)} rows). Skipping.")
+                    continue
+
+                self._train_and_save(discipline_df, str(discipline).lower(), test_days, val_days)
+
+    def _train_and_save(self, data: pd.DataFrame, model_name: str, test_days: int, val_days: int) -> None:
+        # 2. Feature Engineering
         engineer = PmuFeatureEngineer()
-        # We process the whole DF first to handle lag features correctly before splitting
-        full_df = engineer.fit_transform(raw_df)
+        full_df = engineer.fit_transform(data)
         
         # 3. Temporal Split
         max_date = full_df['program_date'].max()
@@ -74,7 +92,11 @@ class XGBoostTrainer:
         val_df = full_df[(full_df['program_date'] > val_cutoff) & (full_df['program_date'] <= test_cutoff)]
         test_df = full_df[full_df['program_date'] > test_cutoff]
 
-        self.logger.info(f"Split -> Train: {len(train_df)} | Val: {len(val_df)} | Test: {len(test_df)}")
+        if len(train_df) < 100 or len(val_df) < 20:
+            self.logger.warning(f"Not enough data for {model_name} after split. Skipping.")
+            return
+
+        self.logger.info(f"[{model_name}] Split -> Train: {len(train_df)} | Val: {len(val_df)} | Test: {len(test_df)}")
 
         # Select Features
         features = self.numerical_features + self.categorical_features
@@ -90,20 +112,17 @@ class XGBoostTrainer:
             ]
         )
 
-        self.logger.info("Encoding Data...")
         X_train_enc = preprocessor.fit_transform(X_train, y_train)
         X_val_enc = preprocessor.transform(X_val)
         X_test_enc = preprocessor.transform(X_test)
 
         # 5. Base XGBoost
-        self.logger.info("Training Base XGBoost...")
         base_xgb = XGBClassifier(
             n_estimators=1000, 
             max_depth=6,
             learning_rate=0.02,
             subsample=0.8,
             colsample_bytree=0.8,
-            # 'hist' is faster and often more accurate for larger datasets
             tree_method='hist',
             early_stopping_rounds=50,
             random_state=42,
@@ -114,11 +133,10 @@ class XGBoostTrainer:
         base_xgb.fit(
             X_train_enc, y_train,
             eval_set=[(X_val_enc, y_val)],
-            verbose=100
+            verbose=False # Keep it clean
         )
 
         # 6. Calibration
-        self.logger.info("Calibrating (Isotonic)...")
         calibrated_model = CalibratedClassifierCV(
             estimator=base_xgb,
             method='isotonic',
@@ -127,7 +145,6 @@ class XGBoostTrainer:
         calibrated_model.fit(X_val_enc, y_val)
 
         # 7. Evaluation
-        self.logger.info("Evaluating on Test Set...")
         probs = calibrated_model.predict_proba(X_test_enc)[:, 1]
         loss = log_loss(y_test, probs)
         try:
@@ -135,34 +152,9 @@ class XGBoostTrainer:
         except ValueError:
             auc = 0.5
 
-        # print(test_df.columns)
-        eval_df = test_df.copy()
-        eval_df['probability'] = probs
-        # Rank horses by probability within each race
-        # method='min' means if there's a tie, they get the same rank (e.g. 1, 2, 2, 4)
-        eval_df['model_rank'] = eval_df.groupby('race_id')['probability'].rank(ascending=False, method='min')
-        # Calculate Hit Rate
-        winners = eval_df[eval_df['is_winner'] == 1]
-        top3_hits = (winners['model_rank'] <= 3).sum()
-        total_races = winners['race_id'].nunique()
-        if total_races == 0:
-            print("Warning: No races found in test set (or no winners flagged).")
-            # return
-
-        hit_rate = top3_hits / total_races
-
-        print(f"-" * 30)
-        print(f"EVALUATION RESULTS")
-        print(f"-" * 30)
-        print(f"Total Races in Test Set: {total_races}")
-        print(f"Top 3 Hit Rate:          {hit_rate:.2%}")
-        print(f"-" * 30)
-
-        self.logger.info(f"FINAL METRICS -> LogLoss: {loss:.4f} | AUC: {auc:.4f}")
-
+        self.logger.info(f"[{model_name}] Metrics -> LogLoss: {loss:.4f} | AUC: {auc:.4f}")
 
         # 8. Save Pipeline
-        # Note: We pass 'engineer' as a step. It must implement fit/transform.
         full_inference_pipeline = Pipeline([
             ('engineer', engineer),
             ('preprocessor', preprocessor),
@@ -170,14 +162,18 @@ class XGBoostTrainer:
         ])
 
         # Ensure directory exists
-        Path(self.model_path).parent.mkdir(parents=True, exist_ok=True)
+        self.model_dir.mkdir(parents=True, exist_ok=True)
+        save_path = self.model_dir / f"model_{model_name}.pkl"
         
-        joblib.dump(full_inference_pipeline, self.model_path)
-        self.logger.info(f"SUCCESS: Model saved to {self.model_path}")
+        joblib.dump(full_inference_pipeline, save_path)
+        self.logger.info(f"SUCCESS: {model_name.upper()} Model saved to {save_path}")
 
 if __name__ == "__main__":
     import sys
-    root_path = "F:\\git\\horse-racing-prediction"
-    trainer = XGBoostTrainer(root_path+"\\data\\model_calibrated.pkl")
+    # For local execution testing, default to project data folder
+    current_file = Path(__file__).resolve()
+    project_root = current_file.parents[2] # backend/src/ml/trainer.py -> backend/src/ -> backend/ -> root/
+    data_dir = project_root / "data"
 
+    trainer = XGBoostTrainer(str(data_dir))
     trainer.train()

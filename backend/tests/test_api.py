@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 from backend.src.api.main import app, get_repository, ml_models
 
@@ -63,7 +63,8 @@ class MockPredictor:
     
     # Accept any arguments so it can replace the real RacePredictor(path)
     def __init__(self, *args, **kwargs):
-        self.pipeline = True 
+        self.models = {"global": MagicMock()}
+        self.pipeline = self.models["global"]
 
     def predict_race(self, participants):
         count = len(participants)

@@ -5,72 +5,83 @@ import numpy as np
 from typing import List, Dict, Any
 pd.set_option('display.max_columns', None)
 
+from pathlib import Path
+
 class RacePredictor:
     """
-    Simplified inference module.
-    Loads the complete Pipeline (Feature Engineering -> Preprocessing -> Calibration).
+    Multi-model inference module.
+    Loads specialty models per discipline and a global fallback.
     """
 
-    def __init__(self, model_path: str = "data/model_calibrated.pkl") -> None:
+    def __init__(self, model_dir: str = "data") -> None:
         """
-        Initializes the predictor by loading the serialized pipeline.
+        Initializes the predictor by loading all available pipelines in the directory.
         """
         self.logger = logging.getLogger("ML.Predictor")
-        self.model_path = model_path
-        self.pipeline = None
+        self.model_dir = Path(model_dir)
+        self.models: Dict[str, Any] = {}
         
-        self._load_model()
+        self._load_models()
 
-    def _load_model(self) -> None:
-        """Loads the single file containing the entire pipeline."""
-        try:
-            self.logger.info(f"Loading model from {self.model_path}...")
-            self.pipeline = joblib.load(self.model_path)
-            self.logger.info("Model loaded successfully.")
-        except FileNotFoundError:
-            self.logger.error(f"Model file not found: {self.model_path}")
-        except Exception as error:
-            self.logger.error(f"Critical error loading model: {error}")
+    def _load_models(self) -> None:
+        """Scans the model directory and loads all model_*.pkl files."""
+        if not self.model_dir.exists():
+            self.logger.error(f"Model directory not found: {self.model_dir}")
+            return
+
+        for model_file in self.model_dir.glob("model_*.pkl"):
+            try:
+                # Extract discipline name from model_discipline.pkl
+                discipline = model_file.stem.replace("model_", "")
+                self.logger.info(f"Loading model '{discipline}' from {model_file}...")
+                self.models[discipline] = joblib.load(model_file)
+            except Exception as error:
+                self.logger.error(f"Failed to load model {model_file}: {error}")
+
+        if not self.models:
+            self.logger.warning(f"No models loaded from {self.model_dir}")
+        else:
+            self.logger.info(f"Successfully loaded {len(self.models)} models: {list(self.models.keys())}")
+
+    @property
+    def pipeline(self):
+        """Compatibility property: returns the global model if it exists."""
+        return self.models.get("global")
 
     def predict_race(self, participants: List[Dict[str, Any]]) -> List[float]:
         """
-        Predicts win probabilities for a list of raw participants (from API/DB).
-
-        Args:
-            participants: List of dictionaries containing raw data 
-                          (e.g., {'program_date': '2023...', 'career_winnings': 5000, ...})
-
-        Returns:
-            List[float]: Calibrated probabilities (between 0.0 and 1.0).
+        Predicts win probabilities for a list of raw participants.
+        Uses a discipline-specific model if available, otherwise falls back to 'global'.
         """
-        if not self.pipeline:
-            self.logger.warning("Attempted prediction without a loaded model.")
+        if not self.models:
+            self.logger.warning("No models available for prediction.")
             return [0.0] * len(participants)
 
         if not participants:
             return []
 
         try:
-            # 1. Convert to DataFrame
-            # The pipeline expects raw columns (it will handle cleaning itself)
             df = pd.DataFrame(participants)
-
-            # print(df.columns)
-            # print(df.head())
-
-            # 2. Predictions
-            # The pipeline executes in order:
-            #   a. PmuFeatureEngineer.transform() -> Calculates ratios, handles dates
-            #   b. ColumnTransformer -> Encodes categories (handles unknowns automatically)
-            #   c. CalibratedClassifierCV -> Predicts actual probability
             
-            # predict_proba returns a matrix (N_samples, 2). Column 1 is the "Winner" class
-            probabilities = self.pipeline.predict_proba(df)[:, 1]
+            # Identify discipline for this race
+            discipline = str(df['discipline'].iloc[0]).lower() if 'discipline' in df.columns else "unknown"
 
-            # Explicit conversion to native float list for easy JSON serialization
+            # Selection Logic
+            model = self.models.get(discipline)
+            if model:
+                self.logger.debug(f"Using specialty model for: {discipline}")
+            else:
+                model = self.models.get("global")
+                if model:
+                    self.logger.debug(f"No model for '{discipline}', using GLOBAL fallback.")
+                else:
+                    self.logger.warning("No suitable model found (no specialty, no global).")
+                    return [0.0] * len(participants)
+
+            # 2. Inference
+            probabilities = model.predict_proba(df)[:, 1]
             return probabilities.tolist()
 
         except Exception as error:
             self.logger.error(f"Error during prediction: {error}")
-            # In case of crash (critical missing column), return zeros to avoid breaking the API
             return [0.0] * len(participants)
