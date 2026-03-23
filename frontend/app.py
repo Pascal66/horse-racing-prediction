@@ -32,10 +32,9 @@ st.markdown("""
 def main():
     # 1. Initialize State
     init_session()
-    
     # 2. Render Sidebar (Handling Inputs)
     render_sidebar()
-    
+
     # 3. Render Main Content (Reading State)
     # render_sniper_section()
     # render_race_grid()
@@ -53,6 +52,8 @@ def main():
     else:
         # 3. Render Admin
         render_admin_dashboard()
+
+
 
 if __name__ == "__main__":
     main()

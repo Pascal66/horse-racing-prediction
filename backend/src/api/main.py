@@ -47,14 +47,6 @@ async def lifespan(app: FastAPI):
     """
     logger.info("Initializing ML Pipeline...")
     try:
-        # current_file = Path(__file__).resolve()
-        # project_root = current_file.parent.parent.parent
-        # model_path = project_root / "data" / "model_calibrated.pkl"
-        # print(model_path)
-#        import sys
-#        root_path = "F:\\git\\horse-racing-prediction"
-#        model_path = root_path + "\\data\\model_calibrated.pkl"
-
         # Resolve the project root dynamically relative to this file
         # main.py is in backend/src/api/
         current_file = Path(__file__).resolve()
@@ -228,7 +220,7 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
         
         recommendations.append({
             "race_id": int(best_bet['race_id']),
-            "meeting_num": 99,#, int(best_bet['meeting_number']),
+            "meeting_num": int(best_bet['meeting_number']),
             "race_num": int(best_bet['race_number']),
             "horse_name": best_bet['horse_name'],
             "program_number": int(best_bet['program_number']),

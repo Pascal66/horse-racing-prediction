@@ -94,8 +94,8 @@ class PerformancesIngestor(BaseIngestor):
         if not horse_id:
             return None
         discipline = history_item.get("discipline", "").upper()
-        if discipline not in ["ATTELE", "MONTE"]:
-            return None
+        #if discipline not in ["ATTELE", "MONTE"]:
+        #    return None
         
         race_date = None
         if history_item.get("date"):

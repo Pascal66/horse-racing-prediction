@@ -68,5 +68,3 @@ def render_sidebar():
             st.caption("v3.2.0 • Architecture Refactor")
         else:
             st.warning("No races available for this date.")
-            # Créer un bouton pour lancer le téléchargement des courses pour le jour concerné
-            st.button("Download")

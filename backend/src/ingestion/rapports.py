@@ -133,7 +133,8 @@ class ReportsIngestor(BaseIngestor):
     def _get_races(self):
         """Retrieves list of races to fetch betting reports for."""
         conn = self.db_manager.get_connection()
-        try:
+        try:                    #AND r.discipline IN ('ATTELE', 'MONTE')
+
             with conn.cursor() as cursor:
                 cursor.execute(
                     """
@@ -142,7 +143,6 @@ class ReportsIngestor(BaseIngestor):
                     JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
                     JOIN daily_program dp ON rm.program_id = dp.program_id
                     WHERE dp.program_date = %s
-                    AND r.discipline IN ('ATTELE', 'MONTE')
                     ORDER BY rm.meeting_number, r.race_number;
                     """,
                     (dt.datetime.strptime(self.date_code, "%d%m%Y").date(),)

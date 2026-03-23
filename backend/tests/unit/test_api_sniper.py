@@ -32,13 +32,13 @@ def test_sniper_strategy_logic(mock_predictor):
     # Setup mock data: 3 horses
     mock_repo.get_daily_data_for_ml.return_value = [
         # Horse A: Odds 1.1 (Too Low)
-        {"race_id": 1, "race_number": 1, "program_number": 1, "horse_name": "Fav", "reference_odds": 1.1},
+        {"race_id": 1, "meeting_number": 1, "race_number": 1, "program_number": 1, "horse_name": "Fav", "reference_odds": 1.1},
         
         # Horse B: Odds 10.0, Prob 0.2 -> Implied 0.1 -> Edge +0.1 (GOOD TARGET)
-        {"race_id": 1, "race_number": 1, "program_number": 2, "horse_name": "SniperTarget", "reference_odds": 10.0},
+        {"race_id": 1, "meeting_number": 1, "race_number": 1, "program_number": 2, "horse_name": "SniperTarget", "reference_odds": 10.0},
         
         # Horse C: Odds 8.0, Prob 0.05 -> Implied 0.125 -> Edge -0.075 (Negative Edge)
-        {"race_id": 1, "race_number": 1, "program_number": 3, "horse_name": "Loser", "reference_odds": 8.0},
+        {"race_id": 1, "meeting_number": 1, "race_number": 1, "program_number": 3, "horse_name": "Loser", "reference_odds": 8.0},
     ]
 
     # 2. Setup Mock Model Predictions

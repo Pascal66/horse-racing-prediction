@@ -96,6 +96,7 @@ class ProgramIngestor(BaseIngestor):
         # Convert milliseconds to seconds
         race_duration_s = int(duration_raw) // 1000 if duration_raw else None
 
+        # ON CONFLICT (meeting_id, race_number) DO NOTHING;
         cursor.execute(
             """
             INSERT INTO race (
@@ -105,7 +106,15 @@ class ProgramIngestor(BaseIngestor):
                 race_duration_s, race_status_category
             )
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (meeting_id, race_number) DO NOTHING;
+            
+            ON CONFLICT (meeting_id, race_number) DO UPDATE SET
+                terrain_label = EXCLUDED.terrain_label,
+                penetrometer = EXCLUDED.penetrometer,
+                declared_runners_count = EXCLUDED.declared_runners_count, 
+                conditions_text = EXCLUDED.conditions_text, 
+                race_status = EXCLUDED.race_status,
+                race_duration_s = EXCLUDED.race_duration_s, 
+                race_status_category = EXCLUDED.race_status_category;
             """,
             (
                 meeting_id, race_number, discipline, race_category,
@@ -144,7 +153,35 @@ class ProgramIngestor(BaseIngestor):
                     ts,
                 )
                 return
-
+        '''
+        {
+  "programme": {
+    "cached": true,
+    "date": 1774220400000,
+    "dateProgrammeActif": 1774220400000,
+    "timezoneOffset": 3600000,
+    "reunions": [
+      {
+        "cached": false,
+        "timezoneOffset": 3600000,
+        "dateReunion": 1774220400000,
+        "numOfficiel": 1,
+        "numOfficielReunionPrecedente": null,
+        "numOfficielReunionSuivante": 2,
+        "numExterne": 1,
+        "nature": "DIURNE",
+        "hippodrome": {
+          "code": "CHA",
+          "libelleCourt": "CHANTILLY",
+          "libelleLong": "HIPPODROME DE CHANTILLY"
+        },
+        "pays": {
+          "code": "FRA",
+          "libelle": "FRANCE"
+        },
+        "courses": [
+          {
+            "cached": false,'''
         conn = self.db_manager.get_connection()
         try:
             with conn:
@@ -155,13 +192,14 @@ class ProgramIngestor(BaseIngestor):
                     
                     count_races = 0
                     for meeting in meetings:
+                        code_pays = meeting.get("pays").get("code")
                         meeting_id = self._insert_race_meeting(cursor, program_id, meeting)
                         races = meeting.get("courses", [])
                         for race in races:
                             discipline = race.get("discipline", "").upper()
-                            if discipline in ["ATTELE", "MONTE"]:
+                            if code_pays in ["FRA"]: #discipline in ["ATTELE", "MONTE"]:
                                 self._insert_race(cursor, meeting_id, race)
                                 count_races += 1
-                    self.logger.info("Ingested %d trot races for date %s", count_races, program_date)
+                    self.logger.info("Ingested %d races for date %s", count_races, program_date)
         finally:
             self.db_manager.release_connection(conn)

@@ -251,6 +251,7 @@ class ParticipantsIngestor(BaseIngestor):
         ref_odds = (participant_data.get("dernierRapportReference") or {}).get("rapport")
         live_odds = (participant_data.get("dernierRapportDirect") or {}).get("rapport")
 
+        # ON CONFLICT (race_id, pmu_number) DO NOTHING;
         cursor.execute(
             """
             INSERT INTO race_participant (
@@ -261,7 +262,20 @@ class ParticipantsIngestor(BaseIngestor):
                 time_achieved_s, reduction_km
             )
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (race_id, pmu_number) DO NOTHING;
+            ON CONFLICT (race_id, pmu_number) DO UPDATE SET
+                trainer_id = EXCLUDED.trainer_id,
+                driver_jockey_id = EXCLUDED.driver_jockey_id,
+                shoeing_id = EXCLUDED.shoeing_id,
+                incident_id = EXCLUDED.incident_id,
+                career_races_count = EXCLUDED.career_races_count,
+                career_winnings = EXCLUDED.career_winnings,
+                reference_odds = EXCLUDED.reference_odds,
+                live_odds = EXCLUDED.live_odds,
+                raw_performance_string = EXCLUDED.raw_performance_string,
+                trainer_advice = EXCLUDED.trainer_advice,
+                finish_rank = EXCLUDED.finish_rank,
+                time_achieved_s = EXCLUDED.time_achieved_s,
+                reduction_km = EXCLUDED.reduction_km;
             """,
             (
                 race_id, horse_id, p_num, participant_data.get("age"), clean_sex,
@@ -315,7 +329,8 @@ class ParticipantsIngestor(BaseIngestor):
         """Retrieves the list of races to ingest for the date_code."""
         conn = self.db_manager.get_connection()
         try:
-            with conn.cursor() as cursor:
+            with conn.cursor() as cursor:                    #AND r.discipline IN ('ATTELE', 'MONTE')
+
                 cursor.execute(
                     """
                     SELECT r.race_id, rm.meeting_number, r.race_number
@@ -323,7 +338,6 @@ class ParticipantsIngestor(BaseIngestor):
                     JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
                     JOIN daily_program dp ON rm.program_id = dp.program_id
                     WHERE dp.program_date = %s
-                    AND r.discipline IN ('ATTELE', 'MONTE')
                     ORDER BY rm.meeting_number, r.race_number;
                     """,
                     (dt.datetime.strptime(self.date_code, "%d%m%Y").date(),)

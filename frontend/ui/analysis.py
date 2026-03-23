@@ -28,6 +28,8 @@ def render_analysis_view(race_id: int):
         full_race_data['win_probability'] = None
         full_race_data['predicted_rank'] = None
 
+    full_race_data.sort_values(by=['win_probability'], ascending=False, inplace=True)
+
     # 1. Top 3 Cards (only if AI data exists)
     if not prediction_data.empty:
         st.subheader("🏆 AI Forecast")

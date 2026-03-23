@@ -227,6 +227,7 @@ class RaceRepository:
             
             SELECT 
                 rp.race_id, 
+                rm.meeting_number,
                 r.race_number,
                 rp.pmu_number AS program_number, 
                 h.horse_name,

@@ -161,10 +161,7 @@ def etl_liveodds(start_hour=10, end_hour=20) -> None:
 
     # Enumerate starting at 1 for user-friendly progress logging
     for i, date_code in enumerate(dates_to_process, 1):
-        # logger.info(f"Progress: [{i}/{total_days}] Processing {date_code}")
-        process_date(date_code, "participants")
-
-    # logger.info("All jobs completed.")
+        process_date(date_code, "all")
 
 if __name__ == "__main__":
     main()
