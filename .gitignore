@@ -72,7 +72,7 @@ htmlcov/
 # Supabase CLI cache
 .supabase/
 
-failures/
+#failures/
 
 #data
 backend/data/
