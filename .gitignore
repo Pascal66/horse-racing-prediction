@@ -55,7 +55,7 @@ logs/
 # Data dumps
 backend/data/raw/
 backend/data/tmp/
-*.json
+#*.json
 dump/
 
 # Notebooks imports
@@ -72,7 +72,7 @@ htmlcov/
 # Supabase CLI cache
 .supabase/
 
-#failures/
+failures/
 
 #data
 backend/data/
@@ -81,7 +81,7 @@ backend/data/
 
 # Ignore ML models and artifacts
 *.pkl
-*.json
+#*.json
 backend/src/ml/*.pkl
 backend/src/ml/*.json
 scripts/*
