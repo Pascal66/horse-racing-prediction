@@ -1,5 +1,6 @@
 import logging
 import streamlit as st
+import streamlit.components.v1 as components
 
 from ui.sidebar import render_sidebar
 from ui.sniper import render_sniper_section
@@ -30,6 +31,19 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def main():
+    # 0. Auto-refresh (every 15 minutes)
+    components.html(
+        """
+        <script>
+        const REFRESH_INTERVAL = 5 * 60 * 1000; // 15 minutes in milliseconds
+        setTimeout(function() {
+            window.parent.location.reload();
+        }, REFRESH_INTERVAL);
+        </script>
+        """,
+        height=0,
+    )
+
     # 1. Initialize State
     init_session()
     # 2. Render Sidebar (Handling Inputs)

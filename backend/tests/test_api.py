@@ -37,17 +37,17 @@ class MockRaceRepository:
         return [
             # Case 1: Winner (Good Odds, High Edge)
             {
-                "race_id": 1, "race_number": 1, "program_number": 1, 
+                "race_id": 1, "meeting_number": 1, "race_number": 1, "program_number": 1,
                 "horse_name": "Sniper Choice", "reference_odds": 10.0
             },
             # Case 2: Favorite (Odds too low)
             {
-                "race_id": 1, "race_number": 1, "program_number": 2, 
+                "race_id": 1, "meeting_number": 1, "race_number": 1, "program_number": 2,
                 "horse_name": "Low Odds Fav", "reference_odds": 2.0
             },
             # Case 3: Longshot (Odds too high)
             {
-                "race_id": 1, "race_number": 1, "program_number": 3, 
+                "race_id": 1, "meeting_number": 1, "race_number": 1, "program_number": 3,
                 "horse_name": "Longshot", "reference_odds": 50.0
             },
         ]

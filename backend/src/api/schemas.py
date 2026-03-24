@@ -48,6 +48,7 @@ class BetRecommendation(BaseModel):
     Represents a betting opportunity identified by the strategy engine.
     """
     race_id: int
+    meeting_num: int
     race_num: int
     horse_name: str
     program_number: int

@@ -108,7 +108,7 @@ class ProgramIngestor(BaseIngestor):
                 distance_m, track_type, terrain_label, penetrometer,
                 declared_runners_count, conditions_text, race_status,
                 race_duration_s, race_status_category,
-                start_timestamp, timezone_offset, prize_money, specialty
+                start_timestamp, timezone_offset, prize_money, speciality
             )
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (meeting_id, race_number) DO NOTHING;
