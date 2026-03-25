@@ -24,6 +24,23 @@ def render_admin_dashboard():
 
     st.divider()
 
+    # 1.5 Model Synthesis
+    st.subheader("🧠 Model Synthesis")
+    available_models = health.get("available_models", [])
+    if available_models:
+        model_data = []
+        for m in available_models:
+            model_data.append({
+                "Specialty": m.upper(),
+                "Status": "🟢 Active",
+                "Type": "Dedicated" if m != "global" else "Fallback"
+            })
+        st.table(model_data)
+    else:
+        st.warning("⚠️ No ML models loaded in the backend.")
+
+    st.divider()
+
     # 2. Jobs Table
     st.subheader("📅 Scheduled Tasks")
     if sched.get("jobs"):

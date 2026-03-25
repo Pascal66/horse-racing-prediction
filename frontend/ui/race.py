@@ -66,19 +66,20 @@ def render_race_tab_content(race_row):
         m2.metric("Runners", f"{race_row.get('declared_runners_count', '-')}")
         m3.metric("Racetrack", race_row['racetrack_code'])
         
-    with col_action:
-        # State Management
-        is_analyzed = (store.get_selected_race() == race_row['race_id'])
-        
-        if is_analyzed:
-             st.button("🔄 Refresh", key=f"btn_ref_{race_row['race_id']}")
-        else:
-            # CORRECTION: use_container_width=True -> width="stretch"
-            if st.button(f"🧠 Analyze C{race_row['race_number']}", key=f"btn_ana_{race_row['race_id']}", type="primary", width="stretch"):
-                store.set_selected_race(race_row['race_id'])
-                st.rerun()
+    # with col_action:
+    #     # State Management
+    #     is_analyzed = (store.get_selected_race() == race_row['race_id'])
+    #
+    #     if is_analyzed:
+    #          st.button("🔄 Refresh", key=f"btn_ref_{race_row['race_id']}")
+    #     else:
+    #         # CORRECTION: use_container_width=True -> width="stretch"
+    #         if st.button(f"🧠 Analyze C{race_row['race_number']}", key=f"btn_ana_{race_row['race_id']}", type="primary", width="stretch"):
+    #             store.set_selected_race(race_row['race_id'])
+    #             st.rerun()
+    #
+    # st.divider()
 
-    st.divider()
-
-    if store.get_selected_race() == race_row['race_id']:
+    if True: #store.get_selected_race() == race_row['race_id']:
         render_analysis_view(race_row['race_id'])
+        store.set_selected_race(race_row['race_id'])
