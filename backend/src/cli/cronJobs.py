@@ -40,10 +40,10 @@ def cronjobs():
         logger.info(f"Triggering daily ETL for range {start_date} to {end_date}")
         etl_daily(start_date, end_date)
 
-    # 1. Daily Ingestion at 07:30 AM
+    # 1. Daily Ingestion at 06:30 AM
     scheduler.add_job(
         daily_job_wrapper,
-        CronTrigger(hour=7, minute=30),
+        CronTrigger(hour=6, minute=30),
         id="daily_etl",
         name="Daily PMU Data Ingestion",
         replace_existing=True

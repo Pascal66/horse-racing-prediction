@@ -2,12 +2,10 @@ import joblib
 import logging
 import pandas as pd
 import numpy as np
-from typing import List, Dict, Any
-
-pd.set_option('display.max_columns', None)
-
+from typing import List, Dict, Any, Union
 from pathlib import Path
 
+pd.set_option('display.max_columns', None)
 
 class RacePredictor:
     """
@@ -20,7 +18,8 @@ class RacePredictor:
         Initializes the predictor by loading all available pipelines in the directory.
         """
         self.logger = logging.getLogger("ML.Predictor")
-        self.model_dir = Path(model_dir)
+        # Ensure path is absolute for consistency
+        self.model_dir = Path(model_dir).resolve()
         self.models: Dict[str, Any] = {}
 
         self._load_models()
@@ -31,17 +30,24 @@ class RacePredictor:
             self.logger.error(f"Model directory not found: {self.model_dir}")
             return
 
-        for model_file in self.model_dir.glob("model_*.pkl"):
+        self.logger.info(f"Scanning directory: {self.model_dir}")
+        model_files = list(self.model_dir.glob("model_*.pkl"))
+        
+        if not model_files:
+            self.logger.warning(f"No .pkl files starting with 'model_' found in {self.model_dir}")
+            return
+
+        for model_file in model_files:
             try:
                 # Extract discipline name from model_discipline.pkl
-                discipline = model_file.stem.replace("model_", "")
-                self.logger.info(f"Loading model '{discipline}' from {model_file}...")
+                discipline = model_file.stem.replace("model_", "").lower()
+                self.logger.info(f"Loading model '{discipline}' from {model_file.name}...")
                 self.models[discipline] = joblib.load(model_file)
             except Exception as error:
                 self.logger.error(f"Failed to load model {model_file}: {error}")
 
         if not self.models:
-            self.logger.warning(f"No models loaded from {self.model_dir}")
+            self.logger.warning(f"No models successfully loaded from {self.model_dir}")
         else:
             self.logger.info(f"Successfully loaded {len(self.models)} models: {list(self.models.keys())}")
 
@@ -50,40 +56,39 @@ class RacePredictor:
         """Compatibility property: returns the global model if it exists."""
         return self.models.get("global")
 
-    def predict_race(self, participants: List[Dict[str, Any]]) -> List[float]:
+    def predict_race(self, participants: Union[List[Dict[str, Any]], pd.DataFrame]) -> List[float]:
         """
-        Predicts win probabilities for a list of raw participants.
-        Uses a discipline-specific model if available, otherwise falls back to 'global'.
+        Predicts win probabilities for raw participants.
+        Supports both list of dicts or a single DataFrame.
         """
         if not self.models:
             self.logger.warning("No models available for prediction.")
-            return [0.0] * len(participants)
-
-        if not participants:
-            return []
+            return [] if isinstance(participants, list) else np.array([])
 
         try:
-            df = pd.DataFrame(participants)
+            df = participants if isinstance(participants, pd.DataFrame) else pd.DataFrame(participants)
+            if df.empty: return []
 
-            # Identify discipline for this race
-            discipline = str(df['discipline'].iloc[0]).lower() if 'discipline' in df.columns else "unknown"
+            # Determine the model to use based on discipline
+            # If all participants belong to the same race/discipline (standard case for single race)
+            discipline = "global"
+            if 'discipline' in df.columns:
+                disc_val = str(df['discipline'].iloc[0]).lower().strip()
+                if disc_val in self.models:
+                    discipline = disc_val
+            
+            model = self.models.get(discipline, self.models.get("global"))
+            
+            if not model:
+                self.logger.error("No model found (specialty or global fallback).")
+                return [0.0] * len(df)
 
-            # Selection Logic
-            model = self.models.get(discipline)
-            if model:
-                self.logger.debug(f"Using specialty model for: {discipline}")
-            else:
-                model = self.models.get("global")
-                if model:
-                    self.logger.debug(f"No model for '{discipline}', using GLOBAL fallback.")
-                else:
-                    self.logger.warning("No suitable model found (no specialty, no global).")
-                    return [0.0] * len(participants)
-
-            # 2. Inference
+            self.logger.debug(f"Predicting {len(df)} rows using '{discipline}' model.")
+            
+            # Use the pipeline (Engineer -> Preprocessor -> Calibrated Model)
             probabilities = model.predict_proba(df)[:, 1]
             return probabilities.tolist()
 
         except Exception as error:
             self.logger.error(f"Error during prediction: {error}")
-            return [0.0] * len(participants)
+            return [0.0] * len(df)

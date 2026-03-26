@@ -148,7 +148,7 @@ def etl_daily(start_date, end_date) -> None:
 
     logger.info("All jobs completed.")
 
-def etl_liveodds(start_hour=10, end_hour=20) -> None:
+def etl_liveodds(start_hour=7, end_hour=21) -> None:
     NOW = datetime.now()
     FROM = NOW.replace(hour=start_hour, minute=0)
     TO = NOW.replace(hour=end_hour, minute=30)

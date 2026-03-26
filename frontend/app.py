@@ -35,7 +35,7 @@ def main():
     components.html(
         """
         <script>
-        const REFRESH_INTERVAL = 5 * 60 * 1000; // 15 minutes in milliseconds
+        const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
         setTimeout(function() {
             window.parent.location.reload();
         }, REFRESH_INTERVAL);
@@ -50,24 +50,14 @@ def main():
     render_sidebar()
 
     # 3. Render Main Content (Reading State)
-    # render_sniper_section()
-    # render_race_grid()
-    # Navigation logic in sidebar or tabs?
-    # Let's add simple navigation in sidebar
-    with st.sidebar:
-        st.markdown("---")
-        st.subheader("🛠️ Navigation")
-        page = st.radio("Go to:", ["🏇 Predictor", "⚙️ Admin & Sched"])
+    tab_predictor, tab_admin = st.tabs(["🏇 Predictor", "⚙️ Admin & Sched"])
 
-    if page == "🏇 Predictor":
-        # 3. Render Main Content (Reading State)
+    with tab_predictor:
         render_sniper_section()
         render_race_grid()
-    else:
-        # 3. Render Admin
+
+    with tab_admin:
         render_admin_dashboard()
-
-
 
 if __name__ == "__main__":
     main()

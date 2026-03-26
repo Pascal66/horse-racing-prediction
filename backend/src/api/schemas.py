@@ -1,52 +1,40 @@
-"""
-Pydantic schemas for API request and response validation.
-Defines the data contract for race summaries, participants, and betting recommendations.
-"""
-from typing import Optional
-from pydantic import BaseModel, Field
-
+from pydantic import BaseModel
+from typing import List, Optional, Dict
+from datetime import datetime
 
 class RaceSummary(BaseModel):
-    """
-    Represents a high-level summary of a horse race.
-    """
     race_id: int
     meeting_number: int
     race_number: int
-    discipline: Optional[str] = None
-    distance_m: Optional[int] = Field(None, description="Distance of the race in meters.")
-    racetrack_code: Optional[str] = None
-    name: Optional[str] = None
-    declared_runners_count: Optional[int] = Field(None, description="Number of declared runners.")
-    # new
-    start_timestamp: Optional[int] = None
-    timezone_offset: Optional[int] = None
-    prize_money: Optional[float] = None
-    speciality: Optional[str] = None
+    program_date: datetime
+    discipline: str
+    distance_m: int
+    track_type: Optional[str]
+    racetrack_code: str
+    declared_runners_count: int
+    start_timestamp: Optional[int]
+    timezone_offset: Optional[int]
+    prize_money: Optional[float]
+    speciality: Optional[str]
 
 class ParticipantSummary(BaseModel):
-    """
-    Represents basic details of a participant (horse/driver) in a specific race.
-    """
-    program_number: int = Field(..., description="The number worn by the horse (formerly PMU number).")
+    program_number: int
     horse_name: str
-    driver_name: Optional[str] = None
-    trainer_name: Optional[str] = None
-    odds: Optional[float] = Field(None, description="Current live odds for the participant.")
+    age: int
+    sex: str
+    jockey_name: Optional[str]
+    trainer_name: Optional[str]
+    reference_odds: Optional[float]
+    live_odds: Optional[float]
+    shoeing_status: Optional[str]
 
 class PredictionResult(BaseModel):
-    """
-    Represents the output of the machine learning prediction model.
-    """
     program_number: int
     horse_name: str
     win_probability: float
     predicted_rank: int
 
 class BetRecommendation(BaseModel):
-    """
-    Represents a betting opportunity identified by the strategy engine.
-    """
     race_id: int
     meeting_num: int
     race_num: int
@@ -55,4 +43,17 @@ class BetRecommendation(BaseModel):
     odds: float
     win_probability: float
     edge: float
-    strategy: str = "Sniper"
+    strategy: str
+
+class ModelMetric(BaseModel):
+    model_name: str
+    segment_type: str
+    segment_value: str
+    test_month: int
+    num_races: int
+    logloss: float
+    auc: float
+    roi: float
+    win_rate: float
+    avg_odds: float
+    updated_at: datetime

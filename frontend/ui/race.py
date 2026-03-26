@@ -81,5 +81,5 @@ def render_race_tab_content(race_row):
     # st.divider()
 
     if True: #store.get_selected_race() == race_row['race_id']:
-        render_analysis_view(race_row['race_id'])
         store.set_selected_race(race_row['race_id'])
+        render_analysis_view(race_row['race_id'])
