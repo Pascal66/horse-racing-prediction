@@ -29,4 +29,5 @@ dependencies = [
     "category-encoders>=2.9.0",
     "shap>=0.51.0",
     "matplotlib>=1.5.0",
+    "catboost>=1.2.10",
 ]

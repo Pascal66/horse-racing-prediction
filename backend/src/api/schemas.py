@@ -47,6 +47,7 @@ class BetRecommendation(BaseModel):
 
 class ModelMetric(BaseModel):
     model_name: str
+    algorithm: str # New field for Tournament tracking
     segment_type: str
     segment_value: str
     test_month: int
