@@ -27,6 +27,9 @@ class ParticipantSummary(BaseModel):
     reference_odds: Optional[float]
     live_odds: Optional[float]
     shoeing_status: Optional[str]
+    blinkers: Optional[str] = None
+    handicap_value: Optional[float] = None
+    owner_name: Optional[str] = None
 
 class PredictionResult(BaseModel):
     program_number: int

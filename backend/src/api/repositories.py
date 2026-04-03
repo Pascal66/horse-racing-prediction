@@ -106,12 +106,16 @@ class RaceRepository:
                 t.actor_name AS trainer_name, 
                 rp.reference_odds,
                 rp.live_odds,
-                ls.code AS shoeing_status
+                ls.code AS shoeing_status,
+                rp.blinkers,
+                rp.handicap_value,
+                o.actor_name AS owner_name
             FROM race_participant rp
             JOIN horse h ON rp.horse_id = h.horse_id
             LEFT JOIN lookup_shoeing ls ON rp.shoeing_id = ls.shoeing_id
             LEFT JOIN racing_actor d ON rp.driver_jockey_id = d.actor_id
             LEFT JOIN racing_actor t ON rp.trainer_id = t.actor_id
+            LEFT JOIN racing_actor o ON rp.owner_id = o.actor_id
             WHERE rp.race_id = %s
             ORDER BY rp.pmu_number;
         """

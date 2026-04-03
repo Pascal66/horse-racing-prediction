@@ -42,6 +42,7 @@ def test_program_ingest_flow(mock_db_manager, mock_response):
                     "numOfficiel": 1,
                     "nature": "TROT",
                     "hippodrome": {"code": "VINC"},
+                    "pays": {"code": "FRA"},
                     "courses": [
                         {
                             "numOrdre": 1,
