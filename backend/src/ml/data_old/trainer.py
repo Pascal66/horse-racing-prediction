@@ -8,6 +8,7 @@ import pandas as pd
 from typing import Dict, Any, List, Union, Optional
 from category_encoders import CatBoostEncoder
 from sklearn.frozen import FrozenEstimator
+from sklearn.impute import SimpleImputer
 from xgboost import XGBClassifier, XGBRanker
 from lightgbm import LGBMClassifier
 from catboost import CatBoostClassifier
@@ -52,39 +53,40 @@ class MultiModelTrainer:
         ]
 
     def _ensure_table_schema(self):
-        """Migre le schéma de la table pour inclure l'algorithme."""
+        """Migre le schéma de la table pour inclure l'algorithme et les métriques."""
         conn = self.db.get_connection()
         try:
             with conn.cursor() as cur:
-                # Table principale des metrics
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS ml_model_metrics (
-                        model_name TEXT,
-                        algorithm TEXT DEFAULT 'xgboost',
-                        segment_type TEXT,
-                        segment_value TEXT,
-                        test_month INTEGER,
-                        num_races INTEGER,
-                        logloss DOUBLE PRECISION,
-                        auc DOUBLE PRECISION,
-                        roi DOUBLE PRECISION,
-                        win_rate DOUBLE PRECISION,
-                        avg_odds DOUBLE PRECISION,
-                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        PRIMARY KEY (model_name, algorithm, segment_type, segment_value, test_month)
-                    )
-                """)
-                # Migration de la PK si nécessaire (si l'ancienne n'avait pas 'algorithm')
+                # 1. Ajout des colonnes une par une si elles manquent
+                cols_to_add = {
+                    "algorithm": "TEXT DEFAULT 'xgboost'",
+                    "roi": "DOUBLE PRECISION DEFAULT 0",
+                    "win_rate": "DOUBLE PRECISION DEFAULT 0",
+                    "avg_odds": "DOUBLE PRECISION DEFAULT 0"
+                }
+                
+                for col, dtype in cols_to_add.items():
+                    cur.execute(f"""
+                        DO $$ 
+                        BEGIN 
+                            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                                           WHERE table_name='ml_model_metrics' AND column_name='{col}') THEN
+                                ALTER TABLE ml_model_metrics ADD COLUMN {col} {dtype};
+                            END IF;
+                        END $$;
+                    """)
+                
+                # 2. Mise à jour de la Primary Key pour inclure 'algorithm'
                 cur.execute("""
                     DO $$ 
                     BEGIN 
                         IF EXISTS (SELECT 1 FROM information_schema.table_constraints 
-                                   WHERE constraint_name='ml_model_metrics_pkey' AND table_name='ml_model_metrics') THEN
-                            ALTER TABLE ml_model_metrics DROP CONSTRAINT ml_model_metrics_pkey;
+                                   WHERE table_name='ml_model_metrics' AND constraint_type='PRIMARY KEY') THEN
+                            ALTER TABLE ml_model_metrics DROP CONSTRAINT IF EXISTS ml_model_metrics_pkey;
                             ALTER TABLE ml_model_metrics ADD PRIMARY KEY (model_name, algorithm, segment_type, segment_value, test_month);
                         END IF;
                     EXCEPTION WHEN OTHERS THEN 
-                        -- PK already correct or table empty
+                        -- PK already correct
                     END $$;
                 """)
                 conn.commit()
@@ -113,7 +115,6 @@ class MultiModelTrainer:
 
         if raw_df.empty: return
 
-        # Entraîner sur Global et les spécialités
         targets = ["global"]
         if 'discipline' in raw_df.columns:
             disciplines = raw_df['discipline'].unique()
@@ -122,13 +123,11 @@ class MultiModelTrainer:
         for target in targets:
             self.logger.info(f"--- Tournament for Target: {target.upper()} ---")
             target_df = raw_df.copy() if target == "global" else raw_df[raw_df['discipline'].str.lower() == target].copy()
-            
             if len(target_df) < 1000: continue
-            
-            # Entraînement des 4 modèles
             self._train_tournament(target_df, target, test_days, val_days)
 
     def _train_tournament(self, data: pd.DataFrame, target_name: str, test_days: int, val_days: int):
+        # global calibrated
         engineer = PmuFeatureEngineer()
         full_df = engineer.fit_transform(data)
         full_df = self._add_features(full_df)
@@ -148,19 +147,45 @@ class MultiModelTrainer:
 
         preprocessor = ColumnTransformer(transformers=[
             ('cat', CatBoostEncoder(cols=self.categorical_features), self.categorical_features),
-            ('num', 'passthrough', self.numerical_features)
+            # ('num', 'passthrough', self.numerical_features + ['odds_log', 'earnings_log', 'speed_rel', 'odds_rank_pct'])
+            ('num', SimpleImputer(strategy='median'), [f for f in features if f not in self.categorical_features])
+
         ])
 
         X_train_enc = preprocessor.fit_transform(X_train, y_train)
         X_val_enc = preprocessor.transform(X_val)
         X_test_enc = preprocessor.transform(X_test)
 
-        # Liste des architectures à tester
         architectures = {
-            "xgboost": XGBClassifier(n_estimators=2000, max_depth=4, learning_rate=0.03, tree_method='auto', random_state=42),
-            "lightgbm": LGBMClassifier(n_estimators=2000, max_depth=4, learning_rate=0.03, boosting_type='dart', random_state=42),
-            "catboost": CatBoostClassifier(iterations=2000, depth=4, learning_rate=0.03, verbose=False, random_seed=42),
-            "ranker": XGBRanker(objective='rank:pairwise', n_estimators=2000, max_depth=4, learning_rate=0.05, random_state=42)
+            "xgboost": XGBClassifier( # best for global monte plat
+                n_estimators=2000, #3000,  #1340 671 1993
+                max_depth=4,        #3 4 3
+                learning_rate=0.03, #0.079 .035 .012
+                subsample=0.8,      #0.84 0.943 0.662
+                colsample_bytree=0.7, #0.8, #0.72 0.694 0.634
+                min_child_weight=5,
+                gamma=1,
+                reg_alpha=0.1,
+                reg_lambda=1.0,
+                tree_method='hist',
+                eval_metric='logloss',
+                n_jobs=-1),
+            "lightgbm": LGBMClassifier( # best for haie attele
+                n_estimators=1000,
+                learning_rate=0.02,
+                max_depth=3, #-1, #3 3
+                num_leaves=31, #110 83
+                min_child_samples=20, #19 20
+                subsample=0.8,
+                colsample_bytree=0.8,
+                force_col_wise=True,
+                random_state=42,verbosity=-1),
+            "catboost": CatBoostClassifier( # best for steeplechase and cross
+                iterations=2000,
+                depth=4,
+                learning_rate=0.03,
+                verbose=False,
+                random_seed=42),
         }
 
         best_algo = None
@@ -169,24 +194,35 @@ class MultiModelTrainer:
         for name, model in architectures.items():
             try:
                 self.logger.info(f"Training Algorithm: {name}...")
-                if name == "ranker":
-                    # Special handling for Ranker
-                    group_train = train_df.groupby('race_id').size().to_list()
-                    group_val = val_df.groupby('race_id').size().to_list()
-                    model.fit(X_train_enc, y_train, group=group_train, eval_set=[(X_val_enc, y_val)], eval_group=[group_val], verbose=False)
-                else:
-                    model.fit(X_train_enc, y_train, eval_set=[(X_val_enc, y_val)], verbose=False)
 
-                # Optuna (Only for the best baseline or all? Let's do a quick run for each)
-                # For this tournament, we skip full Optuna to save time, using solid defaults.
-                
-                # Calibration (Mandatory for probability comparison)
+                if name == "lightgbm":
+                #     """UserWarning: X does not have valid feature names, but LGBMClassifier was fitted with feature names"""
+                    feature_names_l = preprocessor.get_feature_names_out()
+
+                    X_train_enc_l = pd.DataFrame(
+                        preprocessor.fit_transform(X_train, y_train),
+                        columns=feature_names_l
+                    )
+
+                    X_val_enc_l = pd.DataFrame(
+                        preprocessor.transform(X_val),
+                        columns=feature_names_l
+                    )
+
+                    X_test_enc_l = pd.DataFrame(
+                        preprocessor.transform(X_test),
+                        columns=feature_names_l
+                    )
+                    model.fit(X=X_train_enc_l, y=y_train, eval_set=[(X_val_enc_l, y_val)],)
+                else:
+                    model.fit(X_train_enc, y_train, eval_set=[(X_val_enc, y_val)] , verbose=False)
+
                 calibrated = CalibratedClassifierCV(FrozenEstimator(model), method='sigmoid')
                 calibrated.fit(X_val_enc, y_val)
 
-                # Eval
                 val_probs = calibrated.predict_proba(X_val_enc)[:, 1]
                 v_loss = log_loss(y_val, val_probs)
+
                 self.logger.info(f"Algorithm {name} Val Loss: {v_loss:.4f}")
 
                 # Save performance
@@ -229,7 +265,6 @@ class MultiModelTrainer:
                 if len(group) < 20: continue
                 val = keys if isinstance(keys, str) else keys[0]
                 month = 0 if month_col == 0 else (keys if isinstance(keys, int) else keys[1])
-                
                 metrics = self._calculate_metrics(group)
                 if metrics:
                     metrics.update({'segment_type': seg_type, 'segment_value': val, 'month': month})
@@ -256,12 +291,10 @@ class MultiModelTrainer:
         return {
             'logloss': log_loss(y_true, y_pred),
             'auc': roc_auc_score(y_true, y_pred),
-            'roi': ((total_return - total_bets) / total_bets * 100),
-            'win_rate': (group[group['is_winner']==1]['proba'].idxmax() == group['is_winner'].idxmax()) if False else 0, # simplified
-            'win_rate': (total_return > 0), # placeholder
+            'roi': ((total_return - total_bets) / total_bets * 100) if total_bets > 0 else 0,
             'count': total_bets,
             'avg_odds': group['effective_odds'].mean(),
-            'win_rate': (total_return / total_bets if total_bets > 0 else 0) # Real win rate of the model favorite
+            'win_rate': (total_return / total_bets if total_bets > 0 else 0)
         }
 
     def _save_metrics_to_db_v2(self, model_name, algo_name, df):
@@ -281,5 +314,9 @@ class MultiModelTrainer:
         finally: self.db.release_connection(conn)
 
 if __name__ == "__main__":
-    trainer = MultiModelTrainer()
+    # For local execution testing, default to project data folder
+    current_file = Path(__file__).resolve()
+    project_root = current_file.parents[3]  # backend/src/ml/trainer.py -> backend/src/ -> backend/ -> root/
+    data_dir = project_root / "data"
+    trainer = MultiModelTrainer(str(data_dir))
     trainer.train()

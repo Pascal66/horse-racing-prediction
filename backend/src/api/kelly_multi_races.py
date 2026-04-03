@@ -28,9 +28,10 @@ def analyze_multiple_races(df: pd.DataFrame, bankroll=1000.0, kelly_fraction=0.5
         probabilities = group.set_index('program_number')['win_probability'].to_dict()
         odds = group.set_index('program_number')['live_odds'].to_dict()
 
-        # Nettoyage des cotes (sécurité)
-        odds = {k: max(v, 1.01) for k, v in odds.items() if pd.notnull(v)}
-        probabilities = {k: v for k, v in probabilities.items() if pd.notnull(v)}
+        # Nettoyage synchronisé : on ne garde que si les deux sont valides et > 0
+        common_keys = set(probabilities.keys()) & set(odds.keys())
+        probabilities = {k: v for k, v in probabilities.items() if k in common_keys and pd.notnull(v) and v > 0}
+        odds = {k: max(v, 1.01) for k, v in odds.items() if k in common_keys and pd.notnull(v) and v > 0}
 
         if not probabilities or not odds:
             continue

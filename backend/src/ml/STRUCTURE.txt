@@ -1,0 +1,9 @@
+src/ml/
+  models.py        ← HyperStackModel (partagé, pas de dépendances ML circulaires)
+  tabnet_utils.py  ← TabNetEnsembleWrapper
+  features.py      ← PmuFeatureEngineer, RaceContextEncoder
+  safe_loader.py   ← safe_load (dépend de tous les précédents, importé en dernier)
+  loader.py        ← DataLoader
+  predictor.py     ← RacePredictor (importe safe_loader + models)
+  trainer_hyperstack.py  ← importe safe_loader + models
+  trainer_tabnet_gpu.py  ← importe tabnet_utils + features

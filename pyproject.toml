@@ -11,6 +11,7 @@ dependencies = [
     "python-dotenv>=1.2.2",
     "requests>=2.32.5",
     "scikit-learn>1.2.0, <1.8.0",
+    "scikit-learn-intelex",
     "sqlalchemy>=2.0.48",
     "streamlit>=1.32.0",
     "urllib3>=2.6.3",
@@ -30,4 +31,52 @@ dependencies = [
     "shap>=0.51.0",
     "matplotlib>=1.5.0",
     "catboost>=1.2.10",
+    "lightgbm>=4.6.0",
+    "scipy-stubs~=1.17.1",
+    "scipy>=1.17.1",
+    "torch>=2.9.0",
+    "pytorch-tabnet>=4.1.0",
+    "dpcpp-cpp-rt>=2025.3.3",
 ]
+[tool.uv]
+required-environments = [
+    "sys_platform == 'win32' and platform_machine == 'AMD64'",
+]
+[tool.uv.sources]
+torch = [
+#{ index = "pytorch-cpu", extra = "cpu" },
+#    {index = "pytorch-cu128", extra="gpu128"},
+    {index = "pytorch-cu130", extra="gpu130"},
+#{ index = "pytorch-npu", extra = "npu" },
+]
+[project.optional-dependencies]
+cpu = [
+    "torch>=2.9.0",
+]
+gpu128 = [
+    "torch>=2.9.0",
+]
+gpu130 = [
+    "torch>=2.9.0",
+]
+npu = [
+    "torch>=2.9.0",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+[[tool.uv.index]]
+name = "pytorch-npu"
+url = "https://download.pytorch.org/whl/npu"
+explicit = true
+

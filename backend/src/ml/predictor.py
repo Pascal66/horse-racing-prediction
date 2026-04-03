@@ -5,7 +5,19 @@ import numpy as np
 from typing import List, Dict, Any, Union
 from pathlib import Path
 
+from sklearnex import patch_sklearn
+patch_sklearn(verbose=False)  # avant tous les imports sklearn
+
+from src.ml.safe_loader import safe_load
+
 pd.set_option('display.max_columns', None)
+
+import logging
+logger = logging.getLogger('sklearnex')
+logger.setLevel(logging.WARNING)
+
+import os
+os.environ["SKLEARNEX_VERBOSE"] = "WARNING"
 
 class RacePredictor:
     """
@@ -18,7 +30,6 @@ class RacePredictor:
         Initializes the predictor by loading all available pipelines in the directory.
         """
         self.logger = logging.getLogger("ML.Predictor")
-        # Ensure path is absolute for consistency
         self.model_dir = Path(model_dir).resolve()
         self.models: Dict[str, Any] = {}
 
@@ -33,16 +44,11 @@ class RacePredictor:
         self.logger.info(f"Scanning directory: {self.model_dir}")
         model_files = list(self.model_dir.glob("model_*.pkl"))
         
-        if not model_files:
-            self.logger.warning(f"No .pkl files starting with 'model_' found in {self.model_dir}")
-            return
-
         for model_file in model_files:
             try:
-                # Extract discipline name from model_discipline.pkl
                 discipline = model_file.stem.replace("model_", "").lower()
                 self.logger.info(f"Loading model '{discipline}' from {model_file.name}...")
-                self.models[discipline] = joblib.load(model_file)
+                self.models[discipline] = safe_load(model_file)  # remplace joblib.load(model_file)
             except Exception as error:
                 self.logger.error(f"Failed to load model {model_file}: {error}")
 
@@ -53,24 +59,19 @@ class RacePredictor:
 
     @property
     def pipeline(self):
-        """Compatibility property: returns the global model if it exists."""
         return self.models.get("global")
 
     def predict_race(self, participants: Union[List[Dict[str, Any]], pd.DataFrame]) -> List[float]:
         """
-        Predicts win probabilities for raw participants.
-        Supports both list of dicts or a single DataFrame.
+        Performs inference. Full Pipelines handle feature engineering internally.
         """
         if not self.models:
-            self.logger.warning("No models available for prediction.")
             return [] if isinstance(participants, list) else np.array([])
 
         try:
             df = participants if isinstance(participants, pd.DataFrame) else pd.DataFrame(participants)
             if df.empty: return []
 
-            # Determine the model to use based on discipline
-            # If all participants belong to the same race/discipline (standard case for single race)
             discipline = "global"
             if 'discipline' in df.columns:
                 disc_val = str(df['discipline'].iloc[0]).lower().strip()
@@ -78,14 +79,10 @@ class RacePredictor:
                     discipline = disc_val
             
             model = self.models.get(discipline, self.models.get("global"))
-            
-            if not model:
-                self.logger.error("No model found (specialty or global fallback).")
-                return [0.0] * len(df)
+            if not model: return [0.0] * len(df)
 
-            self.logger.debug(f"Predicting {len(df)} rows using '{discipline}' model.")
-            
-            # Use the pipeline (Engineer -> Preprocessor -> Calibrated Model)
+            # Predict using the Pipeline (which internally calls HyperStackModel)
+
             probabilities = model.predict_proba(df)[:, 1]
             return probabilities.tolist()
 

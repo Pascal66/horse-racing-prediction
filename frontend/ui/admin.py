@@ -31,23 +31,45 @@ def render_admin_dashboard():
             summary_data = []
             for m in available_models:
                 m_low = m.lower()
-                # Find the winner (best ROI or lowest LogLoss) from the latest tournament
+                
+                # Correction de la logique de recherche :
+                # Le Predictor charge 'model_attele_tabnet.pkl' sous 'attele_tabnet'
+                # mais la DB stocke model_name='attele' + algorithm='tabnet_only'.
+                is_tabnet_file = m_low.endswith("_tabnet")
+                base_discipline = m_low.replace("_tabnet", "")
+                algo_filter = "tabnet_only" if is_tabnet_file else "hyperstack_context"
+
                 if not metrics_df.empty:
-                    m_stats = metrics_df[(metrics_df['model_name'] == m_low) & (metrics_df['segment_type'] == 'discipline_overall')]
-                    # In production, we usually use the best one
-                    best_algo = m_stats.sort_values('logloss').iloc[0] if not m_stats.empty else None
+                    # On filtre sur la discipline de base ET l'algorithme correspondant au type de fichier
+                    m_stats = metrics_df[
+                        (metrics_df['model_name'] == base_discipline) & 
+                        (metrics_df['algorithm'] == algo_filter) &
+                        (metrics_df['segment_type'] == 'discipline_overall')
+                    ]
+                    best_algo = m_stats.iloc[0] if not m_stats.empty else None
                 else: best_algo = None
 
                 summary_data.append({
                     "Specialty": m.upper(),
                     "Status": "🟢 Active",
                     "Winner Algo": best_algo['algorithm'].upper() if best_algo is not None else "UNKNOWN",
-                    "Best LogLoss": round(best_algo['logloss'], 4) if best_algo is not None else "N/A",
-                    "Current ROI": f"{best_algo['roi']:.1f}%" if best_algo is not None else "N/A",
-                    "Win Rate": f"{best_algo['win_rate']:.1%}" if best_algo is not None else "N/A"
+                    # Utiliser None au lieu de "N/A" pour éviter le crash Arrow
+                    "Best LogLoss": best_algo['logloss'] if best_algo is not None else None,
+                    "Current ROI": best_algo['roi'] if best_algo is not None else None,
+                    "Win Rate": (best_algo['win_rate'] * 100) if best_algo is not None else None
                 })
             
-            st.table(summary_data)
+            # Utilisation de st.dataframe avec configuration des colonnes pour le formatage
+            st.dataframe(
+                pd.DataFrame(summary_data),
+                hide_index=True,
+                column_config={
+                    "Best LogLoss": st.column_config.NumberColumn("LogLoss", format="%.4f"),
+                    "Current ROI": st.column_config.NumberColumn("ROI", format="%.1f%%"),
+                    "Win Rate": st.column_config.NumberColumn("Return %", format="%.1f%%"),
+                },
+                width='stretch' #use_container_width=True
+            )
         else:
             st.warning("No ML models loaded in the backend.")
 
@@ -72,13 +94,13 @@ def render_admin_dashboard():
                 fig_loss = px.bar(battle_df, x='algorithm', y='logloss', color='algorithm', 
                                 title="LogLoss Comparison (Lower is Better)",
                                 color_discrete_sequence=px.colors.qualitative.Pastel)
-                st.plotly_chart(fig_loss, use_container_width=True)
+                st.plotly_chart(fig_loss, width="stretch") #use_container_width=True)
             
             with col_b2:
                 fig_roi = px.bar(battle_df, x='algorithm', y='roi', color='algorithm',
                                title="ROI Comparison (%)",
                                color_discrete_sequence=px.colors.qualitative.Safe)
-                st.plotly_chart(fig_roi, use_container_width=True)
+                st.plotly_chart(fig_roi, width="stretch") #use_container_width=True)
 
             st.dataframe(battle_df[['algorithm', 'logloss', 'auc', 'roi', 'win_rate', 'num_races']].sort_values('logloss'), hide_index=True)
 
@@ -98,6 +120,7 @@ def render_admin_dashboard():
 
     # ------------------
     # TAB 4: DISCIPLINE METRICS
+    # CORRECTION: use_container_width=True -> width="stretch"
     # ------------------
     with tab_discipline:
         st.subheader("Overall Performance Matrix")
@@ -112,7 +135,7 @@ def render_admin_dashboard():
                     "win_rate": st.column_config.NumberColumn("Win Rate", format="%.1f%%"),
                 },
                 hide_index=True,
-                use_container_width=True
+                width="stretch", #use_container_width=True
             )
 
     # ------------------

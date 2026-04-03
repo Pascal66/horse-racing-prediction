@@ -17,8 +17,9 @@ def kelly_method2_corrected(probabilities, odds, kelly_fraction=1.0):
     selection_scores = {}
     for horse in probabilities:
         Pi = probabilities[horse]
-        Ri = odds[horse]
-        if Ri > 1:
+        # Utilisation de .get() pour éviter KeyError si le nettoyage amont a échoué
+        Ri = odds.get(horse)
+        if Ri and Ri > 1:
             score = Pi - 1.0 / (Ri - 1.0)
             if score > 0:
                 selection_scores[horse] = score

@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 import os
 
+import numpy as np
 from fastapi import FastAPI, Depends, HTTPException, status
 import pandas as pd
 
@@ -26,8 +27,8 @@ pd.set_option('future.no_silent_downcasting', True)
 
 # --- CONFIGURATION: SNIPER STRATEGY ---
 MIN_EDGE = 0.05
-MIN_ODDS = 2.5
-MAX_ODDS = 50.0  # Augmenté un peu pour le Sniper, mais Kelly sera plus strict
+MIN_ODDS = 2.0
+MAX_ODDS = 25.0  # Augmenté un peu pour le Sniper, mais Kelly sera plus strict
 
 # Logger Configuration
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -66,7 +67,22 @@ def health_check() -> Dict[str, Any]:
 
 @app.get("/metrics", response_model=List[ModelMetric], tags=["ML Metrics"])
 def get_model_metrics(model_name: Optional[str] = None, segment_type: Optional[str] = None, repository: RaceRepository = Depends(get_repository)) -> List[Dict[str, Any]]:
-    return repository.get_model_metrics(model_name, segment_type)
+    metrics = repository.get_model_metrics(model_name, segment_type)
+    
+    # Sanitization pour éviter le crash Arrow/Streamlit
+    # On remplace les chaînes 'N/A' par None (null en JSON) pour préserver le type float
+    sanitized = []
+    for m in metrics:
+        clean_m = dict(m)
+        for field in ['logloss', 'auc', 'roi', 'win_rate', 'avg_odds']:
+            val = clean_m.get(field)
+            if val == 'N/A' or val == '':
+                clean_m[field] = None
+            elif isinstance(val, str):
+                try: clean_m[field] = float(val)
+                except: clean_m[field] = None
+        sanitized.append(clean_m)
+    return sanitized
 
 @app.get("/races/{date_code}", response_model=List[RaceSummary], tags=["Races"])
 def get_races(date_code: str, repository: RaceRepository = Depends(get_repository)) -> List[Dict[str, Any]]:
@@ -99,52 +115,68 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
     df['effective_odds'] = df['effective_odds'].fillna(df['reference_odds']).fillna(1.0).clip(lower=1.05)
     
     # Marqueur pour l'UI : est-ce une cote live ?
-    df['is_live'] = df['live_odds'].apply(lambda x: True if x and x > 1.1 else False)
+    df['is_live'] = df['reference_odds'].apply(lambda x: True if x and x > 1.1 else False)
+
+    # PMU Market Sentiment (Implied Probability)
+    # if 'reference_odds' in df.columns:
+    #     df['implied_prob'] = 1.0 / df['reference_odds'].replace(0, np.nan).fillna(100).clip(lower=1.01)
+    #     race_total_prob = grouped['implied_prob'].transform("sum")
+    #     df['market_sentiment'] = df['implied_prob'] / (race_total_prob + 1e-6)
 
     # Calcul de l'Edge basé sur la cote effective (Live si possible)
     df['edge'] = df['win_probability'] - (1 / df['effective_odds'])
 
+    # print(df.columns)
+
     recommendations = []
     
     # 1. SNIPER STRATEGY
-    sniper_mask = (df['edge'] >= MIN_EDGE) & (df['effective_odds'] >= MIN_ODDS) & (df['effective_odds'] <= MAX_ODDS)
-    sniper_df = df[sniper_mask]
-    for race_id, group in sniper_df.groupby('race_id'):
-        best_bet = group.sort_values('win_probability', ascending=False).iloc[0]
-        recommendations.append({
-            "race_id": int(best_bet['race_id']), "meeting_num": int(best_bet['meeting_number']),
-            "race_num": int(best_bet['race_number']), "horse_name": best_bet['horse_name'],
-            "program_number": int(best_bet['program_number']), 
-            "odds": float(best_bet['effective_odds']),
-            "win_probability": float(best_bet['win_probability']), 
-            "edge": float(best_bet['edge']),
-            "strategy": "Sniper" + (" (LIVE)" if best_bet['is_live'] else "")
-        })
+    try:
+        sniper_mask = (df['edge'] >= MIN_EDGE) & (df['effective_odds'] >= MIN_ODDS) & (df['effective_odds'] <= MAX_ODDS)
+        sniper_df = df[sniper_mask]
+        for race_id, group in sniper_df.groupby('race_id'):
+            best_bet = group.sort_values('win_probability', ascending=False).iloc[0]
+            recommendations.append({
+                "race_id": int(best_bet['race_id']), "meeting_num": int(best_bet['meeting_number']),
+                "race_num": int(best_bet['race_number']), "horse_name": best_bet['horse_name'],
+                "program_number": int(best_bet['program_number']),
+                "odds": float(best_bet['effective_odds']),
+                "win_probability": float(best_bet['win_probability']),
+                "edge": float(best_bet['edge']),
+                "strategy": "Sniper" + (" (LIVE)" if best_bet['is_live'] else "")
+            })
+    except Exception as e:
+        logger.error(f"Sniper strategy failed: {e}", exc_info=True)
 
     # 2. KELLY MULTI (Plus strict sur les cotes démesurées)
     try:
         # On ne passe à Kelly que les cotes réalistes (< 100) pour éviter les aberrations
         df_kelly = df[df['effective_odds'] < 100.0].copy()
         # On injecte la cote effective dans la colonne que Kelly attend (live_odds)
-        df_kelly['live_odds'] = df_kelly['effective_odds']
+        # df_kelly['live_odds'] = df_kelly['effective_odds']
         
         kelly_report = analyze_multiple_races(df_kelly, bankroll=1000.0, kelly_fraction=0.5)
         for course_info in kelly_report['ranking'][:5]:
             race_id = course_info['race_id']
             race_participants = df_kelly[df_kelly['race_id'] == race_id]
+            if race_participants.empty: continue
+
             for prog_num, stake_frac in course_info['fractions'].items():
                 if stake_frac > 0.005:
-                    p_info = race_participants[race_participants['program_number'] == prog_num].iloc[0]
-                    recommendations.append({
-                        "race_id": int(p_info['race_id']), "meeting_num": int(p_info['meeting_number']),
-                        "race_num": int(p_info['race_number']), "horse_name": p_info['horse_name'],
-                        "program_number": int(p_info['program_number']), "odds": float(p_info['effective_odds']),
-                        "win_probability": float(p_info['win_probability']), 
-                        "edge": float(p_info['edge']),
-                        "strategy": f"Kelly ({stake_frac:.1%})" + (" (LIVE)" if p_info['is_live'] else "")
-                    })
+                    # Sécurisation du type pour le numéro de programme et vérification de présence
+                    p_match = race_participants[race_participants['program_number'].astype(str) == str(prog_num)]
+                    if not p_match.empty:
+                        p_info = p_match.iloc[0]
+                        recommendations.append({
+                            "race_id": int(p_info['race_id']), "meeting_num": int(p_info['meeting_number']),
+                            "race_num": int(p_info['race_number']), "horse_name": p_info['horse_name'],
+                            "program_number": int(p_info['program_number']), "odds": float(p_info['effective_odds']),
+                            "win_probability": float(p_info['win_probability']), 
+                            "edge": float(p_info['edge']),
+                            "strategy": f"Kelly ({stake_frac:.1%})" + (" (LIVE)" if p_info.get('is_live') else "")
+                        })
     except Exception as e:
-        logger.error(f"Kelly analysis failed: {e}")
+        logger.error(f"Kelly multi-race strategy failed: {e}", exc_info=True)
 
     return recommendations
 
@@ -154,13 +186,17 @@ def predict_race(race_id: int, repository: RaceRepository = Depends(get_reposito
     if predictor is None: raise HTTPException(status_code=503, detail="ML Model unavailable.")
     raw_participants = repository.get_race_data_for_ml(race_id)
     if not raw_participants: raise HTTPException(status_code=404, detail="Race not found.")
-    win_probabilities = predictor.predict_race(raw_participants)
     results = []
-    for index, participant in enumerate(raw_participants):
-        results.append({
-            "program_number": participant["program_number"], "horse_name": participant["horse_name"],
-            "win_probability": win_probabilities[index], "predicted_rank": 0
-        })
-    results.sort(key=lambda x: x["win_probability"], reverse=True)
-    for rank, res in enumerate(results, 1): res["predicted_rank"] = rank
+    try:
+        win_probabilities = predictor.predict_race(raw_participants)
+        for index, participant in enumerate(raw_participants):
+            results.append({
+                "program_number": participant["program_number"], "horse_name": participant["horse_name"],
+                "win_probability": win_probabilities[index], "predicted_rank": 0
+            })
+        results.sort(key=lambda x: x["win_probability"], reverse=True)
+        for rank, res in enumerate(results, 1): res["predicted_rank"] = rank
+    except Exception as e:
+        logger.error(f"Prediction route failed: {e}", exc_info=True)
+
     return results

@@ -111,10 +111,10 @@ def render_recommendation_table(recommendations, races_df):
     
     # Display
     df_display = pd.DataFrame(bet_rows)
-    
+    # CORRECTION: use_container_width=True -> width="stretch"
     st.dataframe(
         df_display,
-        use_container_width=True,
+        width="stretch", #use_container_width=True,
         hide_index=True,
         column_config={
             "Race": st.column_config.TextColumn("Race", width="medium"),

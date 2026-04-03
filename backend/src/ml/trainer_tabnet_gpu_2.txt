@@ -1,0 +1,417 @@
+2026-03-30 08:22:19,430 - ML.TabnetTrainer - INFO - --- STARTING TABNET TOURNAMENT ---
+2026-03-30 08:22:19,465 - ML.Loader - INFO - Loading SQL data...
+2026-03-30 08:22:24,146 - ML.Loader - INFO - Calculating historical statistics...
+2026-03-30 08:22:26,789 - ML.Loader - INFO - Merging datasets...
+2026-03-30 08:22:28,396 - ML.TabnetTrainer - INFO - Data Loaded: (538522, 44) rows
+
+2026-04-02 08:48:42,210 - ML.TabnetTrainer - INFO - Target global Metrics: {'logloss': 0.2725242772066161, 'auc': 0.7943080378339874, 'roi': np.float64(28.12586926286506), 'win_rate': np.float64(1.2812586926286507), 'avg_odds': np.float64(30.57347153155919), 'count': 2876}
+2026-04-02 12:29:31,865 - ML.TabnetTrainer - INFO - Target global Metrics: {'logloss': 0.27267676444087074, 'auc': 0.7943412743096918, 'roi': np.float64(31.86643233743411), 'win_rate': np.float64(1.3186643233743411), 'avg_odds': np.float64(30.61974627567508), 'count': 2845}
+2026-04-02 16:48:25,267 - ML.TabnetTrainer - INFO - Target global Metrics: {'logloss': 0.26099037353956606, 'auc': 0.8189145296663888, 'roi': np.float64(28.47674011892275), 'win_rate': np.float64(1.2847674011892276), 'avg_odds': np.float64(30.635823462583975), 'count': 2859}
+--- TABNET FEATURE IMPORTANCES (51 features) ---
+                         feature  importance
+           num__market_sentiment    0.224338
+                   num__odds_log    0.200567
+             num__odds_drift_log    0.170658
+      num__hist_avg_speed_z_race    0.073214
+           num__odds_drift_ratio    0.058161
+    num__avg_speed_last_3_z_race    0.037144
+num__days_since_last_race_z_race    0.031150
+        num__hist_pct_clean_runs    0.023560
+              num__hist_earnings    0.018162
+        num__duo_win_rate_z_race    0.017545
+           num__speed_form_ratio    0.016295
+    num__reference_odds_rel_race    0.016191
+               cat__trainer_name    0.011116
+     num__declared_runners_count    0.011068
+            num__career_winnings    0.010006
+               num__proba_tabnet    0.009574
+             num__reference_odds    0.009574
+          num__odds_rank_in_race    0.009102
+         num__career_races_count    0.006546
+           num__avg_speed_last_3    0.006385
+                 num__distance_m    0.005437
+             num__distance_delta    0.004740
+              num__duo_best_rank    0.003341
+         num__duo_is_experienced    0.003253
+             num__duo_confidence    0.003000
+      num__duo_confidence_z_race    0.002466
+        num__is_unusual_distance    0.001968
+                 cat__discipline    0.001825
+              cat__terrain_label    0.001813
+               num__penetrometer    0.001737
+       num__days_since_last_race    0.001447
+          num__relative_winnings    0.001324
+   num__reference_odds_rank_race    0.001278
+                 cat__track_type    0.001084
+    num__pct_clean_on_discipline    0.001044
+                cat__jockey_name    0.000708
+               num__duo_avg_rank    0.000674
+             cat__racetrack_code    0.000522
+      num__winnings_rank_in_race    0.000468
+  num__career_winnings_rank_race    0.000456
+             cat__shoeing_status    0.000335
+                 num__race_month    0.000216
+            num__duo_total_races    0.000185
+    num__pct_races_on_discipline    0.000109
+              num__is_specialist    0.000092
+                num__is_debutant    0.000055
+          num__horse_age_at_race    0.000035
+                        cat__sex    0.000018
+        num__duo_avg_rank_z_race    0.000006
+               num__duo_win_rate    0.000005
+             num__hist_avg_speed    0.000002
+
+2026-03-30 08:26:27,202 - ML.TabnetTrainer - INFO - Target steeplechase Metrics: {'logloss': 0.3712685924034933, 'auc': 0.7085327635327635, 'roi': np.float64(-7.0370370370370585), 'win_rate': np.float64(0.9296296296296295), 'avg_odds': np.float64(16.098416886543536), 'count': 108}
+2026-03-31 10:46:32,119 - ML.TabnetTrainer - INFO - Target steeplechase Metrics: {'logloss': 0.370897657362571, 'auc': 0.7028062678062678, 'roi': np.float64(0.09259259259258733), 'win_rate': np.float64(1.0009259259259258), 'avg_odds': np.float64(16.098416886543536), 'count': 108}
+2026-03-31 13:40:07,312 - ML.TabnetTrainer - INFO - Target steeplechase Metrics: {'logloss': 0.375828082409402, 'auc': 0.6996581196581196, 'roi': np.float64(-15.462962962962978), 'win_rate': np.float64(0.8453703703703702), 'avg_odds': np.float64(16.098416886543536), 'count': 108}
+2026-04-02 08:50:41,956 - ML.TabnetTrainer - INFO - Target steeplechase Metrics: {'logloss': 0.37120179074468973, 'auc': 0.7264257837089261, 'roi': np.float64(-3.557692307692338), 'win_rate': np.float64(0.9644230769230766), 'avg_odds': np.float64(16.07818181818182), 'count': 104}
+2026-04-02 12:32:30,552 - ML.TabnetTrainer - INFO - Target steeplechase Metrics: {'logloss': 0.3669230284398892, 'auc': 0.7363873851189727, 'roi': np.float64(-2.788461538461571), 'win_rate': np.float64(0.9721153846153843), 'avg_odds': np.float64(16.07818181818182), 'count': 104}
+2026-04-02 16:51:25,555 - ML.TabnetTrainer - INFO - Target steeplechase Metrics: {'logloss': 0.36561238077616187, 'auc': 0.7340425531914894, 'roi': np.float64(7.499999999999971), 'win_rate': np.float64(1.0749999999999997), 'avg_odds': np.float64(16.078181818181818), 'count': 104}
+--- TABNET FEATURE IMPORTANCES (51 features) ---
+                         feature  importance
+           num__market_sentiment    0.109980
+                   num__odds_log    0.079668
+             num__odds_drift_log    0.071553
+             cat__racetrack_code    0.063658
+          num__odds_rank_in_race    0.060972
+num__days_since_last_race_z_race    0.040875
+             num__reference_odds    0.039665
+              num__hist_earnings    0.030430
+          num__horse_age_at_race    0.028674
+   num__reference_odds_rank_race    0.027412
+        num__is_unusual_distance    0.022800
+    num__pct_races_on_discipline    0.022343
+               cat__trainer_name    0.022056
+    num__pct_clean_on_discipline    0.021337
+           num__odds_drift_ratio    0.018585
+    num__reference_odds_rel_race    0.018479
+         num__career_races_count    0.016550
+            num__career_winnings    0.016286
+     num__declared_runners_count    0.015740
+           num__speed_form_ratio    0.014814
+       num__days_since_last_race    0.014644
+          num__relative_winnings    0.014203
+             num__hist_avg_speed    0.013023
+        num__duo_avg_rank_z_race    0.012405
+                num__is_debutant    0.012353
+                cat__jockey_name    0.011851
+         num__duo_is_experienced    0.011760
+  num__career_winnings_rank_race    0.011030
+             cat__shoeing_status    0.010715
+                 cat__discipline    0.010321
+      num__winnings_rank_in_race    0.010273
+        num__hist_pct_clean_runs    0.009074
+               num__duo_win_rate    0.008829
+              cat__terrain_label    0.008773
+             num__distance_delta    0.008640
+              num__duo_best_rank    0.008309
+               num__duo_avg_rank    0.008019
+                 num__distance_m    0.007606
+            num__duo_total_races    0.007482
+      num__hist_avg_speed_z_race    0.007392
+              num__is_specialist    0.006910
+        num__duo_win_rate_z_race    0.006497
+           num__avg_speed_last_3    0.006465
+    num__avg_speed_last_3_z_race    0.005727
+      num__duo_confidence_z_race    0.005471
+                        cat__sex    0.004515
+             num__duo_confidence    0.003866
+               num__penetrometer    0.003678
+                 cat__track_type    0.003590
+               num__proba_tabnet    0.002399
+                 num__race_month    0.002304
+
+2026-03-30 08:31:47,163 - ML.TabnetTrainer - INFO - Target haie Metrics: {'logloss': 0.3269206610810779, 'auc': 0.7427422723475355, 'roi': np.float64(13.85964912280701), 'win_rate': np.float64(1.1385964912280702), 'avg_odds': np.float64(19.315181753385602), 'count': 171}
+2026-03-31 10:50:28,588 - ML.TabnetTrainer - INFO - Target haie Metrics: {'logloss': 0.326453790872402, 'auc': 0.7421204526467684, 'roi': np.float64(11.111111111111093), 'win_rate': np.float64(1.111111111111111), 'avg_odds': np.float64(19.315181753385602), 'count': 171}
+2026-03-31 13:43:30,645 - ML.TabnetTrainer - INFO - Target haie Metrics: {'logloss': 0.3261748750807172, 'auc': 0.7449827219564061, 'roi': np.float64(11.052631578947356), 'win_rate': np.float64(1.1105263157894736), 'avg_odds': np.float64(19.315181753385602), 'count': 171}
+2026-04-02 08:53:50,109 - ML.TabnetTrainer - INFO - Target haie Metrics: {'logloss': 0.3293834265989667, 'auc': 0.7306330724341068, 'roi': np.float64(6.127167630057784), 'win_rate': np.float64(1.0612716763005778), 'avg_odds': np.float64(19.588367203924317), 'count': 173}
+2026-04-02 12:36:09,613 - ML.TabnetTrainer - INFO - Target haie Metrics: {'logloss': 0.3291316350892956, 'auc': 0.7338689603672871, 'roi': np.float64(21.676300578034667), 'win_rate': np.float64(1.2167630057803467), 'avg_odds': np.float64(19.588367203924317), 'count': 173}
+2026-04-02 16:55:18,149 - ML.TabnetTrainer - INFO - Target haie Metrics: {'logloss': 0.3193335088911448, 'auc': 0.7596136567834681, 'roi': np.float64(-7.314285714285688), 'win_rate': np.float64(0.9268571428571432), 'avg_odds': np.float64(19.573047684865237), 'count': 175}
+--- TABNET FEATURE IMPORTANCES (51 features) ---
+                         feature  importance
+                   num__odds_log    0.130512
+           num__market_sentiment    0.114313
+             num__odds_drift_log    0.113430
+          num__odds_rank_in_race    0.047936
+              num__hist_earnings    0.034698
+             cat__racetrack_code    0.030451
+             num__reference_odds    0.029557
+            num__duo_total_races    0.029465
+       num__days_since_last_race    0.024641
+    num__reference_odds_rel_race    0.022675
+               cat__trainer_name    0.021397
+            num__career_winnings    0.020626
+                 num__distance_m    0.019343
+        num__is_unusual_distance    0.017061
+                cat__jockey_name    0.016932
+    num__pct_clean_on_discipline    0.016328
+  num__career_winnings_rank_race    0.015939
+     num__declared_runners_count    0.015465
+             num__hist_avg_speed    0.014250
+        num__hist_pct_clean_runs    0.013929
+num__days_since_last_race_z_race    0.013870
+         num__career_races_count    0.013317
+    num__pct_races_on_discipline    0.013068
+               num__duo_win_rate    0.012920
+             num__distance_delta    0.011791
+           num__speed_form_ratio    0.011765
+        num__duo_avg_rank_z_race    0.011730
+                 cat__track_type    0.011109
+        num__duo_win_rate_z_race    0.009710
+   num__reference_odds_rank_race    0.009677
+          num__horse_age_at_race    0.009123
+      num__winnings_rank_in_race    0.008844
+          num__relative_winnings    0.008826
+                        cat__sex    0.008534
+               num__duo_avg_rank    0.008275
+                num__is_debutant    0.007934
+      num__duo_confidence_z_race    0.007790
+                 num__race_month    0.007481
+             cat__shoeing_status    0.007081
+      num__hist_avg_speed_z_race    0.006996
+              num__is_specialist    0.006995
+                 cat__discipline    0.006533
+              cat__terrain_label    0.005820
+               num__proba_tabnet    0.005217
+         num__duo_is_experienced    0.005046
+               num__penetrometer    0.004700
+              num__duo_best_rank    0.004462
+           num__odds_drift_ratio    0.003999
+    num__avg_speed_last_3_z_race    0.003689
+             num__duo_confidence    0.003667
+           num__avg_speed_last_3    0.001084
+
+2026-03-30 08:39:26,979 - ML.TabnetTrainer - INFO - Target monte Metrics: {'logloss': 0.30789398687407693, 'auc': 0.8050584488671407, 'roi': np.float64(63.17073170731709), 'win_rate': np.float64(1.6317073170731708), 'avg_odds': np.float64(27.678494993930475), 'count': 246}
+2026-03-31 10:56:14,813 - ML.TabnetTrainer - INFO - Target monte Metrics: {'logloss': 0.3062497104497744, 'auc': 0.8080396713221378, 'roi': np.float64(58.73983739837401), 'win_rate': np.float64(1.58739837398374), 'avg_odds': np.float64(28.031938156584506), 'count': 246}
+2026-03-31 13:48:44,380 - ML.TabnetTrainer - INFO - Target monte Metrics: {'logloss': 0.303343350648471, 'auc': 0.8158589464101765, 'roi': np.float64(68.90243902439023), 'win_rate': np.float64(1.6890243902439024), 'avg_odds': np.float64(28.031938156584506), 'count': 246}
+2026-04-02 09:00:12,094 - ML.TabnetTrainer - INFO - Target monte Metrics: {'logloss': 0.2996034780390962, 'auc': 0.8212508628624022, 'roi': np.float64(75.04065040650407), 'win_rate': np.float64(1.7504065040650407), 'avg_odds': np.float64(28.604495105747418), 'count': 246}
+2026-04-02 12:42:18,888 - ML.TabnetTrainer - INFO - Target monte Metrics: {'logloss': 0.29954547641164314, 'auc': 0.8219099938640896, 'roi': np.float64(56.50406504065043), 'win_rate': np.float64(1.5650406504065042), 'avg_odds': np.float64(28.604495105747418), 'count': 246}
+2026-04-02 17:00:47,387 - ML.TabnetTrainer - INFO - Target monte Metrics: {'logloss': 0.2900120174988463, 'auc': 0.836041762540267, 'roi': np.float64(42.72357723577237), 'win_rate': np.float64(1.4272357723577236), 'avg_odds': np.float64(28.604495105747414), 'count': 246}
+--- TABNET FEATURE IMPORTANCES (51 features) ---
+                         feature  importance
+                   num__odds_log    0.099554
+      num__hist_avg_speed_z_race    0.093984
+             num__odds_drift_log    0.086817
+           num__market_sentiment    0.082820
+          num__odds_rank_in_race    0.070184
+             num__reference_odds    0.064591
+             cat__racetrack_code    0.050663
+num__days_since_last_race_z_race    0.036705
+    num__pct_races_on_discipline    0.036492
+   num__reference_odds_rank_race    0.035427
+    num__reference_odds_rel_race    0.030118
+        num__duo_avg_rank_z_race    0.017682
+                cat__jockey_name    0.016146
+     num__declared_runners_count    0.015961
+          num__horse_age_at_race    0.015306
+               num__proba_tabnet    0.014804
+              num__hist_earnings    0.014753
+               num__duo_win_rate    0.014179
+             num__hist_avg_speed    0.013739
+               cat__trainer_name    0.010235
+              num__duo_best_rank    0.009949
+           num__odds_drift_ratio    0.009655
+            num__career_winnings    0.009449
+      num__duo_confidence_z_race    0.009337
+                num__is_debutant    0.008353
+      num__winnings_rank_in_race    0.008187
+    num__avg_speed_last_3_z_race    0.008112
+             num__distance_delta    0.007816
+            num__duo_total_races    0.007749
+           num__avg_speed_last_3    0.007241
+             cat__shoeing_status    0.006626
+    num__pct_clean_on_discipline    0.006590
+         num__duo_is_experienced    0.006408
+        num__duo_win_rate_z_race    0.006327
+           num__speed_form_ratio    0.006160
+  num__career_winnings_rank_race    0.006013
+         num__career_races_count    0.005934
+              cat__terrain_label    0.005889
+        num__hist_pct_clean_runs    0.005793
+        num__is_unusual_distance    0.004623
+                 num__distance_m    0.004396
+                 cat__track_type    0.004263
+       num__days_since_last_race    0.004257
+              num__is_specialist    0.003982
+             num__duo_confidence    0.003286
+               num__duo_avg_rank    0.003045
+                        cat__sex    0.002616
+          num__relative_winnings    0.002291
+                 cat__discipline    0.002053
+                 num__race_month    0.002049
+               num__penetrometer    0.001392
+
+2026-03-30 09:47:57,307 - ML.TabnetTrainer - INFO - Target attele Metrics: {'logloss': 0.2667616500286029, 'auc': 0.817428092264388, 'roi': np.float64(67.1891891891892), 'win_rate': np.float64(1.671891891891892), 'avg_odds': np.float64(37.47989368341401), 'count': 1480}
+2026-03-31 11:40:29,716 - ML.TabnetTrainer - INFO - Target attele Metrics: {'logloss': 0.2649647227799777, 'auc': 0.8195707039820586, 'roi': np.float64(67.61872455902302), 'win_rate': np.float64(1.6761872455902302), 'avg_odds': np.float64(37.774018969903075), 'count': 1474}
+2026-04-02 09:40:19,206 - ML.TabnetTrainer - INFO - Target attele Metrics: {'logloss': 0.26180682157036844, 'auc': 0.8247416309927824, 'roi': np.float64(53.646185010128235), 'win_rate': np.float64(1.5364618501012823), 'avg_odds': np.float64(38.05267792784753), 'count': 1481}
+2026-04-02 13:28:14,247 - ML.TabnetTrainer - INFO - Target attele Metrics: {'logloss': 0.26286353401863366, 'auc': 0.8245578607317962, 'roi': np.float64(66.1538461538462), 'win_rate': np.float64(1.661538461538462), 'avg_odds': np.float64(38.06828082897026), 'count': 1469}
+2026-04-02 17:38:30,747 - ML.TabnetTrainer - INFO - Target attele Metrics: {'logloss': 0.24909537813920715, 'auc': 0.8483135500630931, 'roi': np.float64(49.59999999999996), 'win_rate': np.float64(1.4959999999999996), 'avg_odds': np.float64(38.12841425832583), 'count': 1475}
+--- TABNET FEATURE IMPORTANCES (51 features) ---
+                         feature  importance
+           num__market_sentiment    0.191427
+             num__odds_drift_log    0.163022
+                   num__odds_log    0.161759
+      num__hist_avg_speed_z_race    0.083349
+num__days_since_last_race_z_race    0.050818
+          num__relative_winnings    0.025644
+             cat__shoeing_status    0.025292
+    num__reference_odds_rel_race    0.024952
+           num__avg_speed_last_3    0.024848
+                 cat__track_type    0.024489
+                cat__jockey_name    0.020763
+          num__odds_rank_in_race    0.020085
+              num__hist_earnings    0.015163
+    num__avg_speed_last_3_z_race    0.014863
+       num__days_since_last_race    0.013201
+      num__duo_confidence_z_race    0.013071
+                 cat__discipline    0.011638
+            num__career_winnings    0.011041
+  num__career_winnings_rank_race    0.010502
+             num__reference_odds    0.008535
+               cat__trainer_name    0.008356
+   num__reference_odds_rank_race    0.007811
+            num__duo_total_races    0.006409
+    num__pct_clean_on_discipline    0.006126
+        num__hist_pct_clean_runs    0.006077
+        num__duo_avg_rank_z_race    0.005354
+             num__hist_avg_speed    0.004991
+        num__duo_win_rate_z_race    0.004551
+     num__declared_runners_count    0.004535
+               num__proba_tabnet    0.004521
+               num__duo_avg_rank    0.003156
+           num__odds_drift_ratio    0.002796
+           num__speed_form_ratio    0.002516
+              cat__terrain_label    0.002391
+             num__duo_confidence    0.002238
+          num__horse_age_at_race    0.002100
+         num__duo_is_experienced    0.001806
+                 num__race_month    0.001354
+         num__career_races_count    0.001341
+        num__is_unusual_distance    0.001133
+                        cat__sex    0.000992
+                 num__distance_m    0.000870
+              num__is_specialist    0.000792
+              num__duo_best_rank    0.000718
+             cat__racetrack_code    0.000647
+               num__duo_win_rate    0.000542
+             num__distance_delta    0.000485
+    num__pct_races_on_discipline    0.000432
+      num__winnings_rank_in_race    0.000293
+               num__penetrometer    0.000120
+                num__is_debutant    0.000083
+
+2026-03-30 10:23:04,818 - ML.TabnetTrainer - INFO - Target plat Metrics: {'logloss': 0.26502508413550135, 'auc': 0.7379920783799121, 'roi': np.float64(-10.43321299638991), 'win_rate': np.float64(0.8956678700361009), 'avg_odds': np.float64(22.773563818675576), 'count': 831}
+2026-03-31 12:04:19,855 - ML.TabnetTrainer - INFO - Target plat Metrics: {'logloss': 0.26516838727674885, 'auc': 0.7379204612144854, 'roi': np.float64(-9.975903614457867), 'win_rate': np.float64(0.9002409638554213), 'avg_odds': np.float64(22.899727891156463), 'count': 830}
+2026-04-02 10:13:54,644 - ML.TabnetTrainer - INFO - Target plat Metrics: {'logloss': 0.2664098608639018, 'auc': 0.7340587202321815, 'roi': np.float64(-11.403301886792486), 'win_rate': np.float64(0.8859669811320752), 'avg_odds': np.float64(22.90940249641907), 'count': 848}
+2026-04-02 13:58:37,847 - ML.TabnetTrainer - INFO - Target plat Metrics: {'logloss': 0.26577358855325617, 'auc': 0.736024437302094, 'roi': np.float64(-11.686320754717011), 'win_rate': np.float64(0.8831367924528299), 'avg_odds': np.float64(22.90940249641907), 'count': 848}
+2026-04-02 18:10:53,110 - ML.TabnetTrainer - INFO - Target plat Metrics: {'logloss': 0.2579810550869808, 'auc': 0.763692510760464, 'roi': np.float64(-8.878281622911691), 'win_rate': np.float64(0.9112171837708831), 'avg_odds': np.float64(22.936950207468882), 'count': 838}
+--- TABNET FEATURE IMPORTANCES (51 features) ---
+                         feature  importance
+                   num__odds_log    0.360361
+           num__market_sentiment    0.111229
+             num__odds_drift_log    0.109246
+              num__hist_earnings    0.060935
+num__days_since_last_race_z_race    0.041313
+            num__career_winnings    0.040703
+       num__days_since_last_race    0.032087
+    num__reference_odds_rel_race    0.028713
+             num__distance_delta    0.027513
+             cat__shoeing_status    0.026624
+             num__reference_odds    0.025998
+                 num__distance_m    0.015560
+        num__is_unusual_distance    0.011057
+              cat__terrain_label    0.011004
+          num__horse_age_at_race    0.009482
+               num__duo_avg_rank    0.009165
+         num__career_races_count    0.006714
+             cat__racetrack_code    0.006012
+    num__pct_clean_on_discipline    0.005776
+        num__hist_pct_clean_runs    0.005404
+           num__odds_drift_ratio    0.005272
+   num__reference_odds_rank_race    0.003243
+           num__avg_speed_last_3    0.003228
+             num__duo_confidence    0.003059
+      num__hist_avg_speed_z_race    0.002890
+           num__speed_form_ratio    0.002771
+          num__relative_winnings    0.002765
+               cat__trainer_name    0.002758
+              num__is_specialist    0.002742
+     num__declared_runners_count    0.002717
+                 cat__discipline    0.002655
+  num__career_winnings_rank_race    0.002592
+               num__penetrometer    0.002489
+              num__duo_best_rank    0.001973
+             num__hist_avg_speed    0.001594
+            num__duo_total_races    0.001477
+        num__duo_win_rate_z_race    0.001233
+          num__odds_rank_in_race    0.001172
+                        cat__sex    0.001161
+               num__duo_win_rate    0.001102
+               num__proba_tabnet    0.001092
+      num__winnings_rank_in_race    0.001042
+                 num__race_month    0.001007
+    num__pct_races_on_discipline    0.000827
+         num__duo_is_experienced    0.000757
+    num__avg_speed_last_3_z_race    0.000600
+                 cat__track_type    0.000474
+                cat__jockey_name    0.000233
+                num__is_debutant    0.000127
+        num__duo_avg_rank_z_race    0.000040
+      num__duo_confidence_z_race    0.000012
+
+2026-03-30 10:23:56,838 - ML.TabnetTrainer - INFO - Target cross Metrics: {'logloss': 0.35359135898632804, 'auc': 0.8231640482279869, 'roi': np.float64(18.695652173913047), 'win_rate': np.float64(1.1869565217391305), 'avg_odds': np.float64(14.562676056338029), 'count': 23}
+2026-03-31 12:04:37,840 - ML.TabnetTrainer - INFO - Target cross Metrics: {'logloss': 0.3580129451525389, 'auc': 0.8209718670076727, 'roi': np.float64(12.608695652173923), 'win_rate': np.float64(1.1260869565217393), 'avg_odds': np.float64(14.562676056338029), 'count': 23}
+2026-04-02 18:11:28,416 - ML.TabnetTrainer - INFO - Target cross Metrics: {'logloss': 0.3532365063472849, 'auc': 0.809, 'roi': np.float64(23.750000000000014), 'win_rate': np.float64(1.2375), 'avg_odds': np.float64(14.369798657718123), 'count': 24}
+--- TABNET FEATURE IMPORTANCES (51 features) ---
+                         feature  importance
+          num__odds_rank_in_race    0.073048
+           num__market_sentiment    0.048174
+  num__career_winnings_rank_race    0.042103
+                   num__odds_log    0.037130
+        num__duo_avg_rank_z_race    0.034262
+    num__reference_odds_rel_race    0.034112
+             num__reference_odds    0.032780
+             cat__racetrack_code    0.028293
+     num__declared_runners_count    0.028263
+        num__is_unusual_distance    0.027870
+               num__duo_avg_rank    0.027225
+              cat__terrain_label    0.027196
+      num__winnings_rank_in_race    0.026498
+         num__career_races_count    0.024642
+   num__reference_odds_rank_race    0.023815
+              num__is_specialist    0.023119
+                cat__jockey_name    0.020998
+    num__pct_clean_on_discipline    0.019716
+        num__hist_pct_clean_runs    0.018737
+       num__days_since_last_race    0.018552
+    num__pct_races_on_discipline    0.018534
+           num__avg_speed_last_3    0.017870
+num__days_since_last_race_z_race    0.017102
+                 num__race_month    0.016696
+               cat__trainer_name    0.016595
+         num__duo_is_experienced    0.016356
+        num__duo_win_rate_z_race    0.015831
+            num__duo_total_races    0.015707
+      num__duo_confidence_z_race    0.015652
+                num__is_debutant    0.013847
+          num__horse_age_at_race    0.013411
+             num__odds_drift_log    0.013182
+             cat__shoeing_status    0.012982
+             num__distance_delta    0.012762
+                 cat__track_type    0.011953
+          num__relative_winnings    0.011860
+              num__duo_best_rank    0.011762
+                 num__distance_m    0.011268
+      num__hist_avg_speed_z_race    0.011061
+             num__hist_avg_speed    0.011036
+               num__penetrometer    0.010398
+             num__duo_confidence    0.010376
+                        cat__sex    0.010312
+                 cat__discipline    0.010206
+           num__odds_drift_ratio    0.009978
+           num__speed_form_ratio    0.009341
+               num__duo_win_rate    0.008501
+              num__hist_earnings    0.007986
+    num__avg_speed_last_3_z_race    0.007307
+            num__career_winnings    0.007175
+               num__proba_tabnet    0.006422
