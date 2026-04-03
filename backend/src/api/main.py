@@ -31,7 +31,15 @@ MIN_ODDS = 2.0
 MAX_ODDS = 25.0  # Augmenté un peu pour le Sniper, mais Kelly sera plus strict
 
 # Logger Configuration
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+LOG_FILE = "app.log"
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(LOG_FILE)
+    ]
+)
 logger = logging.getLogger("API")
 
 ml_models: Dict[str, Optional[RacePredictor]] = {}
@@ -63,7 +71,57 @@ def get_repository() -> RaceRepository:
 def health_check() -> Dict[str, Any]:
     predictor = ml_models.get("predictor")
     model_status = "loaded" if predictor and predictor.models else "failed"
-    return {"status": "online", "ml_engine": model_status, "available_models": list(predictor.models.keys()) if predictor else []}
+
+    scheduler = get_scheduler()
+    scheduler_status = "running" if scheduler and scheduler.running else "stopped"
+    jobs = []
+    if scheduler:
+        for job in scheduler.get_jobs():
+            jobs.append({
+                "id": job.id,
+                "name": job.name,
+                "next_run": str(job.next_run_time) if job.next_run_time else None
+            })
+
+    return {
+        "status": "online",
+        "ml_engine": model_status,
+        "available_models": list(predictor.models.keys()) if predictor else [],
+        "scheduler": {
+            "status": scheduler_status,
+            "jobs": jobs
+        }
+    }
+
+@app.get("/logs", tags=["System"])
+def get_logs(lines: int = 100) -> Dict[str, List[str]]:
+    """Retrieves the last N lines of the application log."""
+    if not os.path.exists(LOG_FILE):
+        return {"logs": ["Log file not found."]}
+
+    try:
+        with open(LOG_FILE, "r") as f:
+            all_lines = f.readlines()
+            return {"logs": all_lines[-lines:]}
+    except Exception as e:
+        return {"logs": [f"Error reading logs: {e}"]}
+
+@app.post("/jobs/{job_id}/run", tags=["System"])
+def run_job(job_id: str) -> Dict[str, str]:
+    """Manually triggers a scheduled job."""
+    scheduler = get_scheduler()
+    if not scheduler:
+        raise HTTPException(status_code=503, detail="Scheduler not available.")
+
+    job = scheduler.get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job '{job_id}' not found.")
+
+    try:
+        job.modify(next_run_time=pd.Timestamp.now())
+        return {"message": f"Job '{job_id}' triggered successfully."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to trigger job: {e}")
 
 @app.get("/metrics", response_model=List[ModelMetric], tags=["ML Metrics"])
 def get_model_metrics(model_name: Optional[str] = None, segment_type: Optional[str] = None, repository: RaceRepository = Depends(get_repository)) -> List[Dict[str, Any]]:
