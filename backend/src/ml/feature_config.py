@@ -7,6 +7,8 @@ Modifier ici se propage automatiquement aux trainers et au predictor.
 CATEGORICAL_FEATURES = [
     'racetrack_code', 'discipline', 'track_type', 'sex',
     'shoeing_status', 'jockey_name', 'trainer_name', 'terrain_label', 'meeting_type',
+    'breed', 'color', 'blinkers', 'allure',
+    'father_name', 'mother_name', 'maternal_grandfather_name'
 ]
 
 NUMERICAL_FEATURES = [
@@ -14,8 +16,12 @@ NUMERICAL_FEATURES = [
     'horse_age_at_race', 'career_winnings', 'career_races_count',
     'relative_winnings', 'winnings_rank_in_race', 'odds_rank_in_race',
     'reference_odds', 'is_debutant',
+    'career_wins_count', 'career_places_count', 'career_places_2nd_count', 'career_places_3rd_count',
+    'winnings_victory', 'winnings_place', 'winnings_year_now', 'winnings_year_prev',
+    'career_win_rate', 'career_place_rate',
     # Course
     'distance_m', 'declared_runners_count', 'race_month', 'penetrometer', 'weather_windspeed',
+    'handicap_value', 'handicap_weight', 'mount_weight',
     # Historique
     'hist_avg_speed', 'hist_earnings', 'hist_pct_clean_runs',
     # Forme récente
@@ -57,11 +63,24 @@ FEATURE_DEFAULTS = {
     'odds_rank_in_race':        5,
     'reference_odds':           10.0,
     'is_debutant':              0,
+    'career_wins_count':        0,
+    'career_places_count':      0,
+    'career_places_2nd_count':  0,
+    'career_places_3rd_count':  0,
+    'winnings_victory':         0,
+    'winnings_place':           0,
+    'winnings_year_now':        0,
+    'winnings_year_prev':       0,
+    'career_win_rate':          0.0,
+    'career_place_rate':         0.0,
     # Course
     'distance_m':               2000,
     'declared_runners_count':   10,
     'race_month':               6,
     'penetrometer':             3.5,
+    'handicap_value':           0,
+    'handicap_weight':          0,
+    'mount_weight':             0,
     # Historique
     'hist_avg_speed':           1.20,
     'hist_earnings':            0,

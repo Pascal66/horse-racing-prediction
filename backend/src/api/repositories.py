@@ -173,7 +173,14 @@ class RaceRepository:
                 ls.code AS shoeing_status,
                 h.sex,
                 d.actor_name AS jockey_name,
-                t.actor_name AS trainer_name
+                t.actor_name AS trainer_name,
+                -- Enriched Horse data
+                h.breed, h.color, h.father_name, h.mother_name, h.maternal_grandfather_name,
+                -- Enriched Participant data
+                rp.blinkers, rp.unraced_indicator,
+                rp.career_wins_count, rp.career_places_count, rp.career_places_2nd_count, rp.career_places_3rd_count,
+                rp.winnings_victory, rp.winnings_place, rp.winnings_year_now, rp.winnings_year_prev,
+                rp.handicap_value, rp.handicap_weight, rp.mount_weight, rp.allure
             FROM race_participant rp
             JOIN race r ON rp.race_id = r.race_id
             JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
@@ -255,7 +262,14 @@ class RaceRepository:
                 ls.code AS shoeing_status,
                 h.sex,
                 d.actor_name AS jockey_name,
-                t.actor_name AS trainer_name
+                t.actor_name AS trainer_name,
+                -- Enriched Horse data
+                h.breed, h.color, h.father_name, h.mother_name, h.maternal_grandfather_name,
+                -- Enriched Participant data
+                rp.blinkers, rp.unraced_indicator,
+                rp.career_wins_count, rp.career_places_count, rp.career_places_2nd_count, rp.career_places_3rd_count,
+                rp.winnings_victory, rp.winnings_place, rp.winnings_year_now, rp.winnings_year_prev,
+                rp.handicap_value, rp.handicap_weight, rp.mount_weight, rp.allure
             FROM race_participant rp
             JOIN race r ON rp.race_id = r.race_id
             JOIN race_meeting rm ON r.meeting_id = rm.meeting_id

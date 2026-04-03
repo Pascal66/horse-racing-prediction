@@ -174,7 +174,9 @@ class PmuFeatureEngineer(BaseEstimator, TransformerMixin):
 
         # Categorical Filling
         cat_cols = ['racetrack_code', 'discipline', 'track_type', 'sex', 
-                   'shoeing_status', 'jockey_name', 'trainer_name', 'terrain_label', 'meeting_type']
+                   'shoeing_status', 'jockey_name', 'trainer_name', 'terrain_label', 'meeting_type',
+                   'breed', 'color', 'blinkers', 'allure',
+                   'father_name', 'mother_name', 'maternal_grandfather_name']
         for col in cat_cols:
             if col in df.columns:
                 df[col] = df[col].fillna(self.cat_fill_value_).astype(str)
@@ -343,10 +345,19 @@ class PmuFeatureEngineer(BaseEstimator, TransformerMixin):
             if col not in df.columns:
                 df[col] = default
 
+        # Derived stats from enriched data
+        if 'career_wins_count' in df.columns and 'career_races_count' in df.columns:
+            df['career_win_rate'] = (df['career_wins_count'] / (df['career_races_count'] + 1)).fillna(0)
+
+        if 'career_places_count' in df.columns and 'career_races_count' in df.columns:
+            df['career_place_rate'] = (df['career_places_count'] / (df['career_races_count'] + 1)).fillna(0)
+
         # Dernière étape de transform() — garantit toutes les colonnes attendues
         from src.ml.feature_config import FEATURE_DEFAULTS
         for col, default in FEATURE_DEFAULTS.items():
             if col not in df.columns:
                 df[col] = default
+            else:
+                df[col] = df[col].fillna(default)
 
         return df
