@@ -59,6 +59,11 @@ CREATE TABLE horse (
     horse_name VARCHAR(100) NOT NULL,
     sex VARCHAR(1),
     birth_year SMALLINT,
+    breed VARCHAR(50),
+    color VARCHAR(50),
+    father_name VARCHAR(100),
+    mother_name VARCHAR(100),
+    maternal_grandfather_name VARCHAR(100),
     CONSTRAINT uq_horse_name UNIQUE (horse_name)
 );
 
@@ -103,6 +108,22 @@ CREATE TABLE race_participant (
     time_achieved_s INT,
     reduction_km REAL,
     trainer_advice VARCHAR(30),
+    -- Extended features
+    blinkers VARCHAR(50),
+    unraced_indicator BOOLEAN,
+    career_wins_count SMALLINT,
+    career_places_count SMALLINT,
+    career_places_2nd_count SMALLINT,
+    career_places_3rd_count SMALLINT,
+    winnings_victory REAL,
+    winnings_place REAL,
+    winnings_year_now REAL,
+    winnings_year_prev REAL,
+    handicap_value REAL,
+    handicap_weight REAL,
+    mount_weight REAL,
+    allure VARCHAR(30),
+    owner_id INT REFERENCES racing_actor (actor_id),
     CONSTRAINT fk_race FOREIGN KEY (race_id) REFERENCES race (race_id),
     CONSTRAINT fk_horse FOREIGN KEY (horse_id) REFERENCES horse (horse_id),
     CONSTRAINT uq_race_pmu_number UNIQUE (race_id, pmu_number)

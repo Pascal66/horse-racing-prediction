@@ -83,8 +83,11 @@ class ParticipantsIngestor(BaseIngestor):
         if not name:
             return None
         
-        if name in self.horse_cache:
-            return self.horse_cache[name]
+        # We always want to update/enrich the horse data if possible,
+        # but we use cache to avoid redundant SELECTs for established IDs.
+        # However, for a single ingestion run, the first time we see a horse
+        # we might want to update its fields.
+        # For simplicity, we'll fetch/insert/update and then cache the ID.
 
         age = participant_data.get("age")
         # Determine birth year based on current year and age
@@ -92,26 +95,40 @@ class ParticipantsIngestor(BaseIngestor):
         
         raw_sex = participant_data.get("sexe")
         clean_sex = raw_sex[0].upper() if raw_sex else None
+
+        breed = participant_data.get("race")
+        color = (participant_data.get("robe") or {}).get("libelleLong")
+        father = participant_data.get("nomPere")
+        mother = participant_data.get("nomMere")
+        grand_father = participant_data.get("nomPereMere")
         
         horse_id = None
         tmp_conn = self.db_manager.get_connection()
         try:
             with tmp_conn:
                 with tmp_conn.cursor() as tmp_cur:
-                    # Try to insert; if conflicted, do nothing
                     tmp_cur.execute(
-                        "INSERT INTO horse (horse_name, sex, birth_year) VALUES (%s, %s, %s) "
-                        "ON CONFLICT (horse_name) DO NOTHING RETURNING horse_id;",
-                        (name, clean_sex, birth_year)
+                        """
+                        INSERT INTO horse (
+                            horse_name, sex, birth_year, breed, color,
+                            father_name, mother_name, maternal_grandfather_name
+                        )
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (horse_name) DO UPDATE SET
+                            sex = COALESCE(EXCLUDED.sex, horse.sex),
+                            birth_year = COALESCE(EXCLUDED.birth_year, horse.birth_year),
+                            breed = COALESCE(EXCLUDED.breed, horse.breed),
+                            color = COALESCE(EXCLUDED.color, horse.color),
+                            father_name = COALESCE(EXCLUDED.father_name, horse.father_name),
+                            mother_name = COALESCE(EXCLUDED.mother_name, horse.mother_name),
+                            maternal_grandfather_name = COALESCE(EXCLUDED.maternal_grandfather_name, horse.maternal_grandfather_name)
+                        RETURNING horse_id;
+                        """,
+                        (name, clean_sex, birth_year, breed, color, father, mother, grand_father)
                     )
                     row = tmp_cur.fetchone()
                     if row:
                         horse_id = row[0]
-                    else:
-                        # Fallback: Record exists, fetch ID
-                        tmp_cur.execute("SELECT horse_id FROM horse WHERE horse_name = %s", (name,))
-                        res = tmp_cur.fetchone()
-                        horse_id = res[0] if res else None
         finally:
             self.db_manager.release_connection(tmp_conn)
         
@@ -236,6 +253,7 @@ class ParticipantsIngestor(BaseIngestor):
         driver_id = self._get_or_create_actor(participant_data.get("driver"))
         incident_id = self._get_or_create_incident(clean_incident)
         shoeing_id = self._get_or_create_shoeing(clean_shoe)
+        owner_id = self._get_or_create_actor(participant_data.get("proprietaire"))
 
         raw_sex = participant_data.get("sexe")
         clean_sex = raw_sex[0].upper() if raw_sex else None
@@ -246,12 +264,17 @@ class ParticipantsIngestor(BaseIngestor):
         except:
             clean_red_km = None
         
-        career_winnings = self._to_euros((participant_data.get("gainsParticipant") or {}).get("gainsCarriere"))
+        gains = participant_data.get("gainsParticipant") or {}
+        career_winnings = self._to_euros(gains.get("gainsCarriere"))
+        winnings_victory = self._to_euros(gains.get("gainsVictoires"))
+        winnings_place = self._to_euros(gains.get("gainsPlace"))
+        winnings_year_now = self._to_euros(gains.get("gainsAnneeEnCours"))
+        winnings_year_prev = self._to_euros(gains.get("gainsAnneePrecedente"))
         
         ref_odds = (participant_data.get("dernierRapportReference") or {}).get("rapport")
         live_odds = (participant_data.get("dernierRapportDirect") or {}).get("rapport")
 
-        # ON CONFLICT (race_id, pmu_number) DO NOTHING;
+        # ON CONFLICT (race_id, pmu_number) DO UPDATE...
         cursor.execute(
             """
             INSERT INTO race_participant (
@@ -259,9 +282,13 @@ class ParticipantsIngestor(BaseIngestor):
                 trainer_id, driver_jockey_id, shoeing_id, incident_id,
                 career_races_count, career_winnings, reference_odds, live_odds,
                 raw_performance_string, trainer_advice, finish_rank,
-                time_achieved_s, reduction_km
+                time_achieved_s, reduction_km,
+                blinkers, unraced_indicator, career_wins_count,
+                career_places_count, career_places_2nd_count, career_places_3rd_count,
+                winnings_victory, winnings_place, winnings_year_now, winnings_year_prev,
+                handicap_value, handicap_weight, mount_weight, allure, owner_id
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (race_id, pmu_number) DO UPDATE SET
                 trainer_id = EXCLUDED.trainer_id,
                 driver_jockey_id = EXCLUDED.driver_jockey_id,
@@ -275,7 +302,22 @@ class ParticipantsIngestor(BaseIngestor):
                 trainer_advice = EXCLUDED.trainer_advice,
                 finish_rank = EXCLUDED.finish_rank,
                 time_achieved_s = EXCLUDED.time_achieved_s,
-                reduction_km = EXCLUDED.reduction_km;
+                reduction_km = EXCLUDED.reduction_km,
+                blinkers = EXCLUDED.blinkers,
+                unraced_indicator = EXCLUDED.unraced_indicator,
+                career_wins_count = EXCLUDED.career_wins_count,
+                career_places_count = EXCLUDED.career_places_count,
+                career_places_2nd_count = EXCLUDED.career_places_2nd_count,
+                career_places_3rd_count = EXCLUDED.career_places_3rd_count,
+                winnings_victory = EXCLUDED.winnings_victory,
+                winnings_place = EXCLUDED.winnings_place,
+                winnings_year_now = EXCLUDED.winnings_year_now,
+                winnings_year_prev = EXCLUDED.winnings_year_prev,
+                handicap_value = EXCLUDED.handicap_value,
+                handicap_weight = EXCLUDED.handicap_weight,
+                mount_weight = EXCLUDED.mount_weight,
+                allure = EXCLUDED.allure,
+                owner_id = EXCLUDED.owner_id;
             """,
             (
                 race_id, horse_id, p_num, participant_data.get("age"), clean_sex,
@@ -283,7 +325,14 @@ class ParticipantsIngestor(BaseIngestor):
                 participant_data.get("nombreCourses"), career_winnings,
                 ref_odds, live_odds,
                 participant_data.get("musique"), participant_data.get("avisEntraineur"), participant_data.get("ordreArrivee"),
-                participant_data.get("tempsObtenu"), clean_red_km
+                participant_data.get("tempsObtenu"), clean_red_km,
+                participant_data.get("oeilleres"), participant_data.get("indicateurInedit"),
+                participant_data.get("nombreVictoires"), participant_data.get("nombrePlaces"),
+                participant_data.get("nombrePlacesSecond"), participant_data.get("nombrePlacesTroisieme"),
+                winnings_victory, winnings_place, winnings_year_now, winnings_year_prev,
+                participant_data.get("handicapValeur"), participant_data.get("handicapPoids"),
+                participant_data.get("poidsConditionMonte"), participant_data.get("allure"),
+                owner_id
             )
         )
 
