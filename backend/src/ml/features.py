@@ -47,12 +47,11 @@ class RaceContextEncoder(BaseEstimator, TransformerMixin):
         # Plus de mutation ici — feature_cols est déjà défini dans __init__
         feature_cols = self.feature_cols  # lecture seule
 
-        cols_to_use = [c for c in feature_cols if c in df.columns]
         if self.group_col not in df.columns:
             return df
 
         grouped = df.groupby(self.group_col)
-        for col in cols_to_use:
+        for col in feature_cols:
             # Ensure the column exists before trying to group/transform
             if col not in df.columns:
                 df[col] = np.nan # Fill with NaN, imputer will handle it later
@@ -319,7 +318,7 @@ class PmuFeatureEngineer(BaseEstimator, TransformerMixin):
             df['duo_win_rate'] = df.get('duo_win_rate', 0.0).fillna(0.0)
             df['duo_avg_rank'] = df.get('duo_avg_rank', 0.0).fillna(0.0)
             df['duo_confidence'] = df.get('duo_confidence', 0.0).fillna(0.0)
-            df['duo_best_rank'] = df.get('duo_best_rank', 0.0).fillna(0.0)  # Ensure this is present
+            df['duo_best_rank'] = df.get('duo_best_rank', 0.0).fillna(0.0)
 
             # Flag : duo expérimenté (5+ courses ensemble)
             df['duo_is_experienced'] = (df['duo_total_races'] >= 5).astype(int)
@@ -328,25 +327,25 @@ class PmuFeatureEngineer(BaseEstimator, TransformerMixin):
             # Confiance dans le duo — log pour éviter les extrêmes
             df['duo_confidence'] = np.log1p(df['duo_total_races']) * df['duo_win_rate']
 
-            # Ensure penetrometer is always present and numeric
-            if 'penetrometer' not in df.columns:
-                df['penetrometer'] = np.nan  # Will be imputed by SimpleImputer
+        # Ensure penetrometer is always present and numeric
+        if 'penetrometer' not in df.columns:
+            df['penetrometer'] = np.nan  # Will be imputed by SimpleImputer
 
-            # Fiabilité — valeurs neutres si absentes (inférence sans historique)
-            for col, default in [
-                ('hist_pct_clean_runs', 1.0),
-                ('pct_clean_on_discipline', 1.0),
-                ('pct_races_on_discipline', 0.0),
-                ('hist_avg_speed', 0.0),  # Ensure hist_avg_speed is present for speed_form_ratio
-                ('avg_speed_last_3', 0.0),  # Ensure avg_speed_last_3 is present for speed_form_ratio
-            ]:
-                if col not in df.columns:
-                    df[col] = default
+        # Fiabilité — valeurs neutres si absentes (inférence sans historique)
+        for col, default in [
+            ('hist_pct_clean_runs', 1.0),
+            ('pct_clean_on_discipline', 1.0),
+            ('pct_races_on_discipline', 0.0),
+            ('hist_avg_speed', 0.0),  # Ensure hist_avg_speed is present for speed_form_ratio
+            ('avg_speed_last_3', 0.0),  # Ensure avg_speed_last_3 is present for speed_form_ratio
+        ]:
+            if col not in df.columns:
+                df[col] = default
 
-            # Dernière étape de transform() — garantit toutes les colonnes attendues
-            from src.ml.feature_config import FEATURE_DEFAULTS
-            for col, default in FEATURE_DEFAULTS.items():
-                if col not in df.columns:
-                    df[col] = default
+        # Dernière étape de transform() — garantit toutes les colonnes attendues
+        from src.ml.feature_config import FEATURE_DEFAULTS
+        for col, default in FEATURE_DEFAULTS.items():
+            if col not in df.columns:
+                df[col] = default
 
         return df
