@@ -25,3 +25,5 @@ gbnet.xgbmodule.XGBModule – XGBoost as a PyTorch Module
 gbnet.lgbmodule.LGBModule – LightGBM as a PyTorch Module
 gbnet.gblinear.GBLinear – a linear PyTorch Module trained with boosting instead of via gradient descent methods
 On top of these, GBNet ships higher-level models in gbnet.models, including forecasting, ordinal regression and survival models.
+
+https://github.com/COGS108/Group106_WI26

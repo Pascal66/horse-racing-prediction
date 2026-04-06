@@ -77,7 +77,7 @@ class RaceRepository:
             FROM race r
             JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
             JOIN daily_program dp ON rm.program_id = dp.program_id
-            WHERE dp.program_date = %s
+            WHERE dp.program_date = %s AND rm.audience = 'NATIONAL'
             ORDER BY rm.meeting_number, r.race_number;
         """
         
@@ -266,7 +266,7 @@ class RaceRepository:
             LEFT JOIN lookup_shoeing ls ON rp.shoeing_id = ls.shoeing_id
             LEFT JOIN racing_actor d ON rp.driver_jockey_id = d.actor_id
             LEFT JOIN racing_actor t ON rp.trainer_id = t.actor_id
-            WHERE dp.program_date = %s
+            WHERE dp.program_date = %s AND rm.audience = 'NATIONAL'
             ORDER BY rp.race_id, rp.pmu_number;
         """
         

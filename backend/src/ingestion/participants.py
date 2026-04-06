@@ -267,6 +267,7 @@ class ParticipantsIngestor(BaseIngestor):
         driver_id = self._get_or_create_actor(participant_data.get("driver"))
         incident_id = self._get_or_create_incident(clean_incident)
         shoeing_id = self._get_or_create_shoeing(clean_shoe)
+        owner_id = self._get_or_create_actor(participant_data.get("proprietaire"))
 
         raw_sex = participant_data.get("sexe")
         clean_sex = raw_sex[0].upper() if raw_sex else None
@@ -283,6 +284,7 @@ class ParticipantsIngestor(BaseIngestor):
         winnings_victory = self._to_euros(gains.get("gainsVictoires"))
         winnings_place = self._to_euros(gains.get("gainsPlace"))
         winnings_year_now = self._to_euros(gains.get("gainsAnneeEnCours"))
+        winnings_year_prev = self._to_euros(gains.get("gainsAnneePrecedente"))
 
         ref_odds = (participant_data.get("dernierRapportReference") or {}).get("rapport")
         live_odds = (participant_data.get("dernierRapportDirect") or {}).get("rapport")
@@ -301,7 +303,7 @@ class ParticipantsIngestor(BaseIngestor):
                 winnings_victory, winnings_place, winnings_year_now, winnings_year_prev,
                 handicap_value, handicap_weight, mount_weight, allure, owner_id
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (race_id, pmu_number) DO UPDATE SET
                 trainer_id = EXCLUDED.trainer_id,
                 driver_jockey_id = EXCLUDED.driver_jockey_id,
@@ -315,7 +317,7 @@ class ParticipantsIngestor(BaseIngestor):
                 trainer_advice = EXCLUDED.trainer_advice,
                 finish_rank = EXCLUDED.finish_rank,
                 time_achieved_s = EXCLUDED.time_achieved_s,
-                                reduction_km = EXCLUDED.reduction_km,
+                reduction_km = EXCLUDED.reduction_km,
                 blinkers = EXCLUDED.blinkers,
                 unraced_indicator = EXCLUDED.unraced_indicator,
                 career_wins_count = EXCLUDED.career_wins_count,
