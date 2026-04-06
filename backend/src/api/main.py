@@ -169,7 +169,10 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
 
     df = pd.DataFrame(raw_participants)
     df['win_probability'] = probabilities
-    
+
+    # Ensure live_odds exists
+    if 'live_odds' not in df.columns: df['live_odds'] = None
+
     # --- LOGIQUE DE COTE LIVE PRIORITAIRE ---
     # On utilise la live_odds si disponible (> 1.1), sinon la reference_odds
     df['effective_odds'] = df['live_odds'].apply(lambda x: x if x and x > 1.1 else None)
@@ -192,6 +195,7 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
     recommendations = []
     
     # 1. SNIPER STRATEGY
+    if df.empty: return recommendations
     try:
         sniper_mask = (df['edge'] >= MIN_EDGE) & (df['effective_odds'] >= MIN_ODDS) & (df['effective_odds'] <= MAX_ODDS)
         sniper_df = df[sniper_mask]
