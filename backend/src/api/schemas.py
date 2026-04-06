@@ -31,6 +31,7 @@ class ParticipantSummary(BaseModel):
     handicap_value: Optional[float] = None
     owner_name: Optional[str] = None
     finish_rank: Optional[int] = None
+    incident_code: Optional[str] = None
 
 class PredictionResult(BaseModel):
     program_number: int

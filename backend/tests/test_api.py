@@ -38,7 +38,8 @@ class MockRaceRepository:
                 "live_odds": 5.5,
                 "age": 5,
                 "sex": "M",
-                "finish_rank": 2
+                "finish_rank": 2,
+                "incident_code": "DAI"
             }
         ]
 
@@ -139,6 +140,7 @@ def test_get_participants(client):
     data = response.json()
     assert data[0]["jockey_name"] == "J. Doe"
     assert data[0]["finish_rank"] == 2
+    assert data[0]["incident_code"] == "DAI"
 
 def test_sniper_bets_logic(client):
     response = client.get("/bets/sniper/28122025")
