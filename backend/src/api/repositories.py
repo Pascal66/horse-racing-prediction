@@ -110,7 +110,7 @@ class RaceRepository:
                 rp.blinkers,
                 rp.handicap_value,
                 o.actor_name AS owner_name,
-                ls.code AS shoeing_status
+                rp.finish_rank
             FROM race_participant rp
             JOIN horse h ON rp.horse_id = h.horse_id
             LEFT JOIN lookup_shoeing ls ON rp.shoeing_id = ls.shoeing_id

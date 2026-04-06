@@ -86,9 +86,20 @@ def render_sidebar():
             
             current_meeting = store.get_selected_meeting()
             
-            # Default to first meeting if none selected or invalid
+            # Logic to automatically select the meeting with the NEXT upcoming race globally
             if (current_meeting is None or current_meeting not in unique_meetings) and len(unique_meetings) > 0:
-                current_meeting = unique_meetings[0]
+                now = pd.Timestamp.now(tz=timezone.utc)
+                # Filter for all upcoming races across all meetings
+                upcoming_all = races_df[races_df['start_timestamp'] > now]
+
+                if not upcoming_all.empty:
+                    # Select meeting of the very next race
+                    next_race = upcoming_all.sort_values('start_timestamp').iloc[0]
+                    current_meeting = next_race['meeting_number']
+                else:
+                    # If all finished, select the last meeting (likely the most recent one)
+                    current_meeting = unique_meetings[-1]
+
                 store.set_selected_meeting(current_meeting)
 
             selected_meeting = st.radio(

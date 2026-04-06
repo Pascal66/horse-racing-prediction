@@ -46,14 +46,43 @@ def render_race_grid():
 
     st.markdown(f"## 🏟️ Meeting {selected_meeting} : {racetrack_name} ({formatted_date})")
 
-    # Create Tabs
-    race_labels = [f"C{r['race_number']}" for _, r in meeting_races.iterrows()]
-    tabs = st.tabs(race_labels)
+    # Determine "Current" Race logic: first upcoming, OR last finished if all over.
+    from datetime import timezone
+    import pandas as pd
+    now = pd.Timestamp.now(tz=timezone.utc)
 
-    # Render Tabs
-    for (idx, race_row), tab in zip(meeting_races.iterrows(), tabs):
-        with tab:
-            render_race_tab_content(race_row)
+    # Ensure start_timestamp is datetime (it was processed in sidebar.py and stored in races_df)
+    upcoming_races = meeting_races[meeting_races['start_timestamp'] > now].sort_values('race_number')
+
+    if not upcoming_races.empty:
+        default_race_id = upcoming_races.iloc[0]['race_id']
+    else:
+        # All finished, pick the last one
+        default_race_id = meeting_races.sort_values('race_number', ascending=False).iloc[0]['race_id']
+
+    # Create Pills for Race Selection
+    race_options = {r['race_id']: f"C{r['race_number']}" for _, r in meeting_races.iterrows()}
+
+    # Get current index for the pill selection
+    race_ids_list = list(race_options.keys())
+    default_idx = race_ids_list.index(default_race_id)
+
+    # Use st.radio with a horizontal layout or st.pills if available in recent streamlit
+    # Fallback to radio horizontal for compatibility
+    selected_race_id = st.pills(
+        "Select Race",
+        options=race_ids_list,
+        format_func=lambda x: race_options[x],
+        selection_mode="single",
+        default=default_race_id,
+        label_visibility="collapsed"
+    )
+
+    if selected_race_id:
+        store.set_selected_race(selected_race_id)
+        # Render Content for selected race
+        race_row = meeting_races[meeting_races['race_id'] == selected_race_id].iloc[0]
+        render_race_tab_content(race_row)
 
 def render_race_tab_content(race_row):
     """Renders the content inside a single race tab."""
@@ -80,6 +109,4 @@ def render_race_tab_content(race_row):
     #
     # st.divider()
 
-    if True: #store.get_selected_race() == race_row['race_id']:
-        store.set_selected_race(race_row['race_id'])
-        render_analysis_view(race_row['race_id'])
+    render_analysis_view(race_row['race_id'])

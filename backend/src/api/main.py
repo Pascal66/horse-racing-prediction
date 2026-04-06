@@ -170,6 +170,9 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
     df = pd.DataFrame(raw_participants)
     df['win_probability'] = probabilities
     
+    # Ensure live_odds exists
+    if 'live_odds' not in df.columns: df['live_odds'] = None
+
     # --- LOGIQUE DE COTE LIVE PRIORITAIRE ---
     # On utilise la live_odds si disponible (> 1.1), sinon la reference_odds
     df['effective_odds'] = df['live_odds'].apply(lambda x: x if x and x > 1.1 else None)
@@ -210,6 +213,7 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
         logger.error(f"Sniper strategy failed: {e}", exc_info=True)
 
     # 2. KELLY MULTI (Plus strict sur les cotes démesurées)
+    if df.empty: return recommendations
     try:
         # On ne passe à Kelly que les cotes réalistes (< 100) pour éviter les aberrations
         df_kelly = df[df['effective_odds'] < 100.0].copy()

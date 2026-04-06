@@ -12,11 +12,16 @@ class MockRaceRepository:
                 "race_id": 100,
                 "meeting_number": 1,
                 "race_number": 1,
+                "program_date": "2025-01-01T00:00:00",
                 "discipline": "ATTELE",
                 "distance_m": 2700,
+                "track_type": "DIRT",
                 "racetrack_code": "VINC",
-                "name": "Prix d'Integration",
-                "declared_runners_count": 12
+                "declared_runners_count": 12,
+                "start_timestamp": 1735689600000,
+                "timezone_offset": 3600000,
+                "prize_money": 10000.0,
+                "speciality": "TROT_ATTELE"
             }
         ]
 
@@ -24,14 +29,15 @@ class MockRaceRepository:
         if race_id == 999:
             return []
         return [
-            {"program_number": 1, "horse_name": "A", "reference_odds": 2.0},
-            {"program_number": 2, "horse_name": "B", "reference_odds": 5.0}
+            {"program_number": 1, "horse_name": "A", "reference_odds": 2.0, "live_odds": 2.1},
+            {"program_number": 2, "horse_name": "B", "reference_odds": 5.0, "live_odds": 5.1}
         ]
 
 class MockPredictor:
     # Accept *args so it can catch the arguments meant for the real class
     def __init__(self, *args, **kwargs): 
-        self.pipeline = True 
+        self.pipeline = True
+        self.models = {"global": True}
 
     def predict_race(self, participants):
         return [0.6, 0.4][:len(participants)]
@@ -45,7 +51,7 @@ def client():
     
     # 2. PATCH the Predictor Class
     # This ensures that when main.py calls RacePredictor(), it gets our Mock instead.
-    with patch("src.api.main.RacePredictor", side_effect=MockPredictor):
+    with patch("backend.src.api.main.RacePredictor", side_effect=MockPredictor):
         with TestClient(app) as c:
             yield c
     
@@ -59,6 +65,7 @@ def test_health_check(client):
     response = client.get("/")
     assert response.status_code == 200
     assert response.json()["ml_engine"] == "loaded"
+    assert response.json()["scheduler"]["status"] == "running"
 
 def test_get_races_success(client):
     response = client.get("/races/01012025")
