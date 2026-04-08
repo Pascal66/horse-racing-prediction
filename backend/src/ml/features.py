@@ -122,14 +122,14 @@ class PmuFeatureEngineer(BaseEstimator, TransformerMixin):
             df['is_specialist'] = (df['pct_races_on_discipline'] > 0.7).astype(int)
 
         # 3. Market Drift
-        if 'live_odds' in df.columns and 'reference_odds' in df.columns:
-            live = pd.to_numeric(df['live_odds'], errors='coerce')
-            ref = pd.to_numeric(df['reference_odds'], errors='coerce')
-            df['odds_drift_ratio'] = (live / ref.replace(0, np.nan)).fillna(1.0)
-            df['odds_drift_log'] = np.log(df['odds_drift_ratio'].clip(lower=0.1))
+#        if 'live_odds' in df.columns and 'reference_odds' in df.columns:
+#            live = pd.to_numeric(df['live_odds'], errors='coerce')
+#            ref = pd.to_numeric(df['reference_odds'], errors='coerce')
+#            df['odds_drift_ratio'] = (live / ref.replace(0, np.nan)).fillna(1.0)
+#            df['odds_drift_log'] = np.log(df['odds_drift_ratio'].clip(lower=0.1))
         
         if 'reference_odds' in df.columns:
-            df['odds_log'] = np.log1p(pd.to_numeric(df['reference_odds'], errors='coerce').fillna(20))
+            df['reference_odds_log'] = np.log1p(pd.to_numeric(df['reference_odds'], errors='coerce').fillna(20))
             if 'race_id' in df.columns:
                 df['odds_rank_in_race'] = df.groupby('race_id')['reference_odds'].rank(ascending=True, method='min')
 

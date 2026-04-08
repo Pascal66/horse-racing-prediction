@@ -1,0 +1,173 @@
+
+--- Analyse de Qualité des Prédictions (Podium) ---
+Score = nombre de chevaux du podium (top 3) présents dans les 3 premiers chevaux de la prédiction.
+
+  - 'probability' : 0.53 / 3
+  - 'pmu' : 0.72 / 3
+
+--- Analyse de Rentabilité par Source (Gagnant / Placé) ---
+
+Source : 'probability'
+  [Simple Gagnant]
+  Mises (courses) : 10544
+  Gain Total      : -2086.10€
+  ROI             : -19.78%
+  Taux de réussite: 16.79%
+  Cote Moy. Gagnante: 4.78
+  [Simple Placé]
+  Mises (courses) : 10544
+  Gain Total      : -1568.60€
+  ROI             : -14.88%
+  Taux de réussite: 40.61%
+  [Total Gagnant + Placé]
+  Mises Totales   : 21088
+  Gain Total      : -3654.70€
+  ROI Global      : -17.33%
+
+  [Détail par Discipline (Gagnant + Placé)]
+                  Mises  Gain Total  Taux Réussite    ROI  Cote Moy. Gagnant
+discipline_clean
+Cross               180       -4.00           0.42  -2.22               2.35
+Haies              1956     -207.00           0.29 -10.58               3.04
+Steeple             396      -45.00           0.31 -11.36               2.83
+Monté              2416     -343.05           0.30 -14.20               2.87
+Attelé            11780    -1946.10           0.29 -16.52               2.88
+Plat               4360    -1109.55           0.26 -25.45               2.84
+
+Source : 'pmu'
+  [Simple Gagnant]
+  Mises (courses) : 10280
+  Gain Total      : -974.60€
+  ROI             : -9.48%
+  Taux de réussite: 29.13%
+  Cote Moy. Gagnante: 3.11
+  [Simple Placé]
+  Mises (courses) : 10280
+  Gain Total      : -1018.70€
+  ROI             : -9.91%
+  Taux de réussite: 54.27%
+  [Total Gagnant + Placé]
+  Mises Totales   : 20560
+  Gain Total      : -1993.30€
+  ROI Global      : -9.70%
+
+  [Détail par Discipline (Gagnant + Placé)]
+                  Mises  Gain Total  Taux Réussite    ROI  Cote Moy. Gagnant
+discipline_clean
+Cross               174       -0.70           0.53  -0.40               1.88
+Attelé            11654     -708.95           0.45  -6.08               2.10
+Monté              2384     -209.15           0.46  -8.77               1.97
+Haies              1908     -231.10           0.40 -12.11               2.21
+Plat               4074     -770.10           0.31 -18.90               2.63
+Steeple             366      -73.30           0.40 -20.03               2.02
+
+==================================================================
+   ANALYSE DETAILLEE & SAISONNALITE
+   Cible : Gagnant + Placé sur la source 'probability'
+==================================================================
+
+  [Performance Globale par Discipline - Probability G+P]
+                  Mises  Gain Total    ROI
+discipline_clean
+Cross               180       -4.00  -2.22
+Haies              1956     -207.00 -10.58
+Steeple             396      -45.00 -11.36
+Monté              2416     -343.05 -14.20
+Attelé            11780    -1946.10 -16.52
+Plat               4360    -1109.55 -25.45
+
+  [Tendance Saisonnière Générique (Mois 1-12)]
+discipline_clean  Attelé  Cross  Haies  Monté  Plat  Steeple
+month_num
+1                  -18.6   -4.1  -17.6   -5.1 -23.5     -0.7
+2                  -14.7    5.0   -3.4   -6.4 -18.6    -14.1
+3                  -18.3  -46.8  -18.6   -6.5 -32.4     46.8
+4                  -17.9    7.5    9.2  -48.1  11.5   -100.0
+5                   -0.0   23.6   -2.6  -39.2 -17.0    -28.5
+6                  -14.8  -46.2  -35.5  -23.5 -24.4    -44.5
+7                  -24.0   50.0  -16.0   -2.0 -14.5    -57.2
+8                  -16.3  100.0   -8.5    4.4 -35.5    -21.5
+9                  -25.5  108.7  -40.2  -35.4 -18.4    -50.2
+10                 -14.7   13.3  -38.1   12.5 -34.4     -5.7
+11                 -16.7  -17.2   -1.5  -20.1 -26.4      4.0
+12                 -15.2  -20.7    6.8  -12.7     -        -
+
+  [Simulation : Stratégie 'Saisonnière' (Mois Récurrents)]
+  Critère : ROI > 0% et Mises >= 5 courses/mois
+  Si on joue uniquement ces disciplines durant leurs mois favorables :
+  Mises : 1018 | Gain : 115.70€ | ROI : 11.37%
+
+  [Calendrier Type à Suivre]
+  - Cross      : February, April, May, September, October (ROI Moy: 31.6%)
+  - Haies      : April, December (ROI Moy: 8.0%)
+  - Monté      : August, October (ROI Moy: 8.4%)
+  - Plat       : April (ROI Moy: 11.5%)
+  - Steeple    : March, November (ROI Moy: 25.4%)
+
+  -> Configuration sauvegardée dans 'strategy_seasonality.json'
+
+=======================================================
+=== Analyse de Rentabilité Couplé (Top 2 Chevaux) ===
+=======================================================
+
+--- Source : 'probability' ---
+  [Couplé Gagnant] : Mises 9978 | Gain -2274.90€ | ROI -22.80% | Réussite 5.28%
+  [Couplé Placé] : Mises 9978 | Gain -2867.60€ | ROI -28.74% | Réussite 12.14%
+  [Couplé Ordre] : Mises 564 | Gain -206.70€ | ROI -36.65% | Réussite 5.85%
+
+--- Source : 'pmu' ---
+  [Couplé Gagnant] : Mises 9724 | Gain -1856.70€ | ROI -19.09% | Réussite 10.83%
+  [Couplé Placé] : Mises 9724 | Gain -1607.50€ | ROI -16.53% | Réussite 21.68%
+  [Couplé Ordre] : Mises 531 | Gain -47.10€ | ROI -8.87% | Réussite 11.68%
+
+=======================================================
+=== Analyse de Rentabilité 2sur4 et Trio ===
+=======================================================
+
+--- Source : 'probability' ---
+  [2 sur 4] : Mises 8505 | Gain -2539.40€ (base 1€) | ROI -29.86% | Réussite 18.52%
+      [Détail par Discipline]
+                  Mises  Gain_Total     ROI
+discipline_clean
+Monté               965     -220.10  -22.81
+Attelé             5264    -1547.50  -29.40
+Haies               636     -211.60  -33.27
+Plat               1540     -512.60  -33.29
+Steeple              81      -28.60  -35.31
+Cross                19      -19.00 -100.00
+  [Trio] : Mises 9579 | Gain -842.70€ (base 1€) | ROI -8.80% | Réussite 2.37%
+      [Détail par Discipline]
+                  Mises  Gain_Total    ROI
+discipline_clean
+Monté              1169      168.80  14.44
+Plat               1848      -88.00  -4.76
+Attelé             5550     -665.40 -11.99
+Cross                56       -7.90 -14.11
+Haies               814     -181.90 -22.35
+Steeple             142      -68.30 -48.10
+
+--- Source : 'pmu' ---
+  [2 sur 4] : Mises 8318 | Gain -1628.20€ (base 1€) | ROI -19.57% | Réussite 30.01%
+      [Détail par Discipline]
+                  Mises  Gain_Total    ROI
+discipline_clean
+Steeple              72       11.90  16.53
+Monté               953      -66.60  -6.99
+Haies               624      -82.00 -13.14
+Cross                19       -3.50 -18.42
+Attelé             5209    -1008.30 -19.36
+Plat               1441     -479.70 -33.29
+  [Trio] : Mises 9297 | Gain -3206.90€ (base 1€) | ROI -34.49% | Réussite 5.45%
+      [Détail par Discipline]
+                  Mises  Gain_Total    ROI
+discipline_clean
+Monté              1154     -244.20 -21.16
+Attelé             5477    -1817.10 -33.18
+Plat               1700     -687.10 -40.42
+Haies               786     -342.40 -43.56
+Steeple             127      -70.80 -55.75
+Cross                53      -45.30 -85.47
+
+  -> Stratégies complexes (Trio, etc.) sauvegardées dans 'strategy_complex.json'
+
+Process finished with exit code 0

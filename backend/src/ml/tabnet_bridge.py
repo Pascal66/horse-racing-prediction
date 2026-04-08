@@ -1,8 +1,6 @@
-# src/ml/tabnet_bridge.py
-import joblib
-import numpy as np
-import pandas as pd
 from pathlib import Path
+from src.ml.safe_loader import safe_load
+
 from sklearnex import patch_sklearn
 patch_sklearn(verbose=False)  # avant tous les imports sklearn
 import logging
@@ -11,9 +9,9 @@ logger.setLevel(logging.WARNING)
 
 import os
 os.environ["SKLEARNEX_VERBOSE"] = "WARNING"
+os.environ["SCIPY_ARRAY_API"] = "1"
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from src.ml.safe_loader import safe_load
 
 class TabNetBridge(BaseEstimator, TransformerMixin):
     """

@@ -104,7 +104,11 @@ class DataLoader:
 
                 # Cleanup
                 final_df = final_df.drop(columns=['driver_jockey_id'])
-                return final_df.sort_values('program_date')
+                #final_df.sort_values('program_date', inplace=True)
+                final_df.sort_values(['horse_id', 'program_date'], inplace=True)
+                for col in ['hist_avg_speed', 'career_winnings', 'duo_win_rate']:
+                    final_df[col] = final_df.groupby('horse_id')[col].shift(1).expanding().mean().values
+                return final_df
 
         except Exception as error:
             self.logger.error(f"Error loading data: {error}")

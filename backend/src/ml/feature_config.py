@@ -14,8 +14,9 @@ CATEGORICAL_FEATURES = [
 NUMERICAL_FEATURES = [
     # Cheval — carrière
     'horse_age_at_race', 'career_winnings', 'career_races_count',
-    'relative_winnings', 'winnings_rank_in_race', 'odds_rank_in_race',
-    'reference_odds', 'is_debutant',
+    'relative_winnings',
+    'winnings_rank_in_race', 'odds_rank_in_race', 'reference_odds',
+    'is_debutant',
     'career_wins_count', 'career_places_count', 'career_places_2nd_count', 'career_places_3rd_count',
     'winnings_victory', 'winnings_place', 'winnings_year_now', 'winnings_year_prev',
     'career_win_rate', 'career_place_rate',
@@ -38,17 +39,17 @@ NUMERICAL_FEATURES = [
 
 CONTEXTUAL_FEATURES = [
     # Générées par RaceContextEncoder — ne pas mettre dans numerical_features
-    'market_sentiment',
-    'reference_odds_rel_race', 'reference_odds_rank_race',
-    'hist_avg_speed_z_race',
-    'career_winnings_rank_race',
-    'avg_speed_last_3_z_race',
-    'days_since_last_race_z_race',
-    'duo_win_rate_z_race', 'duo_avg_rank_z_race', 'duo_confidence_z_race',
+       'market_sentiment',
+       'reference_odds_rel_race', 'reference_odds_rank_race',
+        'hist_avg_speed_z_race',
+        'career_winnings_rank_race',
+        'avg_speed_last_3_z_race',
+        'days_since_last_race_z_race',
+        'duo_win_rate_z_race', 'duo_avg_rank_z_race', 'duo_confidence_z_race',
 ]
 
 EXTRA_FEATURES = [
-    'proba_tabnet',  # optionnel — présent seulement si modèle TabNet disponible
+    'proba_tabnet',  'ltr_proba', # optionnel — présent seulement si modèle TabNet et/ou ltr sont disponibles
 ]
 
 # Valeurs par défaut à l'inférence quand une colonne est absente
@@ -117,4 +118,5 @@ FEATURE_DEFAULTS = {
     'duo_confidence_z_race':    0.0,
     # Optionnel
     'proba_tabnet':             0.5,
+    "proba_ltr":                0.5,
 }

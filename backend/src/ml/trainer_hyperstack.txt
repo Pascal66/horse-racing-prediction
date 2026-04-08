@@ -124,4 +124,109 @@ Using Tabnet feature
 2026-04-02 14:46:25,664 - ML.HyperStackTrainer - INFO - Target cross Contextual HS Metrics: {'logloss': 0.3614783410036444, 'auc': 0.825, 'roi': np.float64(22.083333333333336), 'win_rate': np.float64(1.2208333333333334), 'avg_odds': np.float64(14.36979865771812), 'count': 24}
 2026-04-03 08:33:02,991 - ML.HyperStackTrainer - INFO - Target cross Contextual HS Metrics: {'logloss': 0.3626791981799737, 'auc': 0.8433333333333334, 'roi': np.float64(23.750000000000014), 'win_rate': np.float64(1.2375), 'avg_odds': np.float64(14.36979865771812), 'count': 24}
 
+Solution — Walk-Forward annuel (TimeSeriesSplit)
+2026-04-06 09:07:03,134 - ML.HyperStackTrainer - INFO - Data Loaded: (764649, 51) rows
+2026-04-06 09:07:03,218 - ML.HyperStackTrainer - INFO - --- AutoML for Target: GLOBAL ---
+2026-04-06 09:08:52,465 - ML.HyperStackTrainer - INFO - Walk-forward: années complètes 2020-2025, 4 folds, test final=2025, prod=2026 (30346 lignes ignorées dans l'éval)
+2026-04-06 09:08:52,562 - ML.HyperStackTrainer - INFO - [global] Fold 1/4 — test 2022
+2026-04-06 09:10:21,877 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.8026 ROI=+30.6% count=12992
+2026-04-06 09:10:21,879 - ML.HyperStackTrainer - INFO - [global] Fold 2/4 — test 2023
+2026-04-06 09:12:19,273 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.8030 ROI=+31.0% count=12908
+2026-04-06 09:12:19,277 - ML.HyperStackTrainer - INFO - [global] Fold 3/4 — test 2024
+2026-04-06 09:14:47,947 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.8059 ROI=+27.4% count=12973
+2026-04-06 09:14:47,950 - ML.HyperStackTrainer - INFO - [global] Fold 4/4 — test 2025
+2026-04-06 09:17:31,184 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8018 ROI=+25.5% count=12952
+2026-04-06 09:17:31,184 - ML.HyperStackTrainer - INFO - [global] Walk-forward: AUC=0.8033 ROI=+28.6% ±2.3% (4 folds)
+2026-04-06 09:17:31,184 - ML.HyperStackTrainer - INFO - [global] Entraînement modèle final...
+2026-04-03 08:01:54,277 - ML.HyperStackTrainer - INFO - Target global Contextual HS Metrics: {'logloss': 0.2761133158696805, 'auc': 0.8093602840903265, 'roi': np.float64(22.827826086956577), 'win_rate': np.float64(1.2282782608695657), 'avg_odds': np.float64(30.667346280568918), 'count': 2875}
+2026-04-06 09:34:12,403 - ML.HyperStackTrainer - INFO - [global] Final → AUC=0.8039 ROI=+23.3% count=12952
 
+2026-04-06 09:34:12,929 - ML.HyperStackTrainer - INFO - --- AutoML for Target: ATTELE ---
+2026-04-06 09:35:05,615 - ML.HyperStackTrainer - INFO - Walk-forward: années complètes 2020-2025, 4 folds, test final=2025, prod=2026 (15385 lignes ignorées dans l'éval)
+2026-04-06 09:35:05,653 - ML.HyperStackTrainer - INFO - [attele] Fold 1/4 — test 2022
+2026-04-06 09:36:08,649 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.8298 ROI=+43.6% count=6369
+2026-04-06 09:36:08,651 - ML.HyperStackTrainer - INFO - [attele] Fold 2/4 — test 2023
+2026-04-06 09:37:20,209 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.8315 ROI=+46.0% count=6356
+2026-04-06 09:37:20,211 - ML.HyperStackTrainer - INFO - [attele] Fold 3/4 — test 2024
+2026-04-06 09:38:47,916 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.8364 ROI=+38.4% count=6435
+2026-04-06 09:38:47,918 - ML.HyperStackTrainer - INFO - [attele] Fold 4/4 — test 2025
+2026-04-06 09:40:29,487 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8327 ROI=+35.7% count=6408
+2026-04-06 09:40:29,487 - ML.HyperStackTrainer - INFO - [attele] Walk-forward: AUC=0.8326 ROI=+41.0% ±4.1% (4 folds)
+2026-04-06 09:40:29,487 - ML.HyperStackTrainer - INFO - [attele] Entraînement modèle final...
+2026-04-03 08:14:14,331 - ML.HyperStackTrainer - INFO - Target attele Contextual HS Metrics: {'logloss': 0.28337571135800277, 'auc': 0.846805401882633, 'roi': np.float64(42.840755735492586), 'win_rate': np.float64(1.4284075573549257), 'avg_odds': np.float64(38.19707129237919), 'count': 1482}
+2026-04-06 09:49:24,306 - ML.HyperStackTrainer - INFO - [attele] Final → AUC=0.8329 ROI=+36.7% count=6408
+
+2026-04-06 09:49:24,558 - ML.HyperStackTrainer - INFO - --- AutoML for Target: STEEPLECHASE ---
+2026-04-06 09:49:27,559 - ML.HyperStackTrainer - INFO - Walk-forward: années complètes 2020-2025, 4 folds, test final=2025, prod=2026 (768 lignes ignorées dans l'éval)
+2026-04-06 09:49:27,563 - ML.HyperStackTrainer - INFO - [steeplechase] Fold 1/4 — test 2022
+2026-04-06 09:49:39,333 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.7556 ROI=+34.5% count=513
+2026-04-06 09:49:39,334 - ML.HyperStackTrainer - INFO - [steeplechase] Fold 2/4 — test 2023
+2026-04-06 09:49:52,234 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7458 ROI=+21.9% count=481
+2026-04-06 09:49:52,234 - ML.HyperStackTrainer - INFO - [steeplechase] Fold 3/4 — test 2024
+2026-04-06 09:50:21,442 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7606 ROI=+8.7% count=501
+2026-04-06 09:50:21,443 - ML.HyperStackTrainer - INFO - [steeplechase] Fold 4/4 — test 2025
+2026-04-06 09:50:53,830 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7794 ROI=+31.6% count=508
+2026-04-06 09:50:53,830 - ML.HyperStackTrainer - INFO - [steeplechase] Walk-forward: AUC=0.7604 ROI=+24.2% ±10.1% (4 folds)
+2026-04-06 09:50:53,830 - ML.HyperStackTrainer - INFO - [steeplechase] Entraînement modèle final...
+2026-04-03 08:17:55,815 - ML.HyperStackTrainer - INFO - Target steeplechase Contextual HS Metrics: {'logloss': 0.36113146398668144, 'auc': 0.7355678841115735, 'roi': np.float64(-4.190476190476209), 'win_rate': np.float64(0.9580952380952379), 'avg_odds': np.float64(16.033886583679116), 'count': 105}
+2026-04-06 09:54:51,491 - ML.HyperStackTrainer - INFO - [steeplechase] Final → AUC=0.7834 ROI=+29.8% count=508
+
+026-04-06 09:54:51,509 - ML.HyperStackTrainer - INFO - --- AutoML for Target: HAIE ---
+2026-04-06 09:54:57,343 - ML.HyperStackTrainer - INFO - Walk-forward: années complètes 2020-2025, 4 folds, test final=2025, prod=2026 (1548 lignes ignorées dans l'éval)
+2026-04-06 09:54:57,349 - ML.HyperStackTrainer - INFO - [haie] Fold 1/4 — test 2022
+2026-04-06 09:55:12,387 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.7571 ROI=+19.3% count=803
+2026-04-06 09:55:12,387 - ML.HyperStackTrainer - INFO - [haie] Fold 2/4 — test 2023
+2026-04-06 09:55:49,052 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7569 ROI=+17.8% count=781
+2026-04-06 09:55:49,053 - ML.HyperStackTrainer - INFO - [haie] Fold 3/4 — test 2024
+2026-04-06 09:56:30,004 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7615 ROI=+19.3% count=782
+2026-04-06 09:56:30,005 - ML.HyperStackTrainer - INFO - [haie] Fold 4/4 — test 2025
+2026-04-06 09:57:10,183 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7440 ROI=+11.7% count=787
+2026-04-06 09:57:10,183 - ML.HyperStackTrainer - INFO - [haie] Walk-forward: AUC=0.7549 ROI=+17.0% ±3.1% (4 folds)
+2026-04-06 09:57:10,183 - ML.HyperStackTrainer - INFO - [haie] Entraînement modèle final...
+2026-04-03 08:21:01,287 - ML.HyperStackTrainer - INFO - Target haie Contextual HS Metrics: {'logloss': 0.327316312693121, 'auc': 0.747550639884736, 'roi': np.float64(4.166666666666666), 'win_rate': np.float64(1.0416666666666667), 'avg_odds': np.float64(19.711737089201876), 'count': 180}
+2026-04-06 10:01:02,588 - ML.HyperStackTrainer - INFO - [haie] Final → AUC=0.7409 ROI=+5.3% count=787
+
+2026-04-06 10:01:02,611 - ML.HyperStackTrainer - INFO - --- AutoML for Target: MONTE ---
+2026-04-06 10:01:10,142 - ML.HyperStackTrainer - INFO - Walk-forward: années complètes 2020-2025, 4 folds, test final=2025, prod=2026 (2067 lignes ignorées dans l'éval)
+2026-04-06 10:01:10,148 - ML.HyperStackTrainer - INFO - [monte] Fold 1/4 — test 2022
+2026-04-06 10:01:50,911 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.8233 ROI=+58.8% count=1096
+2026-04-06 10:01:50,912 - ML.HyperStackTrainer - INFO - [monte] Fold 2/4 — test 2023
+2026-04-06 10:02:36,391 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.8299 ROI=+63.8% count=1085
+2026-04-06 10:02:36,392 - ML.HyperStackTrainer - INFO - [monte] Fold 3/4 — test 2024
+2026-04-06 10:03:26,131 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.8343 ROI=+59.8% count=1057
+2026-04-06 10:03:26,131 - ML.HyperStackTrainer - INFO - [monte] Fold 4/4 — test 2025
+2026-04-06 10:04:16,986 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8276 ROI=+50.0% count=1050
+2026-04-06 10:04:16,986 - ML.HyperStackTrainer - INFO - [monte] Walk-forward: AUC=0.8288 ROI=+58.1% ±5.0% (4 folds)
+2026-04-06 10:04:16,987 - ML.HyperStackTrainer - INFO - [monte] Entraînement modèle final...
+2026-04-03 08:24:50,758 - ML.HyperStackTrainer - INFO - Target monte Contextual HS Metrics: {'logloss': 0.309622015126403, 'auc': 0.8105963199984415, 'roi': np.float64(38.72950819672131), 'win_rate': np.float64(1.3872950819672132), 'avg_odds': np.float64(28.57870808045517), 'count': 244}
+2026-04-06 10:07:42,768 - ML.HyperStackTrainer - INFO - [monte] Final → AUC=0.8294 ROI=+50.0% count=1050
+
+2026-04-06 10:07:42,806 - ML.HyperStackTrainer - INFO - --- AutoML for Target: PLAT ---
+2026-04-06 10:08:19,500 - ML.HyperStackTrainer - INFO - Walk-forward: années complètes 2020-2025, 4 folds, test final=2025, prod=2026 (10419 lignes ignorées dans l'éval)
+2026-04-06 10:08:19,525 - ML.HyperStackTrainer - INFO - [plat] Fold 1/4 — test 2022
+2026-04-06 10:09:26,149 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.7785 ROI=-4.3% count=4131
+2026-04-06 10:09:26,151 - ML.HyperStackTrainer - INFO - [plat] Fold 2/4 — test 2023
+2026-04-06 10:10:32,669 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7733 ROI=-5.6% count=4132
+2026-04-06 10:10:32,671 - ML.HyperStackTrainer - INFO - [plat] Fold 3/4 — test 2024
+2026-04-06 10:11:49,864 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7734 ROI=-5.3% count=4120
+2026-04-06 10:11:49,866 - ML.HyperStackTrainer - INFO - [plat] Fold 4/4 — test 2025
+2026-04-06 10:13:20,755 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7690 ROI=-7.6% count=4115
+2026-04-06 10:13:20,756 - ML.HyperStackTrainer - INFO - [plat] Walk-forward: AUC=0.7735 ROI=-5.7% ±1.2% (4 folds)
+2026-04-06 10:13:20,756 - ML.HyperStackTrainer - INFO - [plat] Entraînement modèle final...
+2026-04-03 08:31:54,608 - ML.HyperStackTrainer - INFO - Target plat Contextual HS Metrics: {'logloss': 0.2677160139918463, 'auc': 0.7330430325104547, 'roi': np.float64(-12.5714285714286), 'win_rate': np.float64(0.874285714285714), 'avg_odds': np.float64(22.94838075530264), 'count': 840}
+2026-04-06 10:23:42,231 - ML.HyperStackTrainer - INFO - [plat] Final → AUC=0.7694 ROI=-9.7% count=4115
+
+2026-04-06 10:23:42,413 - ML.HyperStackTrainer - INFO - --- AutoML for Target: CROSS ---
+2026-04-06 10:23:43,489 - ML.HyperStackTrainer - INFO - Walk-forward: années complètes 2020-2025, 4 folds, test final=2025, prod=2026 (159 lignes ignorées dans l'éval)
+2026-04-06 10:23:43,490 - ML.HyperStackTrainer - INFO - [cross] Fold 1/4 — test 2022
+2026-04-06 10:23:51,312 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.6910 ROI=+64.6% count=80
+2026-04-06 10:23:51,313 - ML.HyperStackTrainer - INFO - [cross] Fold 2/4 — test 2023
+2026-04-06 10:24:00,023 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7459 ROI=+18.5% count=73
+2026-04-06 10:24:00,024 - ML.HyperStackTrainer - INFO - [cross] Fold 3/4 — test 2024
+2026-04-06 10:24:08,684 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7767 ROI=+41.4% count=78
+2026-04-06 10:24:08,684 - ML.HyperStackTrainer - INFO - [cross] Fold 4/4 — test 2025
+2026-04-06 10:24:17,494 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8180 ROI=+75.4% count=84
+2026-04-06 10:24:17,494 - ML.HyperStackTrainer - INFO - [cross] Walk-forward: AUC=0.7579 ROI=+50.0% ±21.9% (4 folds)
+2026-04-06 10:24:17,494 - ML.HyperStackTrainer - INFO - [cross] Entraînement modèle final...
+2026-04-03 08:33:02,991 - ML.HyperStackTrainer - INFO - Target cross Contextual HS Metrics: {'logloss': 0.3626791981799737, 'auc': 0.8433333333333334, 'roi': np.float64(23.750000000000014), 'win_rate': np.float64(1.2375), 'avg_odds': np.float64(14.36979865771812), 'count': 24}
+2026-04-06 10:25:32,571 - ML.HyperStackTrainer - INFO - [cross] Final → AUC=0.8234 ROI=+68.3% count=84

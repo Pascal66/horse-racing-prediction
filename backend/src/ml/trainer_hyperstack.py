@@ -3,6 +3,9 @@ import sys
 from pathlib import Path
 
 from sklearnex import patch_sklearn
+
+from src.ml.ltr_bridge import LTRBridge
+
 patch_sklearn(verbose=False)
 
 import numpy as np
@@ -19,7 +22,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import log_loss, roc_auc_score
+from sklearn.metrics import log_loss, roc_auc_score, accuracy_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.base import clone
 from sklearn.pipeline import Pipeline
@@ -236,7 +239,7 @@ class HyperStackTrainer:
         stacker = LogisticRegression(max_iter=2000).fit(oof, y_train)
 
         full_pipeline = Pipeline([
-            ('engineer', engineer), ('context', context_encoder), ('tabnet_bridge', tabnet_bridge),
+            ('engineer', engineer), ('context', context_encoder), ('tabnet_bridge', tabnet_bridge), # ('ltr_bridge', ltr_bridge),
             ('preprocessor', preprocessor), ('model', HyperStackModel(fold_models, stacker, feature_names=feature_names))
         ])
 
@@ -275,8 +278,14 @@ class HyperStackTrainer:
         df['proba'] = pipeline.predict_proba(test_df)[:, 1]
         df['month'] = df['program_date'].dt.month
         df['effective_odds'] = df['live_odds'].fillna(df['reference_odds']).fillna(1.0).clip(lower=1.05)
+        segments = [
+            ('discipline_overall', 'discipline', 0),
+            ('discipline_month', 'discipline', 'month'),
+            ('track_month', 'racetrack_code', 'month')
+        ]
+
         perf_list = []
-        for seg_type, col, month_col in [('discipline_overall', 'discipline', 0), ('discipline_month', 'discipline', 'month')]:
+        for seg_type, col, month_col in segments:
             for keys, group in df.groupby([col] if month_col == 0 else [col, month_col]):
                 if len(group) < 20: continue
                 m = self._calculate_metrics(group)

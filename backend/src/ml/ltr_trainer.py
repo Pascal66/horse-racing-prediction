@@ -9,6 +9,7 @@ import pandas as pd
 from sklearnex import patch_sklearn
 patch_sklearn(verbose=False)
 
+from src.core.database import DatabaseManager
 from category_encoders import CatBoostEncoder
 from lightgbm import LGBMRanker
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin
@@ -50,7 +51,14 @@ class LTRRankerWrapper(BaseEstimator, RegressorMixin):
 
     def __init__(self, model=None, feature_names=None):
         self.model = model
-        self.feature_names = feature_names
+        self.feature_names = list(feature_names) if feature_names is not None else None
+
+    @property
+    def feature_importances_(self):
+        """Expose les importances du modèle sous-jacent."""
+        if self.model is not None:
+            return self.model.feature_importances_
+        return None
 
     def fit(self, X, y=None):
         return self
@@ -59,14 +67,20 @@ class LTRRankerWrapper(BaseEstimator, RegressorMixin):
         """Retourne les scores bruts LTR (valeur continue)."""
         if self.model is None:
             raise ValueError("Model not fitted.")
-        X_vals = X.values if hasattr(X, 'values') else X
-        return self.model.predict(X_vals)
+        
+        # Conversion en DataFrame si on a les noms pour éviter le UserWarning de LightGBM
+        # quand le Pipeline passe des numpy arrays.
+        if self.feature_names is not None and not isinstance(X, pd.DataFrame):
+             X_input = pd.DataFrame(X, columns=self.feature_names)
+        else:
+             X_input = X
+
+        return self.model.predict(X_input) #, pred_leaf=True, pred_contrib=True, validate_features=True)
 
     def predict_proba(self, X):
         """
         Convertit les scores LTR en pseudo-probabilités par course.
         Nécessite race_id dans X pour normaliser par course.
-        Si pas de race_id, normalise globalement (fallback inférence).
         """
         scores = self.predict(X)
 
@@ -99,7 +113,8 @@ def build_ltr_model(n_estimators=500, max_depth=6, learning_rate=0.05,
     return LGBMRanker(
         objective='lambdarank',
         metric='ndcg',
-        ndcg_eval_at=[1, 3, 5],  # NDCG@1 = trouver le gagnant
+        # ndcg_eval_at=[1, 3, 5],  # NDCG@1 = trouver le gagnant
+        _eval_at=[1, 3, 5], # avoid alias warning
         n_estimators=n_estimators,
         max_depth=max_depth,
         learning_rate=learning_rate,
@@ -107,11 +122,11 @@ def build_ltr_model(n_estimators=500, max_depth=6, learning_rate=0.05,
         min_child_samples=min_child_samples,
         reg_alpha=reg_alpha,
         reg_lambda=reg_lambda,
-        n_jobs=-1,
+        n_jobs=None, #-1,
+        importance_type='gain',
         random_state=42,
         verbosity=-1
     )
-
 
 # ------------------------------------------------
 # Trainer LTR
@@ -122,6 +137,7 @@ class LTRTrainer:
         self.logger = logging.getLogger("ML.LTRTrainer")
         self.model_dir = Path(model_dir)
         self.loader = DataLoader()
+        self.db = DatabaseManager()
 
     def train(self):
         self.logger.info("--- STARTING LTR WALK-FORWARD TOURNAMENT ---")
@@ -216,13 +232,16 @@ class LTRTrainer:
 
         X_train_enc = preprocessor.fit_transform(X_train, y_train)
         feature_names = preprocessor.get_feature_names_out()
+        
+        # On passe un DataFrame nommé au fit pour que le modèle mémorise les noms
+        X_train_df = pd.DataFrame(X_train_enc, columns=feature_names)
 
         # Entraînement LGBMRanker
         ranker = build_ltr_model()
         ranker.fit(
-            X_train_enc, y_train.values,
+            X_train_df, y_train.values,
             group=train_groups,
-            eval_set=[(X_train_enc, y_train.values)],
+            eval_set=[(X_train_df, y_train.values)],
             eval_group=[train_groups],
         )
 
@@ -235,10 +254,22 @@ class LTRTrainer:
             ('preprocessor', preprocessor),
             ('model', wrapper)
         ])
+        # Ne fonctionne pas sans avoir fait de validation
+        # evals = ranker.evals_result_
+        # print(evals)
+        # if 'valid_0' in evals and 'ndcg@1' in evals['valid_0']:
+        #     best_ndcg = max(evals['valid_0']['ndcg@1'])
+        #     self.logger.info(f"  Best NDCG@1 (train): {best_ndcg:.4f}")
 
         # Évaluation : on convertit les scores LTR en probas par course
         test_enc = preprocessor.transform(test_df[features])
-        scores = ranker.predict(test_enc)
+
+        if not train_df['program_date'].is_monotonic_increasing: print("Train dates not sorted")
+        if not test_df['program_date'].is_monotonic_increasing: print("Test dates not sorted")
+        if not train_df['program_date'].max() < test_df['program_date'].min(): print("Temporal leakage between train and test")
+
+        # On utilise le wrapper.predict qui gère maintenant les noms de features
+        scores = wrapper.predict(test_enc)
 
         test_eval = test_df.copy()
         test_eval['raw_score'] = scores
@@ -255,10 +286,13 @@ class LTRTrainer:
         if save and metrics:
             save_path = self.model_dir / f"model_{target_name}_ltr.pkl"
             joblib.dump(full_pipeline, save_path)
+            self._generate_and_save_perf(full_pipeline, test_df, target_name, "ltr_only")
+
             self.logger.info(
                 f"[{target_name}] LTR saved → "
                 f"AUC={metrics['auc']:.4f} ROI={metrics['roi']:+.1f}%"
             )
+            self._log_feature_importances(ranker)
 
         return metrics
 
@@ -284,6 +318,19 @@ class LTRTrainer:
             df[df['_year'] == complete_years[-1]].drop(columns=['_year'])
         )
 
+    def _log_feature_importances(self, model):
+        importances = model.feature_importances_
+        feature_names = model.feature_name_
+        
+        fi_df = pd.DataFrame({'feature': feature_names, 'importance': importances}).sort_values('importance', ascending=False)
+
+        fi_df = fi_df[fi_df['importance'] > 0].copy()
+        fi_df['importance'] = (fi_df['importance'] / fi_df['importance'].sum() * 100).round(2)
+
+        self.logger.info(f"\n--- LTR FEATURE IMPORTANCES ({len(feature_names)} features) ---")
+        self.logger.info("\n" + fi_df.to_string(index=False))
+        self.logger.info("-" * 50 + "\n")
+
     def _calculate_metrics(self, group):
         if 'proba' not in group.columns or group['is_winner'].nunique() < 2:
             return None
@@ -298,6 +345,10 @@ class LTRTrainer:
                 total_return += best['effective_odds']
             total_bets += 1
 
+        self.logger.info(f"  Avg effective_odds: {df['effective_odds'].mean():.2f}")
+        self.logger.info(f"  Win rate brute: {(total_return / total_bets):.3f}")
+        self.logger.info(f"  Implied win rate: {(1 / df['effective_odds'].mean()):.3f}")
+
         if total_bets == 0: return None
         return {
             'logloss': log_loss(group['is_winner'], group['proba']),
@@ -307,6 +358,37 @@ class LTRTrainer:
             'avg_odds': df['effective_odds'].mean(),
             'count': total_bets
         }
+    def _generate_and_save_perf(self, pipeline, test_df, target_name, algo_name):
+        df = test_df.copy()
+        df['proba'] = pipeline.predict_proba(test_df)[:, 1]
+        df['month'] = df['program_date'].dt.month
+        df['effective_odds'] = df['live_odds'].fillna(df['reference_odds']).fillna(1.0).clip(lower=1.05)
+        segments = [
+            ('discipline_overall', 'discipline', 0),
+            ('discipline_month', 'discipline', 'month'),
+            ('track_month', 'racetrack_code', 'month')
+        ]
+
+        perf_list = []
+        for seg_type, col, month_col in segments:
+            for keys, group in df.groupby([col] if month_col == 0 else [col, month_col]):
+                if len(group) < 20: continue
+                m = self._calculate_metrics(group)
+                if m:
+                    m.update({'segment_type': seg_type, 'segment_value': str(keys if isinstance(keys, str) else keys[0]), 'month': 0 if month_col == 0 else keys[1]})
+                    perf_list.append(m)
+        if perf_list: self._save_metrics_to_db_v2(target_name, algo_name, pd.DataFrame(perf_list))
+
+    def _save_metrics_to_db_v2(self, model_name, algo_name, df):
+        conn = self.db.get_connection()
+        try:
+            with conn.cursor() as cur:
+                for _, row in df.iterrows():
+                    cur.execute("""INSERT INTO ml_model_metrics (model_name, algorithm, segment_type, segment_value, test_month, num_races, logloss, auc, roi, win_rate, avg_odds)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (model_name, algorithm, segment_type, segment_value, test_month) 
+                        DO UPDATE SET roi=EXCLUDED.roi, updated_at=NOW()""", (model_name, algo_name, row['segment_type'], row['segment_value'], int(row['month']), int(row['count']), row['logloss'], row['auc'], row['roi'], row['win_rate'], row['avg_odds']))
+                conn.commit()
+        finally: self.db.release_connection(conn)
 
 
 if __name__ == "__main__":

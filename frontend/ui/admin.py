@@ -35,9 +35,15 @@ def render_admin_dashboard():
                 # Correction de la logique de recherche :
                 # Le Predictor charge 'model_attele_tabnet.pkl' sous 'attele_tabnet'
                 # mais la DB stocke model_name='attele' + algorithm='tabnet_only'.
-                is_tabnet_file = m_low.endswith("_tabnet")
-                base_discipline = m_low.replace("_tabnet", "")
-                algo_filter = "tabnet_only" if is_tabnet_file else "hyperstack_context"
+                if m_low.endswith("_tabnet"):
+                    base_discipline = m_low.replace("_tabnet", "")
+                    algo_filter = "tabnet_only"
+                elif m_low.endswith("_ltr"):
+                    base_discipline = m_low.replace("_ltr", "")
+                    algo_filter = "ltr_only"
+                else:
+                    base_discipline = m_low
+                    algo_filter = "hyperstack_context"
 
                 if not metrics_df.empty:
                     # On filtre sur la discipline de base ET l'algorithme correspondant au type de fichier
@@ -102,7 +108,7 @@ def render_admin_dashboard():
                                color_discrete_sequence=px.colors.qualitative.Safe)
                 st.plotly_chart(fig_roi, width="stretch") #use_container_width=True)
 
-            st.dataframe(battle_df[['algorithm', 'logloss', 'auc', 'roi', 'win_rate', 'num_races']].sort_values('logloss'), hide_index=True)
+            st.dataframe(battle_df[['algorithm', 'logloss', 'auc', 'roi', 'win_rate', 'num_races']].sort_values('roi'), hide_index=True)
 
     # ------------------
     # TAB 3: SEASONAL TRENDS

@@ -177,6 +177,7 @@ class TabNetTrainer:
                 )
                 fold_models.append(model)
             final_model = TabNetEnsembleWrapper(models=fold_models, feature_names=feature_names)
+            self._log_feature_importances(fold_models, feature_names)
         else:
             # Mode Backtest: 1 seul split pour gagner du temps
             X_tr, X_val, y_tr, y_val = train_test_split(X_train_df, y_vals, test_size=0.2, stratify=y_vals, random_state=42)
@@ -206,6 +207,13 @@ class TabNetTrainer:
             self._generate_and_save_perf(full_pipeline, test_df, target_name, "tabnet_only")
         
         return metrics
+
+    def _log_feature_importances(self, fold_models, feature_names):
+        importances = np.mean([m.feature_importances_ for m in fold_models], axis=0)
+        fi_df = pd.DataFrame({'feature': feature_names, 'importance': importances}).sort_values('importance', ascending=False)
+        print(f"\n--- TABNET FEATURE IMPORTANCES ({len(feature_names)} features) ---")
+        print(fi_df.to_string(index=False))
+        print("-" * 50 + "\n")
 
     def _walk_forward_split(self, df: pd.DataFrame):
         df = df.copy()
@@ -259,7 +267,12 @@ class TabNetTrainer:
         except Exception: return
 
         perf_list = []
-        segments = [('discipline_overall', 'discipline', 0), ('discipline_month', 'discipline', 'month')]
+        # segments = [('discipline_overall', 'discipline', 0), ('discipline_month', 'discipline', 'month')]
+        segments = [
+            ('discipline_overall', 'discipline', 0),
+            ('discipline_month', 'discipline', 'month'),
+            ('track_month', 'racetrack_code', 'month')
+        ]
         for seg_type, col, month_col in segments:
             groupby_cols = [col] if month_col == 0 else [col, month_col]
             for keys, group in df.groupby(groupby_cols):
