@@ -49,6 +49,46 @@ class RaceRepository:
         finally:
             self.db_manager.release_connection(conn)
 
+    def get_backtest_data(self) -> List[Dict[str, Any]]:
+        """
+        Retrieves historical races, participants, predictions, and betting results for backtesting.
+        """
+        query = """
+            SELECT
+                r.race_id,
+                r.discipline,
+                dp.program_date,
+                rp.participant_id,
+                rp.pmu_number AS program_number,
+                rp.finish_rank,
+                rp.reference_odds,
+                rp.live_odds,
+                p.model_version,
+                p.proba_winner,
+                rb.bet_type,
+                br.combination,
+                br.dividend_per_1e
+            FROM race r
+            JOIN daily_program dp ON r.meeting_id IN (SELECT meeting_id FROM race_meeting WHERE program_id = dp.program_id)
+            JOIN race_participant rp ON r.race_id = rp.race_id
+            LEFT JOIN prediction p ON rp.participant_id = p.participant_id
+            LEFT JOIN race_bet rb ON r.race_id = rb.race_id
+            LEFT JOIN bet_report br ON rb.bet_id = br.bet_id
+            WHERE rp.finish_rank IS NOT NULL
+            ORDER BY dp.program_date DESC, r.race_id, rp.pmu_number;
+        """
+
+        conn = self.db_manager.get_connection()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute(query)
+                return cur.fetchall()
+        except Exception as exc:
+            logger.error(f"Error fetching backtest data: {exc}")
+            return []
+        finally:
+            self.db_manager.release_connection(conn)
+
     def get_races_by_date(self, date_code: str) -> List[Dict[str, Any]]:
         """
         Retrieves all races scheduled for a specific date.

@@ -18,7 +18,9 @@ def mock_races_data():
             "discipline": "TROTTING",
             "distance_m": 2700,
             "declared_runners_count": 14,
-            "name": "Prix d'Amerique"
+            "name": "Prix d'Amerique",
+            "start_timestamp": 1711929600,
+            "timezone_offset": 3600
         },
         {
             "meeting_number": 1,
@@ -28,7 +30,9 @@ def mock_races_data():
             "discipline": "TROTTING",
             "distance_m": 2100,
             "declared_runners_count": 12,
-            "name": "Prix de France"
+            "name": "Prix de France",
+            "start_timestamp": 1711933200,
+            "timezone_offset": 3600
         }
     ]
 
@@ -76,7 +80,17 @@ def mock_sniper_bets():
             "horse_name": "Sniper Pick",
             "odds": 8.5,
             "win_probability": 0.20,
-            "edge": 0.15
+            "edge": 0.15,
+            "strategy": "Sniper"
+        },
+        {
+            "race_num": 2,
+            "program_number": 1,
+            "horse_name": "Kelly Pick",
+            "odds": 3.5,
+            "win_probability": 0.40,
+            "edge": 0.10,
+            "strategy": "Kelly (5.0%)"
         }
     ]
 

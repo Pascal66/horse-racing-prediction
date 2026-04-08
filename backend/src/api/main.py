@@ -22,6 +22,7 @@ from src.api.repositories import RaceRepository
 from src.cli.cronJobs import cronjobs, get_scheduler
 from src.ml.predictor import RacePredictor
 from src.api.kelly_multi_races import analyze_multiple_races
+from src.api.backtest_service import BacktestService
 
 pd.set_option('future.no_silent_downcasting', True)
 
@@ -244,6 +245,11 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
         logger.error(f"Kelly multi-race strategy failed: {e}", exc_info=True)
 
     return recommendations
+
+@app.get("/backtest", tags=["Betting"])
+def get_backtest(repository: RaceRepository = Depends(get_repository)) -> Dict[str, Any]:
+    service = BacktestService(repository)
+    return service.run_backtest()
 
 @app.get("/races/{race_id}/predict", response_model=List[PredictionResult], tags=["Predictions"])
 def predict_race(race_id: int, repository: RaceRepository = Depends(get_repository)) -> List[Dict[str, Any]]:
