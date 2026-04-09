@@ -298,9 +298,7 @@ def run_backtest(
     """Point d'entrée pour le service de backtesting complet."""
     try:
         service = BacktestService(repository)
-        # Utilise une date par défaut si date_start est absent pour éviter le 422
-        start = date_start or pd.Timestamp.now().strftime("%d%m%Y")
-        results = service.run_full_backtest(start, date_end)
+        results = service.run_full_backtest(date_start, date_end)
         return results
     except Exception as e:
         logger.error(f"Backtest service failed: {e}", exc_info=True) # Ajout de exc_info=True pour la stack trace

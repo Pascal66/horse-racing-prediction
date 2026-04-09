@@ -1,7 +1,7 @@
 import logging
 
 import pandas as pd
-from typing import  Dict, Any
+from typing import  Dict, Any, Optional
 from .repositories import RaceRepository
 from .kelly_multi_races import analyze_multiple_races
 
@@ -11,11 +11,12 @@ class BacktestService:
     def __init__(self, repository: RaceRepository):
         self.repository = repository
 
-    def run_backtest(self) -> Dict[str, Any]:
+    def run_full_backtest(self, date_start: Optional[str] = None, date_end: Optional[str] = None) -> Dict[str, Any]:
         try:
-            raw_data = self.repository.get_backtest_data()
+            raw_data = self.repository.get_backtest_data(date_start, date_end)
         except Exception as e:
-            logger.error(f"Backtest service failed: {e}", exc_info=True)
+            logger.error(f"Backtest service failed to fetch data: {e}", exc_info=True)
+            return {"error": f"Failed to retrieve backtesting data: {e}"}
 
         if not raw_data:
             return {"error": "No data available for backtesting"}

@@ -48,11 +48,32 @@ class RaceRepository:
         finally:
             self.db_manager.release_connection(conn)
 
-    def get_backtest_data(self) -> List[Dict[str, Any]]:
+    def get_backtest_data(self, date_start: Optional[str] = None, date_end: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Retrieves historical races, participants, predictions, and betting results for backtesting.
         """
-        query = """
+        params = []
+        where_clauses = ["rp.finish_rank IS NOT NULL"]
+
+        if date_start:
+            try:
+                start_dt = dt.datetime.strptime(date_start, "%d%m%Y").date()
+                where_clauses.append("dp.program_date >= %s")
+                params.append(start_dt)
+            except ValueError:
+                logger.warning(f"Invalid date_start format: {date_start}")
+
+        if date_end:
+            try:
+                end_dt = dt.datetime.strptime(date_end, "%d%m%Y").date()
+                where_clauses.append("dp.program_date <= %s")
+                params.append(end_dt)
+            except ValueError:
+                logger.warning(f"Invalid date_end format: {date_end}")
+
+        where_str = " AND ".join(where_clauses)
+
+        query = f"""
             SELECT 
                 r.race_id,
                 r.discipline,
@@ -73,14 +94,14 @@ class RaceRepository:
             LEFT JOIN prediction p ON rp.participant_id = p.participant_id
             LEFT JOIN race_bet rb ON r.race_id = rb.race_id
             LEFT JOIN bet_report br ON rb.bet_id = br.bet_id
-            WHERE rp.finish_rank IS NOT NULL
+            WHERE {where_str}
             ORDER BY dp.program_date DESC, r.race_id, rp.pmu_number;
         """
 
         conn = self.db_manager.get_connection()
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-                cur.execute(query)
+                cur.execute(query, tuple(params))
                 return cur.fetchall()
         except Exception as exc:
             logger.error(f"Error fetching backtest data: {exc}", exc_info=True)
