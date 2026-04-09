@@ -30,7 +30,7 @@ class DataLoader:
                     rp.participant_id, rp.race_id, rp.horse_id,
                     rp.finish_rank,
                     CASE WHEN rp.finish_rank = 1 THEN 1 ELSE 0 END AS is_winner,
-                    dp.program_date, rm.racetrack_code, rm.meeting_type,
+                    dp.program_date, rm.racetrack_code, rm.meeting_type, rm.audience,
                     r.discipline, r.distance_m, r.track_type, r.terrain_label,
                     r.declared_runners_count, r.penetrometer,
                     h.birth_year, h.sex,
@@ -54,6 +54,10 @@ class DataLoader:
                 LEFT JOIN racing_actor j ON rp.driver_jockey_id = j.actor_id
                 LEFT JOIN racing_actor t ON rp.trainer_id = t.actor_id
                 WHERE rp.finish_rank IS NOT NULL
+                -- Filtrer sur les courses pariables
+                AND rm.audience IN ('NATIONAL')
+                --, 'REGIONAL')  
+                -- ou uniquement NATIONAL si les régionales ne sont pas disponibles
                 """
                 main_df = pd.read_sql(query_main, connection)
                 main_df['program_date'] = pd.to_datetime(main_df['program_date'])

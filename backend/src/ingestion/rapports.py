@@ -14,7 +14,10 @@ class ReportsIngestor(BaseIngestor):
 
     def _fetch_rapports_json(self, session, meeting, race):
         """Fetches the betting reports JSON from the external API."""
-        url = REPORTS_URL_TEMPLATE.format(date=self.date_code, meeting=meeting, race=race)
+        # url = REPORTS_URL_TEMPLATE.format(date=self.date_code, meeting=meeting, race=race)
+        # On s'assure que la spécialisation INTERNET est présente pour avoir les masses en ligne
+        base_url = REPORTS_URL_TEMPLATE.format(date=self.date_code, meeting=meeting, race=race)
+        url = f"{base_url}&specialisation=INTERNET" if "?" in base_url else f"{base_url}?specialisation=INTERNET"
         try:
             response = session.get(url, headers=HEADERS, timeout=10)
             if response.status_code in [404, 204]:
@@ -25,7 +28,14 @@ class ReportsIngestor(BaseIngestor):
             if isinstance(data, list):
                 return data, 200
             
-            return data.get("rapportsDefinitifs", []), 200
+            # PMU change souvent les clés entre live et définitif
+            rapports = (
+                data.get("rapportsDefinitifs") or 
+                data.get("rapports") or 
+                data.get("rapportsProbables") or []
+            )
+            return rapports, 200
+            
         except Exception as e:
             self.logger.warning(f"Failed fetching reports R{meeting}C{race}: {e}")
             return [], 500
@@ -37,8 +47,8 @@ class ReportsIngestor(BaseIngestor):
         
         if clean_type is None:
             if raw_type:
-                if len(raw_type) > 10:
-                    truncated = raw_type[:10]
+                if len(raw_type) > 20:
+                    truncated = raw_type[:20]
                     self.logger.warning(
                         "Bet type '%s' not found in BET_TYPE_MAP; truncating to '%s'.",
                         raw_type,
@@ -46,25 +56,31 @@ class ReportsIngestor(BaseIngestor):
                     )
                     clean_type = truncated
                 else:
-                    clean_type = raw_type[:10]
+                    clean_type = raw_type[:20]
             else:
                 clean_type = None
         
         stake_euros = self._to_euros(bet_data.get("miseBase"))
+        total_stakes = self._to_euros(bet_data.get("totalEnjeux"))
 
         cursor.execute(
             """
-            INSERT INTO race_bet (race_id, bet_type, bet_family, base_stake, is_refunded)
-            VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT (race_id, bet_type) DO NOTHING
-            RETURNING bet_id;
+            INSERT INTO race_bet (race_id, bet_type, bet_family, base_stake, is_refunded, total_stakes)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (race_id, bet_type) DO UPDATE SET
+                bet_family = EXCLUDED.bet_family,
+                base_stake = EXCLUDED.base_stake,
+                is_refunded = EXCLUDED.is_refunded,
+                total_stakes = EXCLUDED.total_stakes
+             RETURNING bet_id;
             """,
             (
                 race_id, 
                 clean_type, 
                 bet_data.get("famillePari"),
                 stake_euros, 
-                bet_data.get("rembourse")
+                bet_data.get("rembourse"),
+                total_stakes
             )
         )
         row = cursor.fetchone()
@@ -85,7 +101,10 @@ class ReportsIngestor(BaseIngestor):
             """
             INSERT INTO bet_report (bet_id, combination, dividend, dividend_per_1e, winners_count)
             VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT (bet_id, combination) DO NOTHING;
+            ON CONFLICT (bet_id, combination) DO UPDATE SET
+                dividend = EXCLUDED.dividend,
+                dividend_per_1e = EXCLUDED.dividend_per_1e,
+                winners_count = EXCLUDED.winners_count;
             """,
             (
                 bet_id, 
@@ -103,7 +122,7 @@ class ReportsIngestor(BaseIngestor):
         bets, status_code = self._fetch_rapports_json(session, meeting_num, race_num)
         
         if status_code in [204, 404]:
-            return 0, IngestStatus.SKIPPED
+            return 0, IngestStatus.SKIPPED_NO_CONTENT
         if not bets and status_code == 200:
             return 0, IngestStatus.SUCCESS
         if status_code >= 500:
@@ -143,7 +162,7 @@ class ReportsIngestor(BaseIngestor):
                     JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
                     JOIN daily_program dp ON rm.program_id = dp.program_id
                     WHERE dp.program_date = %s
-                    ORDER BY rm.meeting_number, r.race_number;
+                    ORDER BY dp.program_date, rm.meeting_number, r.race_number;
                     """,
                     (dt.datetime.strptime(self.date_code, "%d%m%Y").date(),)
                 )
@@ -170,7 +189,7 @@ class ReportsIngestor(BaseIngestor):
                     count, status = future.result()
                     if status == IngestStatus.SUCCESS:
                         total_bets += count
-                    elif status == IngestStatus.SKIPPED:
+                    elif status in [IngestStatus.SKIPPED, IngestStatus.SKIPPED_NO_CONTENT]:
                         skipped += 1
                     else:
                         failed += 1

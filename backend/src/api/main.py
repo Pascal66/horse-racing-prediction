@@ -11,17 +11,19 @@ import numpy as np
 from fastapi import FastAPI, Depends, HTTPException, status
 import pandas as pd
 
-from src.api.schemas import (
+from .schemas import (
     RaceSummary, 
     ParticipantSummary, 
     PredictionResult, 
     BetRecommendation,
     ModelMetric
 )
+from src.core.database import DatabaseManager
 from src.api.repositories import RaceRepository
+from src.api.backtest_service import BacktestService
+from src.api.kelly_multi_races import analyze_multiple_races
 from src.cli.cronJobs import cronjobs, get_scheduler
 from src.ml.predictor import RacePredictor
-from src.api.kelly_multi_races import analyze_multiple_races
 
 pd.set_option('future.no_silent_downcasting', True)
 
@@ -48,6 +50,8 @@ ml_models: Dict[str, Optional[RacePredictor]] = {}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Initializing ML Pipeline...")
+    db = DatabaseManager()
+    db.initialize_pool()
     try:
         current_file = Path(__file__).resolve()
         possible_data_path = current_file.parents[3] / "data"
@@ -58,6 +62,7 @@ async def lifespan(app: FastAPI):
         logger.error(f"CRITICAL: Failed to load ML model ({exc}).")
         ml_models["predictor"] = None
     yield
+    db.close_pool()
     ml_models.clear()
 
 app = FastAPI(title="PMU Predictor API", lifespan=lifespan)
@@ -175,17 +180,28 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
 
     # --- LOGIQUE DE COTE LIVE PRIORITAIRE ---
     # On utilise la live_odds si disponible (> 1.1), sinon la reference_odds
-    df['effective_odds'] = df['live_odds'].apply(lambda x: x if x and x > 1.1 else None)
+    # df['effective_odds'] = df['live_odds'].apply(lambda x: x if x and x > 1.1 else None)
+    # Utilisation prioritaire de la cote Live, sinon 30mn, sinon référence
+    df['effective_odds'] = df['live_odds'].combine_first(df.get('live_odds_30mn', pd.Series([None] * len(df))))
+    df['effective_odds'] = df['effective_odds'].apply(lambda x: x if x and x > 1.1 else None)
+
     df['effective_odds'] = df['effective_odds'].fillna(df['reference_odds']).fillna(1.0).clip(lower=1.05)
     
     # Marqueur pour l'UI : est-ce une cote live ?
-    df['is_live'] = df['reference_odds'].apply(lambda x: True if x and x > 1.1 else False)
+    df['is_live'] = df['live_odds'].apply(lambda x: True if x and x > 1.1 else False)
 
     # PMU Market Sentiment (Implied Probability)
-    # if 'reference_odds' in df.columns:
-    #     df['implied_prob'] = 1.0 / df['reference_odds'].replace(0, np.nan).fillna(100).clip(lower=1.01)
-    #     race_total_prob = grouped['implied_prob'].transform("sum")
-    #     df['market_sentiment'] = df['implied_prob'] / (race_total_prob + 1e-6)
+    if 'reference_odds' in df.columns:
+        df['implied_prob'] = 1.0 / df['reference_odds'].replace(0, np.nan).fillna(100).clip(lower=1.01)
+        # Correction du NameError: grouped n'était pas défini
+        race_total_prob = df.groupby('race_id')['implied_prob'].transform("sum")
+        df['market_sentiment'] = df['implied_prob'] / (race_total_prob + 1e-6)
+
+        # --- SENTIMENT DE MARCHÉ (SMART MONEY) ---
+        # Un drop de cote entre la référence (matin) et le live indique un fort sentiment
+        df['odds_drop'] = (df['reference_odds'] - df['effective_odds']) / df['reference_odds'].replace(0, np.nan)
+        # On sature à 0 si la cote monte (désintérêt du marché)
+        df['market_signal'] = df['odds_drop'].apply(lambda x: x if x > 0 else 0)
 
     # Calcul de l'Edge basé sur la cote effective (Live si possible)
     df['edge'] = df['win_probability'] - (1 / df['effective_odds'])
@@ -197,7 +213,13 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
     # 1. SNIPER STRATEGY
     if df.empty: return recommendations
     try:
-        sniper_mask = (df['edge'] >= MIN_EDGE) & (df['effective_odds'] >= MIN_ODDS) & (df['effective_odds'] <= MAX_ODDS)
+        # sniper_mask = (df['edge'] >= MIN_EDGE) & (df['effective_odds'] >= MIN_ODDS) & (df['effective_odds'] <= MAX_ODDS)
+        # sniper_mask = (df['edge'] >= MIN_EDGE) & (df['effective_odds'] >= MIN_ODDS) & (df['effective_odds'] <= MAX_ODDS)
+        # On ajoute un filtre : si le marché est très contre nous (cote qui explose), on est prudent
+        # Sauf si notre probabilité est tellement forte qu'on accepte l'outsider
+        sniper_mask = (df['edge'] >= MIN_EDGE) & \
+                      (df['effective_odds'] >= MIN_ODDS) & \
+                      (df['effective_odds'] <= MAX_ODDS)
         sniper_df = df[sniper_mask]
         for race_id, group in sniper_df.groupby('race_id'):
             best_bet = group.sort_values('win_probability', ascending=False).iloc[0]
@@ -207,7 +229,8 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
                 "program_number": int(best_bet['program_number']),
                 "odds": float(best_bet['effective_odds']),
                 "win_probability": float(best_bet['win_probability']),
-                "edge": float(best_bet['edge']),
+                # "edge": float(best_bet['edge']),
+                "edge": float(best_bet['edge']) + float(best_bet['market_signal'] * 0.1), # On boost l'edge si le marché confirme
                 "strategy": "Sniper" + (" (LIVE)" if best_bet['is_live'] else "")
             })
     except Exception as e:
@@ -265,3 +288,35 @@ def predict_race(race_id: int, repository: RaceRepository = Depends(get_reposito
         logger.error(f"Prediction route failed: {e}", exc_info=True)
 
     return results
+
+@app.get("/backtest", tags=["ML Metrics"])
+def run_backtest(
+    date_start: Optional[str] = None,
+    date_end: Optional[str] = None,
+    repository: RaceRepository = Depends(get_repository)
+):
+    """Point d'entrée pour le service de backtesting complet."""
+    try:
+        service = BacktestService(repository)
+        # Utilise une date par défaut si date_start est absent pour éviter le 422
+        start = date_start or pd.Timestamp.now().strftime("%d%m%Y")
+        results = service.run_full_backtest(start, date_end)
+        return results
+    except Exception as e:
+        logger.error(f"Backtest service failed: {e}", exc_info=True) # Ajout de exc_info=True pour la stack trace
+        raise HTTPException(status_code=500, detail=str(e))
+
+# @app.get("/backtest", tags=["ML Metrics"])
+# def run_backtest(
+#     date_start: Optional[str] = None,
+#     date_end: Optional[str] = None,
+#     repository: RaceRepository = Depends(get_repository)
+# ):
+#     """Point d'entrée pour le service de backtesting complet."""
+#     try:
+#         service = BacktestService(repository)
+#         results = service.run_full_backtest(date_start, date_end)
+#         return results
+#     except Exception as e:
+#         logger.error(f"Backtest service failed: {e}")
+#         raise HTTPException(status_code=500, detail=str(e))

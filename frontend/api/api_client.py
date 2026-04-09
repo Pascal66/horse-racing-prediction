@@ -62,3 +62,10 @@ def fetch_model_metrics(model_name: Optional[str] = None) -> pd.DataFrame:
         params["model_name"] = model_name
     data = client._get("/metrics", params=params)
     return pd.DataFrame(data) if data else pd.DataFrame()
+
+@st.cache_data(ttl=7200)
+def fetch_backtest_results() -> Dict[str, Any]: # -> pd.DataFrame: #
+    """Retrieves detailed backtesting results."""
+    data = client._get("/backtest")
+    return data if data else {}
+    # return pd.DataFrame(data) if data else pd.DataFrame()

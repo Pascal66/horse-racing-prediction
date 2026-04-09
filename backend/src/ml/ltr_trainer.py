@@ -210,8 +210,10 @@ class LTRTrainer:
         ]
 
         # Trier par race_id — obligatoire pour LGBMRanker
-        train_df = train_df.sort_values('race_id').reset_index(drop=True)
-        test_df = test_df.sort_values('race_id').reset_index(drop=True)
+        # train_df = train_df.sort_values('race_id').reset_index(drop=True)
+        # test_df = test_df.sort_values('race_id').reset_index(drop=True)
+        train_df = train_df.sort_values(['program_date', 'race_id']).reset_index(drop=True)
+        test_df = test_df.sort_values(['program_date', 'race_id']).reset_index(drop=True)
 
         X_train = train_df[features]
         y_train = train_df['ltr_score']
@@ -345,9 +347,35 @@ class LTRTrainer:
                 total_return += best['effective_odds']
             total_bets += 1
 
-        self.logger.info(f"  Avg effective_odds: {df['effective_odds'].mean():.2f}")
-        self.logger.info(f"  Win rate brute: {(total_return / total_bets):.3f}")
-        self.logger.info(f"  Implied win rate: {(1 / df['effective_odds'].mean()):.3f}")
+        # if 'meeting_type' in df.columns:
+        #     for mtype, group in df.groupby('meeting_type'):
+        #         total_r, total_b = 0, 0
+        #         for _, race in group.groupby('race_id'):
+        #             best = race.loc[race['proba'].idxmax()]
+        #             if best['is_winner'] == 1:
+        #                 total_r += best['effective_odds']
+        #             total_b += 1
+        #         roi = (total_r - total_b) / total_b * 100 if total_b > 0 else 0
+        #         self.logger.info(
+        #             f"    [{mtype}] ROI={roi:+.1f}% "
+        #             f"count={total_b} "
+        #             f"avg_odds={group['effective_odds'].mean():.2f}"
+        #         )
+        #
+        #     if 'audience' in df.columns:
+        #         for mtype, group in df.groupby('audience'):
+        #             total_r, total_b = 0, 0
+        #             for _, race in group.groupby('race_id'):
+        #                 best = race.loc[race['proba'].idxmax()]
+        #                 if best['is_winner'] == 1:
+        #                     total_r += best['effective_odds']
+        #                 total_b += 1
+        #             roi = (total_r - total_b) / total_b * 100 if total_b > 0 else 0
+        #             self.logger.info(
+        #                 f"    [{mtype}] ROI={roi:+.1f}% "
+        #                 f"count={total_b} "
+        #                 f"avg_odds={group['effective_odds'].mean():.2f}"
+        #             )
 
         if total_bets == 0: return None
         return {

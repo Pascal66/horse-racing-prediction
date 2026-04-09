@@ -3,6 +3,8 @@ import logging
 import time
 import random
 import threading
+from typing import Optional
+
 import psycopg2
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from src.core.config import PARTICIPANTS_URL_TEMPLATE, HEADERS, INCIDENT_MAP, SHOE_MAP, MAX_WORKERS
@@ -94,7 +96,10 @@ class ParticipantsIngestor(BaseIngestor):
 
         age = participant_data.get("age")
         # Determine birth year based on current year and age
-        birth_year = (dt.datetime.now(tz=dt.timezone.utc).year - int(age)) if age else None
+        try:
+            birth_year = (dt.datetime.now(tz=dt.timezone.utc).year - int(age)) if age else None
+        except (ValueError, TypeError):
+            birth_year = None
         
         raw_sex = participant_data.get("sexe")
         clean_sex = raw_sex[0].upper() if raw_sex else None
@@ -249,7 +254,7 @@ class ParticipantsIngestor(BaseIngestor):
                 self.incident_cache[code] = incident_id
         return incident_id
 
-    def _insert_participant(self, cursor, race_id, participant_data):
+    def _insert_participant(self, cursor, race_id, participant_data, race_start_timestamp: Optional[int] = None):
         """Parses participant JSON data and inserts into race_participant table."""
         p_num = participant_data.get("numPmu")
         
@@ -289,13 +294,23 @@ class ParticipantsIngestor(BaseIngestor):
         ref_odds = (participant_data.get("dernierRapportReference") or {}).get("rapport")
         live_odds = (participant_data.get("dernierRapportDirect") or {}).get("rapport")
 
+        # Logic to capture live_odds_30mn snapshot
+        live_odds_30mn_snapshot = None
+        if race_start_timestamp and live_odds:
+            race_start_dt = dt.datetime.fromtimestamp(race_start_timestamp / 1000, tz=dt.timezone.utc) # PMU timestamp is in ms
+            current_dt = dt.datetime.now(tz=dt.timezone.utc)
+            
+            time_to_start = race_start_dt - current_dt
+            if dt.timedelta(minutes=20) <= time_to_start <= dt.timedelta(minutes=40):
+                live_odds_30mn_snapshot = live_odds
+
         # ON CONFLICT (race_id, pmu_number) DO NOTHING;
         cursor.execute(
             """
             INSERT INTO race_participant (
                 race_id, horse_id, pmu_number, age, sex,
                 trainer_id, driver_jockey_id, shoeing_id, incident_id,
-                career_races_count, career_winnings, reference_odds, live_odds,
+                career_races_count, career_winnings, reference_odds, live_odds, live_odds_30mn,
                 raw_performance_string, trainer_advice, finish_rank,
                 time_achieved_s, reduction_km,
                 blinkers, unraced_indicator, career_wins_count,
@@ -303,7 +318,7 @@ class ParticipantsIngestor(BaseIngestor):
                 winnings_victory, winnings_place, winnings_year_now, winnings_year_prev,
                 handicap_value, handicap_weight, mount_weight, allure, owner_id
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (race_id, pmu_number) DO UPDATE SET
                 trainer_id = EXCLUDED.trainer_id,
                 driver_jockey_id = EXCLUDED.driver_jockey_id,
@@ -312,7 +327,8 @@ class ParticipantsIngestor(BaseIngestor):
                 career_races_count = EXCLUDED.career_races_count,
                 career_winnings = EXCLUDED.career_winnings,
                 reference_odds = EXCLUDED.reference_odds,
-                live_odds = EXCLUDED.live_odds,
+                live_odds = EXCLUDED.live_odds, 
+                live_odds_30mn = COALESCE(race_participant.live_odds_30mn, EXCLUDED.live_odds_30mn),
                 raw_performance_string = EXCLUDED.raw_performance_string,
                 trainer_advice = EXCLUDED.trainer_advice,
                 finish_rank = EXCLUDED.finish_rank,
@@ -337,8 +353,8 @@ class ParticipantsIngestor(BaseIngestor):
             (
                 race_id, horse_id, p_num, participant_data.get("age"), clean_sex,
                 trainer_id, driver_id, shoeing_id, incident_id,
-                participant_data.get("nombreCourses"), career_winnings,
-                ref_odds, live_odds,
+                participant_data.get("nombreCourses"), career_winnings, # ... (autres colonnes)
+                ref_odds, live_odds, live_odds_30mn_snapshot, # Utilise le snapshot calculé
                 participant_data.get("musique"), participant_data.get("avisEntraineur"), participant_data.get("ordreArrivee"),
                 participant_data.get("tempsObtenu"), clean_red_km,
                 participant_data.get("oeilleres"), participant_data.get("indicateurInedit"),
@@ -350,6 +366,17 @@ class ParticipantsIngestor(BaseIngestor):
                 owner_id
             )
         )
+
+    def _get_race_start_timestamp(self, race_id):
+        """Fetches the start_timestamp for a given race_id."""
+        conn = self.db_manager.get_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT start_timestamp FROM race WHERE race_id = %s", (race_id,))
+                result = cursor.fetchone()
+                return result[0] if result else None
+        finally:
+            self.db_manager.release_connection(conn)
 
     def _process_single_race(self, race_id, meeting_num, race_num):
         """Worker method to process participants for a single race."""
@@ -363,6 +390,8 @@ class ParticipantsIngestor(BaseIngestor):
         if participants is None:
             return 0, IngestStatus.FAILED
 
+        race_start_timestamp = self._get_race_start_timestamp(race_id)
+
         conn = None
         max_retries = 3
         for _ in range(max_retries):
@@ -371,7 +400,7 @@ class ParticipantsIngestor(BaseIngestor):
                 with conn:
                     with conn.cursor() as cursor:
                         for p_data in participants:
-                            self._insert_participant(cursor, race_id, p_data)
+                            self._insert_participant(cursor, race_id, p_data, race_start_timestamp)
                 return len(participants), IngestStatus.SUCCESS
             except psycopg2.errors.DeadlockDetected:
                 if conn:
@@ -412,7 +441,6 @@ class ParticipantsIngestor(BaseIngestor):
 
     def ingest(self):
         """Main entry point for parallel participants ingestion."""
-        self.db_manager.initialize_pool()
         self._preload_caches()
         
         self.logger.info(f"Starting PARALLEL PARTICIPANTS ingestion for {self.date_code}")
@@ -432,7 +460,7 @@ class ParticipantsIngestor(BaseIngestor):
                     count, status = future.result()
                     if status == IngestStatus.SUCCESS:
                         total_inserted += count
-                    elif status == IngestStatus.SKIPPED_NO_CONTENT:
+                    elif status in [IngestStatus.SKIPPED, IngestStatus.SKIPPED_NO_CONTENT]:
                         total_skipped += 1
                     else:
                         total_failed += 1
@@ -441,4 +469,3 @@ class ParticipantsIngestor(BaseIngestor):
                     total_failed += 1
         
         self.logger.info(f"Ingestion Completed. Records: {total_inserted} | Skipped: {total_skipped} | Failed: {total_failed}")
-        self.db_manager.close_pool()

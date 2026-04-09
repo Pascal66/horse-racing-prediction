@@ -11,7 +11,7 @@ FAILURES_DIR = "failures"
 
 
 PROGRAMME_URL_TEMPLATE = "https://online.turfinfo.api.pmu.fr/rest/client/1/programme/{date_code}"
-PARTICIPANTS_URL_TEMPLATE = "https://online.turfinfo.api.pmu.fr/rest/client/61/programme/{date}/R{meeting}/C{race}/participants"
+PARTICIPANTS_URL_TEMPLATE = "https://online.turfinfo.api.pmu.fr/rest/client/61/programme/{date}/R{meeting}/C{race}/participants?specialisation=INTERNET"
 PERF_URL_TEMPLATE = "https://online.turfinfo.api.pmu.fr/rest/client/61/programme/{date}/R{meeting}/C{race}/performances-detaillees/pretty"
 REPORTS_URL_TEMPLATE = "https://online.turfinfo.api.pmu.fr/rest/client/1/programme/{date}/R{meeting}/C{race}/rapports-definitifs"
 

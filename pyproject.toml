@@ -37,6 +37,7 @@ dependencies = [
     "torch>=2.9.0",
     "pytorch-tabnet>=4.1.0",
     "dpcpp-cpp-rt>=2025.3.3",
+    "plotly>=6.6.0",
 ]
 [tool.uv]
 required-environments = [
