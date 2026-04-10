@@ -68,12 +68,14 @@ class RaceRepository:
                 br.combination,
                 br.dividend_per_1e
             FROM race r
-            JOIN daily_program dp ON r.meeting_id IN (SELECT meeting_id FROM race_meeting WHERE program_id = dp.program_id)
+            JOIN daily_program dp ON r.meeting_id IN (SELECT meeting_id FROM race_meeting rm WHERE program_id = dp.program_id AND rm.audience = 'NATIONAL')
             JOIN race_participant rp ON r.race_id = rp.race_id
             LEFT JOIN prediction p ON rp.participant_id = p.participant_id
             LEFT JOIN race_bet rb ON r.race_id = rb.race_id
             LEFT JOIN bet_report br ON rb.bet_id = br.bet_id
-            WHERE rp.finish_rank IS NOT NULL
+            WHERE dp.program_date >= CURRENT_DATE - INTERVAL '1 year'
+              AND rp.finish_rank IS NOT NULL 
+              AND (rb.bet_family IN ('Simple', 'Couple', 'Trio'))
             ORDER BY dp.program_date DESC, r.race_id, rp.pmu_number;
         """
 

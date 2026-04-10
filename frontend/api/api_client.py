@@ -17,7 +17,7 @@ class APIClient:
         # Allow environment override for Docker (backend:8000)
         self.base_url = os.getenv("API_URL", "http://192.168.1.156:8000").rstrip("/")
         self.session = requests.Session()
-        self.timeout = 10
+        self.timeout = 60
 
     def _get(self, endpoint: str, params: Optional[Dict] = None) -> Any:
         """Internal helper for GET requests with error handling."""
@@ -63,7 +63,7 @@ def fetch_model_metrics(model_name: Optional[str] = None) -> pd.DataFrame:
     data = client._get("/metrics", params=params)
     return pd.DataFrame(data) if data else pd.DataFrame()
 
-@st.cache_data(ttl=7200)
+@st.cache_data(ttl=3600)
 def fetch_backtest_results() -> Dict[str, Any]: # -> pd.DataFrame: #
     """Retrieves detailed backtesting results."""
     data = client._get("/backtest")
