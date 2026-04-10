@@ -184,5 +184,6 @@ CREATE TABLE prediction (
     proba_winner REAL,
     proba_top3_place REAL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_participant_prediction FOREIGN KEY (participant_id) REFERENCES race_participant (participant_id)
+    CONSTRAINT fk_participant_prediction FOREIGN KEY (participant_id) REFERENCES race_participant (participant_id),
+    CONSTRAINT uq_participant_model UNIQUE (participant_id, model_version)
 );

@@ -167,13 +167,27 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
     if not raw_participants: return []
 
     try:
-        probabilities = predictor.predict_race(raw_participants)
+        probabilities, model_version = predictor.predict_race(raw_participants)
     except Exception as exc:
         logger.error(f"Inference engine failure: {exc}")
         raise HTTPException(status_code=500, detail="Inference engine failed.")
 
     df = pd.DataFrame(raw_participants)
     df['win_probability'] = probabilities
+
+    # Persistence des prédictions
+    try:
+        preds_to_save = [
+            {
+                "participant_id": row["participant_id"],
+                "model_version": model_version,
+                "proba_winner": row["win_probability"]
+            }
+            for _, row in df.iterrows()
+        ]
+        repository.upsert_predictions(preds_to_save)
+    except Exception as e:
+        logger.error(f"Failed to persist predictions: {e}")
 
     # Ensure live_odds exists
     if 'live_odds' not in df.columns: df['live_odds'] = None
@@ -221,6 +235,10 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
                       (df['effective_odds'] >= MIN_ODDS) & \
                       (df['effective_odds'] <= MAX_ODDS)
         sniper_df = df[sniper_mask]
+
+        # Correction: grouped n'était pas défini, et on veut éviter les doublons si Kelly et Sniper choisissent le même
+        seen_bets = set() # (race_id, program_number)
+
         for race_id, group in sniper_df.groupby('race_id'):
             best_bet = group.sort_values('win_probability', ascending=False).iloc[0]
             recommendations.append({
@@ -230,9 +248,10 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
                 "odds": float(best_bet['effective_odds']),
                 "win_probability": float(best_bet['win_probability']),
                 # "edge": float(best_bet['edge']),
-                "edge": float(best_bet['edge']) + float(best_bet['market_signal'] * 0.1), # On boost l'edge si le marché confirme
+                "edge": float(best_bet['edge']) + float(best_bet.get('market_signal', 0) * 0.1), # On boost l'edge si le marché confirme
                 "strategy": "Sniper" + (" (LIVE)" if best_bet['is_live'] else "")
             })
+            seen_bets.add((int(best_bet['race_id']), int(best_bet['program_number'])))
     except Exception as e:
         logger.error(f"Sniper strategy failed: {e}", exc_info=True)
 
@@ -255,6 +274,8 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
                     p_match = race_participants[race_participants['program_number'].astype(str) == str(prog_num)]
                     if not p_match.empty:
                         p_info = p_match.iloc[0]
+                        if (int(p_info['race_id']), int(p_info['program_number'])) in seen_bets:
+                            continue
                         recommendations.append({
                             "race_id": int(p_info['race_id']), "meeting_num": int(p_info['meeting_number']),
                             "race_num": int(p_info['race_number']), "horse_name": p_info['horse_name'],
@@ -276,12 +297,23 @@ def predict_race(race_id: int, repository: RaceRepository = Depends(get_reposito
     if not raw_participants: raise HTTPException(status_code=404, detail="Race not found.")
     results = []
     try:
-        win_probabilities = predictor.predict_race(raw_participants)
+        win_probabilities, model_version = predictor.predict_race(raw_participants)
+
+        # Persistence
+        preds_to_save = []
         for index, participant in enumerate(raw_participants):
             results.append({
                 "program_number": participant["program_number"], "horse_name": participant["horse_name"],
                 "win_probability": win_probabilities[index], "predicted_rank": 0
             })
+            preds_to_save.append({
+                "participant_id": participant["participant_id"],
+                "model_version": model_version,
+                "proba_winner": win_probabilities[index]
+            })
+
+        repository.upsert_predictions(preds_to_save)
+
         results.sort(key=lambda x: x["win_probability"], reverse=True)
         for rank, res in enumerate(results, 1): res["predicted_rank"] = rank
     except Exception as e:

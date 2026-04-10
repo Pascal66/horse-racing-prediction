@@ -61,16 +61,17 @@ class RacePredictor:
     def pipeline(self):
         return self.models.get("global")
 
-    def predict_race(self, participants: Union[List[Dict[str, Any]], pd.DataFrame]) -> List[float]:
+    def predict_race(self, participants: Union[List[Dict[str, Any]], pd.DataFrame]) -> tuple[List[float], str]:
         """
         Performs inference. Full Pipelines handle feature engineering internally.
+        Returns a tuple (probabilities, model_version).
         """
         if not self.models:
-            return [] if isinstance(participants, list) else np.array([])
+            return ([] if isinstance(participants, list) else np.array([])), "none"
 
         try:
             df = participants if isinstance(participants, pd.DataFrame) else pd.DataFrame(participants)
-            if df.empty: return []
+            if df.empty: return [], "none"
 
             discipline = "global"
             if 'discipline' in df.columns:
@@ -79,13 +80,13 @@ class RacePredictor:
                     discipline = disc_val
             
             model = self.models.get(discipline, self.models.get("global"))
-            if not model: return [0.0] * len(df)
+            if not model: return [0.0] * len(df), "none"
 
             # Predict using the Pipeline (which internally calls HyperStackModel)
 
             probabilities = model.predict_proba(df)[:, 1]
-            return probabilities.tolist()
+            return probabilities.tolist(), discipline
 
         except Exception as error:
             self.logger.error(f"Error during prediction: {error}")
-            return [0.0] * len(df)
+            return [0.0] * len(df), "error"
