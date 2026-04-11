@@ -193,6 +193,7 @@ class RaceRepository:
             )
             
             SELECT 
+                rp.participant_id,
                 rp.race_id, 
                 rp.pmu_number AS program_number, 
                 h.horse_name,
@@ -274,6 +275,7 @@ class RaceRepository:
             )
             
             SELECT 
+                rp.participant_id,
                 rp.race_id, 
                 rm.meeting_number,
                 r.race_number,
@@ -323,5 +325,60 @@ class RaceRepository:
         except Exception as exc:
             logger.error(f"Database error in get_daily_data_for_ml for date {target_date}: {exc}")
             return []
+        finally:
+            self.db_manager.release_connection(conn)
+
+    def upsert_predictions(self, predictions: List[Dict[str, Any]]) -> bool:
+        """
+        Saves prediction results to the database.
+        Expected format: List of {'participant_id': int, 'model_version': str, 'proba_winner': float}
+        """
+        if not predictions:
+            return True
+
+        query = """
+            INSERT INTO prediction (participant_id, model_version, proba_winner, proba_top3_place)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (participant_id, model_version) DO UPDATE SET
+                proba_winner = EXCLUDED.proba_winner,
+                proba_top3_place = EXCLUDED.proba_top3_place,
+                created_at = CURRENT_TIMESTAMP;
+        """
+
+        params = [(p['participant_id'], p['model_version'], p['proba_winner'], p.get('proba_top3_place')) for p in predictions]
+
+        conn = self.db_manager.get_connection()
+        try:
+            with conn:
+                with conn.cursor() as cur:
+                    psycopg2.extras.execute_batch(cur, query, params)
+            return True
+        except Exception as exc:
+            logger.error(f"Error upserting predictions: {exc}")
+            return False
+        finally:
+            self.db_manager.release_connection(conn)
+
+    def get_best_model_for_context(self, discipline: str, month: int) -> Optional[str]:
+        """
+        Identifie le nom du modèle (algorithm) ayant le meilleur ROI
+        historique pour une discipline et un mois donnés.
+        """
+        query = """
+             SELECT algorithm 
+             FROM ml_model_metrics 
+             WHERE segment_value = %s AND test_month = %s AND segment_type = 'discipline_month'
+             ORDER BY roi DESC 
+             LIMIT 1;
+         """
+        conn = self.db_manager.get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(query, (discipline.upper(), month))
+                res = cur.fetchone()
+                return res[0] if res else None
+        except Exception as exc:
+            logger.error(f"Error fetching best model: {exc}")
+            return None
         finally:
             self.db_manager.release_connection(conn)

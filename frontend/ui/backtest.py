@@ -54,28 +54,80 @@ def render_backtest_tab():
             })
 
         df_trainers = pd.DataFrame(trainer_list)
-        st.table(df_trainers.style.format({
-            "ROI": "{:.2f}%",
-            "Success Rate": "{:.2f}%",
-            "Avg Odds": "{:.2f}"
-        }))
+        
+        st.dataframe(
+            df_trainers,
+            hide_index=True,
+            column_config={
+                "Success Rate": st.column_config.NumberColumn("Success Rate", format="%.2f%%"),
+                "ROI": st.column_config.NumberColumn("ROI", format="%.2f%%"),
+                "Avg Odds": st.column_config.NumberColumn("Avg Odds", format="%.2f"),
+            },
+            width='stretch' #use_container_width=True
+        )
+
+        # Export CSV des performances globales
+        csv_trainers = df_trainers.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Télécharger Performance Trainers (CSV)",
+            data=csv_trainers,
+            file_name='backtest_trainers_performance.csv',
+            mime='text/csv',
+        )
 
         # Chart ROI
         fig = px.bar(df_trainers, x="Trainer", y="ROI", color="ROI",
                      title="ROI par Trainer",
                      color_continuous_scale="RdYlGn")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch') #use_container_width=True)
 
-        # Discipline breakdown for selected trainer
-        selected_trainer = st.selectbox("Détail par discipline pour :", list(trainers.keys()))
+        # --- Analyse Saisonnière Avancée ---
+        st.subheader("📅 Matrice de Performance Saisonnière")
+        selected_trainer = st.selectbox("Sélectionner un modèle pour l'analyse temporelle :", list(trainers.keys()))
+        
         if selected_trainer:
-            disc_data = trainers[selected_trainer]["by_discipline"]
-            disc_list = [{"Discipline": d, "ROI": v["roi"], "Count": v["count"]} for d, v in disc_data.items()]
-            df_disc = pd.DataFrame(disc_list)
-            st.dataframe(df_disc.style.format({"ROI": "{:.2f}%"}))
+            seasonal_data = trainers[selected_trainer].get("seasonal_analysis", {})
+            
+            if seasonal_data:
+                # Transformation des données pour le heatmap
+                rows = []
+                for discipline, months in seasonal_data.items():
+                    for month, stats in months.items():
+                        rows.append({
+                            "Discipline": discipline,
+                            "Mois": int(month),
+                            "ROI": stats["roi"],
+                            "ROI_Place": stats.get("roi_place", 0.0),
+                            "Win_Rate": stats["win_rate"],
+                            "Volume": stats["count"],
+                            "Avg_Odds": stats["avg_odds"]
+                        })
+                
+                df_seasonal = pd.DataFrame(rows)
+                
+                if not df_seasonal.empty:
+                    # Heatmap du ROI par Mois et Discipline
+                    pivot_roi = df_seasonal.pivot(index="Discipline", columns="Mois", values="ROI")
+                    fig_heat = px.imshow(pivot_roi, 
+                                        labels=dict(x="Mois (1-12)", y="Discipline", color="ROI %"),
+                                        color_continuous_scale="RdYlGn",
+                                        text_auto=".0f",
+                                        title=f"Saisonnalité du ROI : {selected_trainer}")
+                    st.plotly_chart(fig_heat, width='stretch') # use_container_width=True)
+                    
+                    # Export CSV des données saisonnières
+                    csv_seasonal = df_seasonal.to_csv(index=False).encode('utf-8')
+                    st.download_button(
+                        label=f"📥 Télécharger Analyse Saisonnière {selected_trainer} (CSV)",
+                        data=csv_seasonal,
+                        file_name=f'backtest_seasonal_{selected_trainer}.csv',
+                        mime='text/csv',
+                    )
+                    
+                    st.write("💡 *Conseil : Ciblez les cellules vert foncé avec un volume de paris suffisant.*")
+                else:
+                    st.info("Pas assez de données pour l'analyse saisonnière de ce trainer.")
 
-            fig_disc = px.bar(df_disc, x="Discipline", y="ROI", title=f"ROI par Discipline ({selected_trainer})")
-            st.plotly_chart(fig_disc, use_container_width=True)
 
     else:
         st.warning("Aucune donnée de performance pour les trainers.")

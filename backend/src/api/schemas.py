@@ -38,6 +38,7 @@ class PredictionResult(BaseModel):
     horse_name: str
     win_probability: float
     predicted_rank: int
+    model_version: Optional[str] = None
 
 class BetRecommendation(BaseModel):
     race_id: int
@@ -49,10 +50,11 @@ class BetRecommendation(BaseModel):
     win_probability: float
     edge: float
     strategy: str
+    model_version: Optional[str] = None
 
 class ModelMetric(BaseModel):
     model_name: str
-    algorithm: Optional[str] = "xgboost" # Made optional with default
+    algorithm: Optional[str] = "xgboost"
     segment_type: str
     segment_value: str
     test_month: int

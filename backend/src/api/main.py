@@ -30,10 +30,9 @@ pd.set_option('future.no_silent_downcasting', True)
 # --- CONFIGURATION: SNIPER STRATEGY ---
 MIN_EDGE = 0.05
 MIN_ODDS = 2.0
-MAX_ODDS = 25.0  # Augmenté un peu pour le Sniper, mais Kelly sera plus strict
+MAX_ODDS = 25.0
 
 # Logger Configuration
-# logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 LOG_FILE = "app.log"
 logging.basicConfig(
     level=logging.INFO,
@@ -77,7 +76,6 @@ def get_repository() -> RaceRepository:
 def health_check() -> Dict[str, Any]:
     predictor = ml_models.get("predictor")
     model_status = "loaded" if predictor and predictor.models else "failed"
-    # return {"status": "online", "ml_engine": model_status, "available_models": list(predictor.models.keys()) if predictor else []}
     scheduler = get_scheduler()
     scheduler_status = "running" if scheduler and scheduler.running else "stopped"
     jobs = []
@@ -92,7 +90,7 @@ def health_check() -> Dict[str, Any]:
     return {
         "status": "online",
         "ml_engine": model_status,
-        "available_models": list(predictor.models.keys()) if predictor else [],
+        "available_models": sorted(list(predictor.models.keys())) if predictor else [],
         "scheduler": {
             "status": scheduler_status,
             "jobs": jobs
@@ -135,8 +133,6 @@ def run_job(job_id: str) -> Dict[str, str]:
 def get_model_metrics(model_name: Optional[str] = None, segment_type: Optional[str] = None, repository: RaceRepository = Depends(get_repository)) -> List[Dict[str, Any]]:
     metrics = repository.get_model_metrics(model_name, segment_type)
     
-    # Sanitization pour éviter le crash Arrow/Streamlit
-    # On remplace les chaînes 'N/A' par None (null en JSON) pour préserver le type float
     sanitized = []
     for m in metrics:
         clean_m = dict(m)
@@ -159,7 +155,11 @@ def get_race_participants(race_id: int, repository: RaceRepository = Depends(get
     return repository.get_participants_by_race(race_id)
 
 @app.get("/bets/sniper/{date_code}", response_model=List[BetRecommendation], tags=["Betting"])
-def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_repository)) -> List[Dict[str, Any]]:
+def get_sniper_bets(
+    date_code: str, 
+    algo: Optional[str] = "tabnet",
+    repository: RaceRepository = Depends(get_repository)
+) -> List[Dict[str, Any]]:
     predictor = ml_models.get("predictor")
     if predictor is None: raise HTTPException(status_code=503, detail="ML Model unavailable.")
 
@@ -167,60 +167,57 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
     if not raw_participants: return []
 
     try:
-        probabilities = predictor.predict_race(raw_participants)
+        preds_dict, model_version = predictor.predict_race(raw_participants, force_algo=algo)
+        probabilities = preds_dict["win"]
+        place_probabilities = preds_dict["place"]
     except Exception as exc:
         logger.error(f"Inference engine failure: {exc}")
         raise HTTPException(status_code=500, detail="Inference engine failed.")
 
     df = pd.DataFrame(raw_participants)
     df['win_probability'] = probabilities
+    df['place_probability'] = place_probabilities
 
-    # Ensure live_odds exists
-    if 'live_odds' not in df.columns: df['live_odds'] = None
+    # Persistence des prédictions
+    try:
+        preds_to_save = [
+            {
+                "participant_id": row["participant_id"],
+                "model_version": model_version,
+                "proba_winner": row["win_probability"],
+                "proba_top3_place": row["place_probability"]
+            }
+            for _, row in df.iterrows()
+        ]
+        repository.upsert_predictions(preds_to_save)
+    except Exception as e:
+        logger.error(f"Failed to persist predictions: {e}")
 
-    # --- LOGIQUE DE COTE LIVE PRIORITAIRE ---
-    # On utilise la live_odds si disponible (> 1.1), sinon la reference_odds
-    # df['effective_odds'] = df['live_odds'].apply(lambda x: x if x and x > 1.1 else None)
-    # Utilisation prioritaire de la cote Live, sinon 30mn, sinon référence
+    # Process effective odds & signals
     df['effective_odds'] = df['live_odds'].combine_first(df.get('live_odds_30mn', pd.Series([None] * len(df))))
     df['effective_odds'] = df['effective_odds'].apply(lambda x: x if x and x > 1.1 else None)
-
     df['effective_odds'] = df['effective_odds'].fillna(df['reference_odds']).fillna(1.0).clip(lower=1.05)
-    
-    # Marqueur pour l'UI : est-ce une cote live ?
     df['is_live'] = df['live_odds'].apply(lambda x: True if x and x > 1.1 else False)
 
-    # PMU Market Sentiment (Implied Probability)
     if 'reference_odds' in df.columns:
         df['implied_prob'] = 1.0 / df['reference_odds'].replace(0, np.nan).fillna(100).clip(lower=1.01)
-        # Correction du NameError: grouped n'était pas défini
         race_total_prob = df.groupby('race_id')['implied_prob'].transform("sum")
         df['market_sentiment'] = df['implied_prob'] / (race_total_prob + 1e-6)
-
-        # --- SENTIMENT DE MARCHÉ (SMART MONEY) ---
-        # Un drop de cote entre la référence (matin) et le live indique un fort sentiment
         df['odds_drop'] = (df['reference_odds'] - df['effective_odds']) / df['reference_odds'].replace(0, np.nan)
-        # On sature à 0 si la cote monte (désintérêt du marché)
         df['market_signal'] = df['odds_drop'].apply(lambda x: x if x > 0 else 0)
 
-    # Calcul de l'Edge basé sur la cote effective (Live si possible)
-    df['edge'] = df['win_probability'] - (1 / df['effective_odds'])
-
-    # print(df.columns)
+    # Edge calculation
+    raw_edge = df['win_probability'] - (1 / df['effective_odds'])
+    df['edge'] = raw_edge + (df.get('market_signal', 0) * 0.15)
 
     recommendations = []
     
     # 1. SNIPER STRATEGY
-    if df.empty: return recommendations
     try:
-        # sniper_mask = (df['edge'] >= MIN_EDGE) & (df['effective_odds'] >= MIN_ODDS) & (df['effective_odds'] <= MAX_ODDS)
-        # sniper_mask = (df['edge'] >= MIN_EDGE) & (df['effective_odds'] >= MIN_ODDS) & (df['effective_odds'] <= MAX_ODDS)
-        # On ajoute un filtre : si le marché est très contre nous (cote qui explose), on est prudent
-        # Sauf si notre probabilité est tellement forte qu'on accepte l'outsider
-        sniper_mask = (df['edge'] >= MIN_EDGE) & \
-                      (df['effective_odds'] >= MIN_ODDS) & \
-                      (df['effective_odds'] <= MAX_ODDS)
+        sniper_mask = (df['edge'] >= MIN_EDGE) & (df['effective_odds'] >= MIN_ODDS) & (df['effective_odds'] <= MAX_ODDS)
         sniper_df = df[sniper_mask]
+        seen_bets = set()
+
         for race_id, group in sniper_df.groupby('race_id'):
             best_bet = group.sort_values('win_probability', ascending=False).iloc[0]
             recommendations.append({
@@ -229,20 +226,17 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
                 "program_number": int(best_bet['program_number']),
                 "odds": float(best_bet['effective_odds']),
                 "win_probability": float(best_bet['win_probability']),
-                # "edge": float(best_bet['edge']),
-                "edge": float(best_bet['edge']) + float(best_bet['market_signal'] * 0.1), # On boost l'edge si le marché confirme
-                "strategy": "Sniper" + (" (LIVE)" if best_bet['is_live'] else "")
+                "edge": float(best_bet['edge']) + float(best_bet.get('market_signal', 0) * 0.1),
+                "strategy": "Sniper" + (" (LIVE)" if best_bet['is_live'] else ""),
+                "model_version": model_version
             })
+            seen_bets.add((int(best_bet['race_id']), int(best_bet['program_number'])))
     except Exception as e:
         logger.error(f"Sniper strategy failed: {e}", exc_info=True)
 
-    # 2. KELLY MULTI (Plus strict sur les cotes démesurées)
+    # 2. KELLY MULTI
     try:
-        # On ne passe à Kelly que les cotes réalistes (< 100) pour éviter les aberrations
         df_kelly = df[df['effective_odds'] < 100.0].copy()
-        # On injecte la cote effective dans la colonne que Kelly attend (live_odds)
-        # df_kelly['live_odds'] = df_kelly['effective_odds']
-        
         kelly_report = analyze_multiple_races(df_kelly, bankroll=1000.0, kelly_fraction=0.5)
         for course_info in kelly_report['ranking'][:5]:
             race_id = course_info['race_id']
@@ -251,17 +245,18 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
 
             for prog_num, stake_frac in course_info['fractions'].items():
                 if stake_frac > 0.005:
-                    # Sécurisation du type pour le numéro de programme et vérification de présence
                     p_match = race_participants[race_participants['program_number'].astype(str) == str(prog_num)]
                     if not p_match.empty:
                         p_info = p_match.iloc[0]
+                        if (int(p_info['race_id']), int(p_info['program_number'])) in seen_bets: continue
                         recommendations.append({
                             "race_id": int(p_info['race_id']), "meeting_num": int(p_info['meeting_number']),
                             "race_num": int(p_info['race_number']), "horse_name": p_info['horse_name'],
                             "program_number": int(p_info['program_number']), "odds": float(p_info['effective_odds']),
                             "win_probability": float(p_info['win_probability']), 
                             "edge": float(p_info['edge']),
-                            "strategy": f"Kelly ({stake_frac:.1%})" + (" (LIVE)" if p_info.get('is_live') else "")
+                            "strategy": f"Kelly ({stake_frac:.1%})" + (" (LIVE)" if p_info.get('is_live') else ""),
+                            "model_version": model_version
                         })
     except Exception as e:
         logger.error(f"Kelly multi-race strategy failed: {e}", exc_info=True)
@@ -269,19 +264,36 @@ def get_sniper_bets(date_code: str, repository: RaceRepository = Depends(get_rep
     return recommendations
 
 @app.get("/races/{race_id}/predict", response_model=List[PredictionResult], tags=["Predictions"])
-def predict_race(race_id: int, repository: RaceRepository = Depends(get_repository)) -> List[Dict[str, Any]]:
+def predict_race(
+    race_id: int, 
+    algo: Optional[str] = "tabnet",
+    repository: RaceRepository = Depends(get_repository)
+) -> List[Dict[str, Any]]:
     predictor = ml_models.get("predictor")
     if predictor is None: raise HTTPException(status_code=503, detail="ML Model unavailable.")
     raw_participants = repository.get_race_data_for_ml(race_id)
     if not raw_participants: raise HTTPException(status_code=404, detail="Race not found.")
     results = []
     try:
-        win_probabilities = predictor.predict_race(raw_participants)
+        preds_dict, model_version = predictor.predict_race(raw_participants, force_algo=algo)
+        win_probs = preds_dict["win"]
+        place_probs = preds_dict["place"]
+        
+        preds_to_save = []
         for index, participant in enumerate(raw_participants):
             results.append({
                 "program_number": participant["program_number"], "horse_name": participant["horse_name"],
-                "win_probability": win_probabilities[index], "predicted_rank": 0
+                "win_probability": win_probs[index], "predicted_rank": 0,
+                "model_version": model_version
             })
+            preds_to_save.append({
+                "participant_id": participant["participant_id"],
+                "model_version": model_version,
+                "proba_winner": win_probs[index],
+                "proba_top3_place": place_probs[index]
+            })
+
+        repository.upsert_predictions(preds_to_save)
         results.sort(key=lambda x: x["win_probability"], reverse=True)
         for rank, res in enumerate(results, 1): res["predicted_rank"] = rank
     except Exception as e:
@@ -290,33 +302,10 @@ def predict_race(race_id: int, repository: RaceRepository = Depends(get_reposito
     return results
 
 @app.get("/backtest", tags=["ML Metrics"])
-def run_backtest(
-    date_start: Optional[str] = None,
-    date_end: Optional[str] = None,
-    repository: RaceRepository = Depends(get_repository)
-):
-    """Point d'entrée pour le service de backtesting complet."""
+def run_backtest(repository: RaceRepository = Depends(get_repository)):
     try:
         service = BacktestService(repository)
-        # Utilise une date par défaut si date_start est absent pour éviter le 422
-        start = date_start or pd.Timestamp.now().strftime("%d%m%Y")
-        results = service.run_backtest() # .run_full_backtest(start, date_end)
-        return results
+        return service.run_backtest()
     except Exception as e:
-        logger.error(f"Backtest service failed: {e}", exc_info=True) # Ajout de exc_info=True pour la stack trace
-        raise HTTPException(status_code=500, detail=str(e))
-
-# @app.get("/backtest", tags=["ML Metrics"])
-# def run_backtest(
-#     date_start: Optional[str] = None,
-#     date_end: Optional[str] = None,
-#     repository: RaceRepository = Depends(get_repository)
-# ):
-#     """Point d'entrée pour le service de backtesting complet."""
-#     try:
-#         service = BacktestService(repository)
-#         results = service.run_full_backtest(date_start, date_end)
-#         return results
-#     except Exception as e:
-#         logger.error(f"Backtest service failed: {e}")
-#         raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Backtest service failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Backtest failure.")

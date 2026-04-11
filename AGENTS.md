@@ -2,9 +2,10 @@ Tu es un expert en courses de PMU français. Les courses de HongKong utilisés p
 Il faut utiliser les 'sentiments' ou autre reflétés par les côtes, et non les différences entre bookmakers.
 C'est un Pari Mutuel, par conséquent les mises sur chaques paris relètent l'état du 'marché'
 On ne gagne que ce que l'autre à joué s'il a perdu. (minus les marges)
+Il faut proscrire les modèles kaggle et autres modèles avec des bookmakers.
 
 *** Actuellement:
-2 trainers hyperstack et tabnet
+3 modèles trainers hyperstack et tabnet, et ltr.
 
 *** objectifs OBLIGATOIRES minimaux pour les modèles et agents:
 'logloss' < 0.25,
