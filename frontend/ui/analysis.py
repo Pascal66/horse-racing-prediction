@@ -19,7 +19,9 @@ def render_analysis_view(race_id: int):
     if not prediction_data.empty:
         full_race_data = pd.merge(
             participant_data,
-            prediction_data[['program_number', 'win_probability', 'predicted_rank']],
+            # prediction_data[['program_number', 'win_probability', 'predicted_rank']],
+            prediction_data[['program_number', 'win_probability', 'predicted_rank', 'model_version', 'is_recommended']],
+
             on='program_number', 
             how='left'
         )
@@ -42,7 +44,16 @@ def render_analysis_view(race_id: int):
 
     # Top 3 Cards
     if not prediction_data.empty:
-        st.subheader("🏆 AI Forecast")
+        # st.subheader("🏆 AI Forecast")
+        model_name = prediction_data['model_version'].iloc[0] if 'model_version' in prediction_data.columns else "AI"
+        is_rec = prediction_data['is_recommended'].iloc[0] if 'is_recommended' in prediction_data.columns else False
+
+        header_text = f"🏆 AI Forecast ({model_name})"
+        if is_rec:
+            header_text += " ✨ RECOMMENDED"
+
+        st.subheader(header_text)
+
         col1, col2, col3 = st.columns(3)
         top_3 = full_race_data.head(3)
         colors = ["#FFD700", "#C0C0C0", "#CD7F32"] 

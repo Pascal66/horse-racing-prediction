@@ -39,6 +39,7 @@ class PredictionResult(BaseModel):
     win_probability: float
     predicted_rank: int
     model_version: Optional[str] = None
+    is_recommended: Optional[bool] = None
 
 class BetRecommendation(BaseModel):
     race_id: int

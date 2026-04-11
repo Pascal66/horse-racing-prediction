@@ -68,6 +68,55 @@ class BacktestService:
                 place_div = group[(group['bet_type'] == 'E_SIMPLE_PLACE') & 
                                   (group['combination'] == str(best_horse['program_number']))]['dividend_per_1e']
                 payout_sp = float(place_div.iloc[0]) if not place_div.empty else (1.1 if is_placed else 0.0)
+                # --- Multi-bets (Couple, Trio) ---
+                payout_cg, payout_cp, payout_trio = 0.0, 0.0, 0.0
+
+                # CG: Top 2 by win_probability
+                top2_win = group.nlargest(2, 'win_probability')
+                if len(top2_win) == 2:
+                    nums = set(map(int, top2_win['program_number']))
+                    if (top2_win['finish_rank'].between(1, 2)).all():
+                        cg_rows = group[group['bet_type'].str.contains('COUPLE_GAGNANT', na=False)]
+                        for _, row in cg_rows.iterrows():
+                            try:
+                                comb_nums = set(map(int, str(row['combination']).replace('-', ' ').split()))
+                                if comb_nums == nums:
+                                    payout_cg = float(row['dividend_per_1e'])
+                                    break
+                            except:
+                                continue
+
+                # CP: Top 2 by place_probability
+                top2_place = group.nlargest(2, 'place_probability')
+                if len(top2_place) == 2:
+                    nums = set(map(int, top2_place['program_number']))
+                    if (top2_place['finish_rank'].between(1, 3)).all():
+                        cp_rows = group[group['bet_type'].str.contains('COUPLE_PLACE', na=False)]
+                        for _, row in cp_rows.iterrows():
+                            try:
+                                comb_nums = set(map(int, str(row['combination']).replace('-', ' ').split()))
+                                if nums.issubset(comb_nums):
+                                    payout_cp = float(row['dividend_per_1e'])
+                                    break
+                            except:
+                                continue
+
+                # Trio: Top 3 by win_probability
+                top3_win = group.nlargest(3, 'win_probability')
+                if len(top3_win) == 3:
+                    nums = set(map(int, top3_win['program_number']))
+                    if (top3_win['finish_rank'].between(1, 3)).all():
+                        trio_rows = group[
+                            group['bet_type'].str.contains('TRIO', na=False) & ~group['bet_type'].str.contains('ORDRE',
+                                                                                                               na=False)]
+                        for _, row in trio_rows.iterrows():
+                            try:
+                                comb_nums = set(map(int, str(row['combination']).replace('-', ' ').split()))
+                                if comb_nums == nums:
+                                    payout_trio = float(row['dividend_per_1e'])
+                                    break
+                            except:
+                                continue
 
                 bets.append({
                     "race_id": race_id,
@@ -75,18 +124,25 @@ class BacktestService:
                     "month": int(best_horse['program_date'].month),
                     "payout_sg": payout_sg,
                     "payout_sp": payout_sp,
+                    "payout_cg": payout_cg,
+                    "payout_cp": payout_cp,
+                    "payout_trio": payout_trio,
                     "win": is_win,
                     "placed": is_placed,
                     "odds": float(best_horse['effective_odds'])
                 })
 
             bets_df = pd.DataFrame(bets)
-            roi_sg, roi_sp, win_rate, place_rate = 0.0, 0.0, 0.0, 0.0
+            roi_sg, roi_sp, roi_cg, roi_cp, roi_trio = 0.0, 0.0, 0.0, 0.0, 0.0
+            win_rate, place_rate = 0.0, 0.0
             seasonal = {}
 
             if not bets_df.empty and len(bets_df) >= MIN_BETS_FOR_RELIABLE_TRAINER:
                 roi_sg = (bets_df['payout_sg'].sum() - len(bets_df)) / len(bets_df) * 100
                 roi_sp = (bets_df['payout_sp'].sum() - len(bets_df)) / len(bets_df) * 100
+                roi_cg = (bets_df['payout_cg'].sum() - len(bets_df)) / len(bets_df) * 100
+                roi_cp = (bets_df['payout_cp'].sum() - len(bets_df)) / len(bets_df) * 100
+                roi_trio = (bets_df['payout_trio'].sum() - len(bets_df)) / len(bets_df) * 100
                 win_rate = bets_df['win'].mean() * 100
                 place_rate = bets_df['placed'].mean() * 100
 
@@ -94,6 +150,9 @@ class BacktestService:
                 seasonal_raw = bets_df.groupby(['discipline', 'month']).apply(lambda x: {
                     "roi": float(((x['payout_sg'].sum() - len(x)) / len(x) * 100) if len(x) > 0 else 0),
                     "roi_place": float(((x['payout_sp'].sum() - len(x)) / len(x) * 100) if len(x) > 0 else 0),
+                    "roi_cg": float(((x['payout_cg'].sum() - len(x)) / len(x) * 100) if len(x) > 0 else 0),
+                    "roi_cp": float(((x['payout_cp'].sum() - len(x)) / len(x) * 100) if len(x) > 0 else 0),
+                    "roi_trio": float(((x['payout_trio'].sum() - len(x)) / len(x) * 100) if len(x) > 0 else 0),
                     "win_rate": float(x['win'].mean() * 100) if len(x) > 0 else 0,
                     "count": int(len(x)),
                     "avg_odds": float(x['odds'].mean())
@@ -107,6 +166,9 @@ class BacktestService:
                 model_results[str(model)] = {
                     "roi": float(roi_sg),
                     "roi_place": float(roi_sp),
+                    "roi_cg": float(roi_cg),
+                    "roi_cp": float(roi_cp),
+                    "roi_trio": float(roi_trio),
                     "win_rate": float(win_rate),
                     "place_rate": float(place_rate),
                     "total_bets": int(len(bets_df)),
@@ -181,10 +243,110 @@ class BacktestService:
                     "avg_horses_per_race": float(sum(horses_per_race) / len(horses_per_race)) if horses_per_race else 0.0
                 }
 
+        # --- Recommended Composite Strategy Evaluation ---
+        composite_results = {}
+        composite_bets = []
+
+        # Mapping best algorithms per context
+        contexts = df[['discipline', 'program_date']].copy()
+        contexts['month'] = contexts['program_date'].dt.month
+        unique_contexts = contexts[['discipline', 'month']].drop_duplicates()
+        best_algos = {}
+        for _, row in unique_contexts.iterrows():
+            best_algos[(row['discipline'], row['month'])] = self.repository.get_best_model_for_context(
+                row['discipline'], row['month'])
+
+        for race_id, race_group in df.groupby('race_id'):
+            disc = race_group['discipline'].iloc[0]
+            mon = race_group['program_date'].iloc[0].month
+            target_algo = best_algos.get((disc, mon))
+
+            # On cherche le modèle qui correspond au meilleur algo, ou le premier disponible
+            if target_algo:
+                model_group = race_group[race_group['model_version'].str.contains(target_algo, case=False, na=False)]
+            else:
+                model_group = pd.DataFrame()
+
+            if model_group.empty:
+                # Fallback: on prend le modèle avec la plus haute proba moyenne (arbitraire mais robuste)
+                model_group = race_group[race_group['model_version'] == race_group['model_version'].iloc[0]]
+
+            best_idx = model_group['win_probability'].idxmax()
+            best_horse = model_group.loc[best_idx]
+            is_win = int(best_horse['finish_rank']) == 1
+            win_div = model_group[(model_group['bet_type'] == 'E_SIMPLE_GAGNANT') & (
+                        model_group['combination'] == str(best_horse['program_number']))]['dividend_per_1e']
+            payout_sg = float(win_div.iloc[0]) if not win_div.empty else (
+                float(best_horse['effective_odds']) if is_win else 0.0)
+
+            # Reprendre les logiques multi-bets pour le composite
+            payout_cg, payout_cp, payout_trio = 0.0, 0.0, 0.0
+
+            top2_win = model_group.nlargest(2, 'win_probability')
+            if len(top2_win) == 2:
+                nums = set(map(int, top2_win['program_number']))
+                if (top2_win['finish_rank'].between(1, 2)).all():
+                    cg_rows = model_group[model_group['bet_type'].str.contains('COUPLE_GAGNANT', na=False)]
+                    for _, row in cg_rows.iterrows():
+                        try:
+                            if set(map(int, str(row['combination']).replace('-', ' ').split())) == nums:
+                                payout_cg = float(row['dividend_per_1e'])
+                                break
+                        except:
+                            continue
+
+            top2_place = model_group.nlargest(2, 'place_probability')
+            if len(top2_place) == 2:
+                nums = set(map(int, top2_place['program_number']))
+                if (top2_place['finish_rank'].between(1, 3)).all():
+                    cp_rows = model_group[model_group['bet_type'].str.contains('COUPLE_PLACE', na=False)]
+                    for _, row in cp_rows.iterrows():
+                        try:
+                            if nums.issubset(set(map(int, str(row['combination']).replace('-', ' ').split()))):
+                                payout_cp = float(row['dividend_per_1e'])
+                                break
+                        except:
+                            continue
+
+            top3_win = model_group.nlargest(3, 'win_probability')
+            if len(top3_win) == 3:
+                nums = set(map(int, top3_win['program_number']))
+                if (top3_win['finish_rank'].between(1, 3)).all():
+                    trio_rows = model_group[
+                        model_group['bet_type'].str.contains('TRIO', na=False) & ~model_group['bet_type'].str.contains(
+                            'ORDRE', na=False)]
+                    for _, row in trio_rows.iterrows():
+                        try:
+                            if set(map(int, str(row['combination']).replace('-', ' ').split())) == nums:
+                                payout_trio = float(row['dividend_per_1e'])
+                                break
+                        except:
+                            continue
+
+            composite_bets.append({
+                "payout_sg": payout_sg,
+                "payout_cg": payout_cg,
+                "payout_cp": payout_cp,
+                "payout_trio": payout_trio,
+                "win": is_win
+            })
+
+        if composite_bets:
+            c_df = pd.DataFrame(composite_bets)
+            composite_results = {
+                "roi": float((c_df['payout_sg'].sum() - len(c_df)) / len(c_df) * 100),
+                "roi_cg": float((c_df['payout_cg'].sum() - len(c_df)) / len(c_df) * 100),
+                "roi_cp": float((c_df['payout_cp'].sum() - len(c_df)) / len(c_df) * 100),
+                "roi_trio": float((c_df['payout_trio'].sum() - len(c_df)) / len(c_df) * 100),
+                "win_rate": float(c_df['win'].mean() * 100),
+                "total_bets": int(len(c_df))
+            }
+
         return {
             "trainers": model_results,
             "strategies": {
                 "sniper": sniper_results,
-                "kelly": kelly_results
+                "kelly": kelly_results,
+                "composite": composite_results
             }
         }

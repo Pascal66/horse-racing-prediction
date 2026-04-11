@@ -157,7 +157,8 @@ def get_race_participants(race_id: int, repository: RaceRepository = Depends(get
 @app.get("/bets/sniper/{date_code}", response_model=List[BetRecommendation], tags=["Betting"])
 def get_sniper_bets(
     date_code: str, 
-    algo: Optional[str] = "tabnet",
+    # algo: Optional[str] = "tabnet",
+    algo: Optional[str] = "auto",
     repository: RaceRepository = Depends(get_repository)
 ) -> List[Dict[str, Any]]:
     predictor = ml_models.get("predictor")
@@ -165,14 +166,42 @@ def get_sniper_bets(
 
     raw_participants = repository.get_daily_data_for_ml(date_code)
     if not raw_participants: return []
+    # Intelligent selection if algo="auto"
+    if algo == "auto":
+        # Note: on groupe par race pour avoir des algos différents par discipline
+        df_p = pd.DataFrame(raw_participants)
+        month = pd.to_datetime(df_p['program_date']).iloc[0].month
 
-    try:
-        preds_dict, model_version = predictor.predict_race(raw_participants, force_algo=algo)
-        probabilities = preds_dict["win"]
-        place_probabilities = preds_dict["place"]
-    except Exception as exc:
-        logger.error(f"Inference engine failure: {exc}")
-        raise HTTPException(status_code=500, detail="Inference engine failed.")
+        all_preds_win = []
+        all_preds_place = []
+        final_model_versions = []
+
+        for race_id, race_group in df_p.groupby('race_id'):
+            discipline = race_group['discipline'].iloc[0]
+            best_algo = repository.get_best_model_for_context(discipline, month)
+
+            try:
+                preds_dict, model_ver = predictor.predict_race(race_group.to_dict('records'), force_algo=best_algo)
+                all_preds_win.extend(preds_dict["win"])
+                all_preds_place.extend(preds_dict["place"])
+                final_model_versions.extend([model_ver] * len(race_group))
+            except Exception as e:
+                logger.error(f"Auto-prediction failed for race {race_id}: {e}")
+                all_preds_win.extend([0.0] * len(race_group))
+                all_preds_place.extend([0.0] * len(race_group))
+                final_model_versions.extend(["error"] * len(race_group))
+
+        probabilities = all_preds_win
+        place_probabilities = all_preds_place
+        model_version = "auto_composite"  # Pour le stockage global, mais chaque pari aura son model_version
+    else:
+        try:
+            preds_dict, model_version = predictor.predict_race(raw_participants, force_algo=algo)
+            probabilities = preds_dict["win"]
+            place_probabilities = preds_dict["place"]
+        except Exception as exc:
+            logger.error(f"Inference engine failure: {exc}")
+            raise HTTPException(status_code=500, detail="Inference engine failed.")
 
     df = pd.DataFrame(raw_participants)
     df['win_probability'] = probabilities
@@ -209,6 +238,8 @@ def get_sniper_bets(
     # Edge calculation
     raw_edge = df['win_probability'] - (1 / df['effective_odds'])
     df['edge'] = raw_edge + (df.get('market_signal', 0) * 0.15)
+    if algo == "auto":
+        df['model_version_specific'] = final_model_versions
 
     recommendations = []
     
@@ -228,7 +259,8 @@ def get_sniper_bets(
                 "win_probability": float(best_bet['win_probability']),
                 "edge": float(best_bet['edge']) + float(best_bet.get('market_signal', 0) * 0.1),
                 "strategy": "Sniper" + (" (LIVE)" if best_bet['is_live'] else ""),
-                "model_version": model_version
+                # "model_version": model_version
+                "model_version": best_bet['model_version_specific'] if algo == "auto" else model_version
             })
             seen_bets.add((int(best_bet['race_id']), int(best_bet['program_number'])))
     except Exception as e:
@@ -256,7 +288,8 @@ def get_sniper_bets(
                             "win_probability": float(p_info['win_probability']), 
                             "edge": float(p_info['edge']),
                             "strategy": f"Kelly ({stake_frac:.1%})" + (" (LIVE)" if p_info.get('is_live') else ""),
-                            "model_version": model_version
+                            # "model_version": model_version
+                            "model_version": p_info['model_version_specific'] if algo == "auto" else model_version
                         })
     except Exception as e:
         logger.error(f"Kelly multi-race strategy failed: {e}", exc_info=True)
@@ -266,16 +299,27 @@ def get_sniper_bets(
 @app.get("/races/{race_id}/predict", response_model=List[PredictionResult], tags=["Predictions"])
 def predict_race(
     race_id: int, 
-    algo: Optional[str] = "tabnet",
-    repository: RaceRepository = Depends(get_repository)
+    # algo: Optional[str] = "tabnet",
+    algo: Optional[str] = "auto",
+
+        repository: RaceRepository = Depends(get_repository)
 ) -> List[Dict[str, Any]]:
     predictor = ml_models.get("predictor")
     if predictor is None: raise HTTPException(status_code=503, detail="ML Model unavailable.")
     raw_participants = repository.get_race_data_for_ml(race_id)
     if not raw_participants: raise HTTPException(status_code=404, detail="Race not found.")
+
+    selected_algo = algo
+    if algo == "auto":
+        discipline = raw_participants[0]['discipline']
+        month = pd.to_datetime(raw_participants[0]['program_date']).month
+        selected_algo = repository.get_best_model_for_context(discipline, month)
+        logger.info(f"Auto-selected algo: {selected_algo} for {discipline} (month {month})")
+
     results = []
     try:
-        preds_dict, model_version = predictor.predict_race(raw_participants, force_algo=algo)
+        # preds_dict, model_version = predictor.predict_race(raw_participants, force_algo=algo)
+        preds_dict, model_version = predictor.predict_race(raw_participants, force_algo=selected_algo)
         win_probs = preds_dict["win"]
         place_probs = preds_dict["place"]
         
@@ -284,7 +328,10 @@ def predict_race(
             results.append({
                 "program_number": participant["program_number"], "horse_name": participant["horse_name"],
                 "win_probability": win_probs[index], "predicted_rank": 0,
-                "model_version": model_version
+                # "model_version": model_version
+                "model_version": model_version,
+                "is_recommended": (algo == "auto")
+
             })
             preds_to_save.append({
                 "participant_id": participant["participant_id"],
