@@ -64,6 +64,7 @@ class RaceRepository:
                 rp.live_odds,
                 p.model_version,
                 p.proba_winner,
+                p.proba_top3_place,
                 rb.bet_type,
                 br.combination,
                 br.dividend_per_1e

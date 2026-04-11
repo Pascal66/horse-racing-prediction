@@ -37,6 +37,21 @@ def render_backtest_tab():
     else:
         col_k1.info("Kelly: Pas de données")
 
+    composite = strategies.get("composite", {})
+    if composite:
+        st.subheader("🌟 Stratégie Composite (Auto-Selection)")
+        col_c1, col_c2, col_c3 = st.columns(3)
+        col_c1.metric("ROI SG", f"{composite['roi']:.2f}%", help="Simple Gagnant")
+        col_c2.metric("Win Rate", f"{composite['win_rate']:.2f}%")
+        col_c3.metric("Total Paris", composite['total_bets'])
+
+        col_c4, col_c5, col_c6 = st.columns(3)
+        col_c4.metric("ROI CG", f"{composite.get('roi_cg', 0):.2f}%")
+        col_c5.metric("ROI CP", f"{composite.get('roi_cp', 0):.2f}%")
+        col_c6.metric("ROI Trio", f"{composite.get('roi_trio', 0):.2f}%")
+    else:
+        st.info("Composite: Pas de données")
+
     st.divider()
 
     # --- Trainers Performance ---
@@ -47,8 +62,12 @@ def render_backtest_tab():
         for name, data in trainers.items():
             trainer_list.append({
                 "Trainer": name,
-                "ROI": data["roi"],
-                "Success Rate": data["win_rate"],
+                "ROI SG": data["roi"],
+                "ROI SP": data.get("roi_place", 0),
+                "ROI CG": data.get("roi_cg", 0),
+                "ROI CP": data.get("roi_cp", 0),
+                "ROI Trio": data.get("roi_trio", 0),
+                "Win Rate": data["win_rate"],
                 "Bets": data["total_bets"],
                 "Avg Odds": data["avg_odds"]
             })
@@ -59,8 +78,12 @@ def render_backtest_tab():
             df_trainers,
             hide_index=True,
             column_config={
-                "Success Rate": st.column_config.NumberColumn("Success Rate", format="%.2f%%"),
-                "ROI": st.column_config.NumberColumn("ROI", format="%.2f%%"),
+                "Win Rate": st.column_config.NumberColumn("Win Rate", format="%.2f%%"),
+                "ROI SG": st.column_config.NumberColumn("ROI SG", format="%.2f%%"),
+                "ROI SP": st.column_config.NumberColumn("ROI SP", format="%.2f%%"),
+                "ROI CG": st.column_config.NumberColumn("ROI CG", format="%.2f%%"),
+                "ROI CP": st.column_config.NumberColumn("ROI CP", format="%.2f%%"),
+                "ROI Trio": st.column_config.NumberColumn("ROI Trio", format="%.2f%%"),
                 "Avg Odds": st.column_config.NumberColumn("Avg Odds", format="%.2f"),
             },
             width='stretch' #use_container_width=True
@@ -76,8 +99,8 @@ def render_backtest_tab():
         )
 
         # Chart ROI
-        fig = px.bar(df_trainers, x="Trainer", y="ROI", color="ROI",
-                     title="ROI par Trainer",
+        fig = px.bar(df_trainers, x="Trainer", y="ROI SG", color="ROI SG",
+                     title="ROI SG par Trainer",
                      color_continuous_scale="RdYlGn")
         st.plotly_chart(fig, width='stretch') #use_container_width=True)
 

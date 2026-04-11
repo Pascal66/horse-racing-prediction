@@ -106,6 +106,7 @@ def render_recommendation_table(recommendations, races_df):
             "Odds": f"{bet.get('odds', 0):.1f}",
             "AI Prob": bet.get('win_probability', 0), # Keep raw for column_config
             "Edge": f"+{bet.get('edge', 0)*100:.1f}%",
+            "Model": bet.get('model_version', 'N/A'),
             "Strategy": bet.get('strategy', 'N/A')
         })
     
@@ -121,5 +122,6 @@ def render_recommendation_table(recommendations, races_df):
             "Horse": st.column_config.TextColumn("Horse", width="large"),
             "AI Prob": st.column_config.ProgressColumn("Win Probability", min_value=0, max_value=1, format="%.2f%%"),
             "Edge": st.column_config.TextColumn("Edge", help="Diff AI vs Market"),
+            "Model": st.column_config.TextColumn("Model", width="small"),
         }
     )
