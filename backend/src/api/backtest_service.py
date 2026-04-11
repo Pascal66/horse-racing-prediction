@@ -3,8 +3,8 @@ import logging
 
 import pandas as pd
 from typing import  Dict, Any
-from .repositories import RaceRepository
-from .kelly_multi_races import analyze_multiple_races
+from backend.src.api.repositories import RaceRepository
+from backend.src.api.kelly_multi_races import analyze_multiple_races
 
 logger = logging.getLogger(__name__)
 MIN_BETS_FOR_RELIABLE_TRAINER = 50  # Ignore les vieux modèles polluants
@@ -177,170 +177,186 @@ class BacktestService:
                 }
 
         # --- Sniper Strategy Evaluation ---
-        df['implied_prob'] = 1 / df['effective_odds'].replace(0, 100)
-        df['edge'] = df['win_probability'] - df['implied_prob']
-
-        sniper_mask = (df['edge'] >= 0.05) & (df['effective_odds'] >= 2.0) & (df['effective_odds'] <= 25.0)
-        sniper_bets_df = df[sniper_mask].copy()
-
-        sniper_final_bets = []
-        for race_id, group in sniper_bets_df.groupby('race_id'):
-            best = group.sort_values('win_probability', ascending=False).iloc[0]
-            is_win = int(best['finish_rank']) == 1
-            win_div = group[(group['bet_type'] == 'E_SIMPLE_GAGNANT') & (group['combination'] == str(best['program_number']))]['dividend_per_1e']
-            payout = float(win_div.iloc[0]) if not win_div.empty else (float(best['effective_odds']) if is_win else 0.0)
-            sniper_final_bets.append({"payout": payout, "win": is_win})
-
         sniper_results = {}
-        if sniper_final_bets:
-            s_df = pd.DataFrame(sniper_final_bets)
-            sniper_results = {
-                "roi": float((s_df['payout'].sum() - len(s_df)) / len(s_df) * 100),
-                "win_rate": float(s_df['win'].mean() * 100),
-                "total_bets": int(len(s_df))
-            }
+        try:
+            df['implied_prob'] = 1 / df['effective_odds'].replace(0, 100)
+            df['edge'] = df['win_probability'] - df['implied_prob']
+
+            sniper_mask = (df['edge'] >= 0.05) & (df['effective_odds'] >= 2.0) & (df['effective_odds'] <= 25.0)
+            sniper_bets_df = df[sniper_mask].copy()
+
+            sniper_final_bets = []
+            for race_id, group in sniper_bets_df.groupby('race_id'):
+                if group.empty: continue
+                best = group.sort_values('win_probability', ascending=False).iloc[0]
+                is_win = int(best['finish_rank']) == 1
+                win_div = group[(group['bet_type'] == 'E_SIMPLE_GAGNANT') & (group['combination'] == str(best['program_number']))]['dividend_per_1e']
+                payout = float(win_div.iloc[0]) if not win_div.empty else (float(best['effective_odds']) if is_win else 0.0)
+                sniper_final_bets.append({"payout": payout, "win": is_win})
+
+            if sniper_final_bets:
+                s_df = pd.DataFrame(sniper_final_bets)
+                sniper_results = {
+                    "roi": float((s_df['payout'].sum() - len(s_df)) / len(s_df) * 100),
+                    "win_rate": float(s_df['win'].mean() * 100),
+                    "total_bets": int(len(s_df))
+                }
+        except Exception as e:
+            logger.error(f"Sniper evaluation failed: {e}", exc_info=True)
 
         # --- Kelly Strategy Evaluation ---
         kelly_results = {}
-        available_models = [m for m in df['model_version'].unique() if m]
-        if available_models:
-            sim_model = 'global' if 'global' in available_models else available_models[0]
-            sim_df = df[df['model_version'] == sim_model].copy()
-            sim_df['live_odds'] = sim_df['effective_odds']
+        try:
+            available_models = [m for m in df['model_version'].unique() if m and pd.notna(m)]
+            if available_models:
+                sim_model = 'global' if 'global' in available_models else available_models[0]
+                sim_df = df[df['model_version'] == sim_model].copy()
+                sim_df['live_odds'] = sim_df['effective_odds']
 
-            current_bankroll = 1000.0
-            total_profit = 0.0
-            total_staked = 0.0
-            horses_per_race = []
-            kelly_count = 0
+                current_bankroll = 1000.0
+                total_profit = 0.0
+                total_staked = 0.0
+                horses_per_race = []
+                kelly_count = 0
 
-            for _, day_df in sim_df.groupby(sim_df['program_date'].dt.date):
-                for race_id, race_df in day_df.groupby('race_id'):
-                    res = analyze_multiple_races(race_df, bankroll=current_bankroll, kelly_fraction=0.5)
-                    if not res.get('fractions'): continue
+                for _, day_df in sim_df.groupby(sim_df['program_date'].dt.date):
+                    for race_id, race_df in day_df.groupby('race_id'):
+                        res = analyze_multiple_races(race_df, bankroll=current_bankroll, kelly_fraction=0.5)
+                        if not res.get('fractions'): continue
 
-                    horses_per_race.append(len(res['fractions']))
-                    for prog_num, fraction in res['fractions'].items():
-                        if fraction <= 0: continue
-                        stake = current_bankroll * fraction
-                        horse = race_df[race_df['program_number'] == int(prog_num)].iloc[0]
-                        is_win = int(horse['finish_rank']) == 1
-                        win_div = race_df[(race_df['bet_type'] == 'E_SIMPLE_GAGNANT') & (race_df['combination'] == str(prog_num))]['dividend_per_1e']
-                        odds_payout = float(win_div.iloc[0]) if not win_div.empty else (float(horse['effective_odds']) if is_win else 0.0)
-                        
-                        profit = (stake * odds_payout) - stake
-                        current_bankroll += profit
-                        total_profit += profit
-                        total_staked += stake
-                        kelly_count += 1
+                        horses_per_race.append(len(res['fractions']))
+                        for prog_num, fraction in res['fractions'].items():
+                            if fraction <= 0: continue
+                            stake = current_bankroll * fraction
+                            horse = race_df[race_df['program_number'] == int(prog_num)].iloc[0]
+                            is_win = int(horse['finish_rank']) == 1
+                            win_div = race_df[(race_df['bet_type'] == 'E_SIMPLE_GAGNANT') & (race_df['combination'] == str(prog_num))]['dividend_per_1e']
+                            odds_payout = float(win_div.iloc[0]) if not win_div.empty else (float(horse['effective_odds']) if is_win else 0.0)
 
-            if kelly_count > 0:
-                kelly_results = {
-                    "roi": float((total_profit / total_staked) * 100) if total_staked > 0 else 0.0,
-                    "total_profit": float(total_profit),
-                    "total_bets": int(kelly_count),
-                    "final_bankroll": float(current_bankroll),
-                    "avg_horses_per_race": float(sum(horses_per_race) / len(horses_per_race)) if horses_per_race else 0.0
-                }
+                            profit = (stake * odds_payout) - stake
+                            current_bankroll += profit
+                            total_profit += profit
+                            total_staked += stake
+                            kelly_count += 1
+
+                if kelly_count > 0:
+                    kelly_results = {
+                        "roi": float((total_profit / total_staked) * 100) if total_staked > 0 else 0.0,
+                        "total_profit": float(total_profit),
+                        "total_bets": int(kelly_count),
+                        "final_bankroll": float(current_bankroll),
+                        "avg_horses_per_race": float(sum(horses_per_race) / len(horses_per_race)) if horses_per_race else 0.0
+                    }
+        except Exception as e:
+            logger.error(f"Kelly strategy failed: {e}", exc_info=True)
 
         # --- Recommended Composite Strategy Evaluation ---
         composite_results = {}
-        composite_bets = []
+        try:
+            composite_bets = []
 
-        # Mapping best algorithms per context
-        contexts = df[['discipline', 'program_date']].copy()
-        contexts['month'] = contexts['program_date'].dt.month
-        unique_contexts = contexts[['discipline', 'month']].drop_duplicates()
-        best_algos = {}
-        for _, row in unique_contexts.iterrows():
-            best_algos[(row['discipline'], row['month'])] = self.repository.get_best_model_for_context(
-                row['discipline'], row['month'])
+            # Mapping best algorithms per context
+            contexts = df[['discipline', 'program_date']].copy()
+            contexts['month'] = contexts['program_date'].dt.month
+            unique_contexts = contexts[['discipline', 'month']].drop_duplicates()
+            best_algos = {}
+            for _, row in unique_contexts.iterrows():
+                best_algos[(row['discipline'], row['month'])] = self.repository.get_best_model_for_context(
+                    row['discipline'], row['month'])
 
-        for race_id, race_group in df.groupby('race_id'):
-            disc = race_group['discipline'].iloc[0]
-            mon = race_group['program_date'].iloc[0].month
-            target_algo = best_algos.get((disc, mon))
+            for race_id, race_group in df.groupby('race_id'):
+                disc = race_group['discipline'].iloc[0]
+                mon = race_group['program_date'].iloc[0].month
+                target_algo = best_algos.get((disc, mon))
 
-            # On cherche le modèle qui correspond au meilleur algo, ou le premier disponible
-            if target_algo:
-                model_group = race_group[race_group['model_version'].str.contains(target_algo, case=False, na=False)]
-            else:
+                # On cherche le modèle qui correspond au meilleur algo, ou le premier disponible
                 model_group = pd.DataFrame()
+                if target_algo:
+                    model_group = race_group[race_group['model_version'].astype(str).str.contains(target_algo, case=False, na=False)]
 
-            if model_group.empty:
-                # Fallback: on prend le modèle avec la plus haute proba moyenne (arbitraire mais robuste)
-                model_group = race_group[race_group['model_version'] == race_group['model_version'].iloc[0]]
+                if model_group.empty:
+                    # Fallback: on prend le premier modèle disponible qui n'est pas NaN
+                    first_model_ver = race_group['model_version'].dropna().iloc[0] if not race_group['model_version'].dropna().empty else None
+                    if first_model_ver:
+                        model_group = race_group[race_group['model_version'] == first_model_ver]
+                    else:
+                        continue # No model versions available at all for this race
 
-            best_idx = model_group['win_probability'].idxmax()
-            best_horse = model_group.loc[best_idx]
-            is_win = int(best_horse['finish_rank']) == 1
-            win_div = model_group[(model_group['bet_type'] == 'E_SIMPLE_GAGNANT') & (
-                        model_group['combination'] == str(best_horse['program_number']))]['dividend_per_1e']
-            payout_sg = float(win_div.iloc[0]) if not win_div.empty else (
-                float(best_horse['effective_odds']) if is_win else 0.0)
+                if model_group.empty or model_group['win_probability'].isna().all():
+                    continue
 
-            # Reprendre les logiques multi-bets pour le composite
-            payout_cg, payout_cp, payout_trio = 0.0, 0.0, 0.0
+                best_idx = model_group['win_probability'].idxmax()
+                best_horse = model_group.loc[best_idx]
+                is_win = int(best_horse['finish_rank']) == 1
+                win_div = model_group[(model_group['bet_type'] == 'E_SIMPLE_GAGNANT') & (
+                            model_group['combination'] == str(best_horse['program_number']))]['dividend_per_1e']
+                payout_sg = float(win_div.iloc[0]) if not win_div.empty else (
+                    float(best_horse['effective_odds']) if is_win else 0.0)
 
-            top2_win = model_group.nlargest(2, 'win_probability')
-            if len(top2_win) == 2:
-                nums = set(map(int, top2_win['program_number']))
-                if (top2_win['finish_rank'].between(1, 2)).all():
-                    cg_rows = model_group[model_group['bet_type'].str.contains('COUPLE_GAGNANT', na=False)]
-                    for _, row in cg_rows.iterrows():
-                        try:
-                            if set(map(int, str(row['combination']).replace('-', ' ').split())) == nums:
-                                payout_cg = float(row['dividend_per_1e'])
-                                break
-                        except:
-                            continue
+                # Reprendre les logiques multi-bets pour le composite
+                payout_cg, payout_cp, payout_trio = 0.0, 0.0, 0.0
 
-            top2_place = model_group.nlargest(2, 'place_probability')
-            if len(top2_place) == 2:
-                nums = set(map(int, top2_place['program_number']))
-                if (top2_place['finish_rank'].between(1, 3)).all():
-                    cp_rows = model_group[model_group['bet_type'].str.contains('COUPLE_PLACE', na=False)]
-                    for _, row in cp_rows.iterrows():
-                        try:
-                            if nums.issubset(set(map(int, str(row['combination']).replace('-', ' ').split()))):
-                                payout_cp = float(row['dividend_per_1e'])
-                                break
-                        except:
-                            continue
+                top2_win = model_group.nlargest(2, 'win_probability')
+                if len(top2_win) == 2:
+                    nums = set(map(int, top2_win['program_number']))
+                    if (top2_win['finish_rank'].between(1, 2)).all():
+                        cg_rows = model_group[model_group['bet_type'].str.contains('COUPLE_GAGNANT', na=False)]
+                        for _, row in cg_rows.iterrows():
+                            try:
+                                if set(map(int, str(row['combination']).replace('-', ' ').split())) == nums:
+                                    payout_cg = float(row['dividend_per_1e'])
+                                    break
+                            except:
+                                continue
 
-            top3_win = model_group.nlargest(3, 'win_probability')
-            if len(top3_win) == 3:
-                nums = set(map(int, top3_win['program_number']))
-                if (top3_win['finish_rank'].between(1, 3)).all():
-                    trio_rows = model_group[
-                        model_group['bet_type'].str.contains('TRIO', na=False) & ~model_group['bet_type'].str.contains(
-                            'ORDRE', na=False)]
-                    for _, row in trio_rows.iterrows():
-                        try:
-                            if set(map(int, str(row['combination']).replace('-', ' ').split())) == nums:
-                                payout_trio = float(row['dividend_per_1e'])
-                                break
-                        except:
-                            continue
+                top2_place = model_group.nlargest(2, 'place_probability')
+                if len(top2_place) == 2:
+                    nums = set(map(int, top2_place['program_number']))
+                    if (top2_place['finish_rank'].between(1, 3)).all():
+                        cp_rows = model_group[model_group['bet_type'].str.contains('COUPLE_PLACE', na=False)]
+                        for _, row in cp_rows.iterrows():
+                            try:
+                                if nums.issubset(set(map(int, str(row['combination']).replace('-', ' ').split()))):
+                                    payout_cp = float(row['dividend_per_1e'])
+                                    break
+                            except:
+                                continue
 
-            composite_bets.append({
-                "payout_sg": payout_sg,
-                "payout_cg": payout_cg,
-                "payout_cp": payout_cp,
-                "payout_trio": payout_trio,
-                "win": is_win
-            })
+                top3_win = model_group.nlargest(3, 'win_probability')
+                if len(top3_win) == 3:
+                    nums = set(map(int, top3_win['program_number']))
+                    if (top3_win['finish_rank'].between(1, 3)).all():
+                        trio_rows = model_group[
+                            model_group['bet_type'].str.contains('TRIO', na=False) & ~model_group['bet_type'].str.contains(
+                                'ORDRE', na=False)]
+                        for _, row in trio_rows.iterrows():
+                            try:
+                                if set(map(int, str(row['combination']).replace('-', ' ').split())) == nums:
+                                    payout_trio = float(row['dividend_per_1e'])
+                                    break
+                            except:
+                                continue
 
-        if composite_bets:
-            c_df = pd.DataFrame(composite_bets)
-            composite_results = {
-                "roi": float((c_df['payout_sg'].sum() - len(c_df)) / len(c_df) * 100),
-                "roi_cg": float((c_df['payout_cg'].sum() - len(c_df)) / len(c_df) * 100),
-                "roi_cp": float((c_df['payout_cp'].sum() - len(c_df)) / len(c_df) * 100),
-                "roi_trio": float((c_df['payout_trio'].sum() - len(c_df)) / len(c_df) * 100),
-                "win_rate": float(c_df['win'].mean() * 100),
-                "total_bets": int(len(c_df))
-            }
+                composite_bets.append({
+                    "payout_sg": payout_sg,
+                    "payout_cg": payout_cg,
+                    "payout_cp": payout_cp,
+                    "payout_trio": payout_trio,
+                    "win": is_win
+                })
+
+            if composite_bets:
+                c_df = pd.DataFrame(composite_bets)
+                composite_results = {
+                    "roi": float((c_df['payout_sg'].sum() - len(c_df)) / len(c_df) * 100),
+                    "roi_cg": float((c_df['payout_cg'].sum() - len(c_df)) / len(c_df) * 100),
+                    "roi_cp": float((c_df['payout_cp'].sum() - len(c_df)) / len(c_df) * 100),
+                    "roi_trio": float((c_df['payout_trio'].sum() - len(c_df)) / len(c_df) * 100),
+                    "win_rate": float(c_df['win'].mean() * 100),
+                    "total_bets": int(len(c_df))
+                }
+        except Exception as e:
+            logger.error(f"Composite strategy failed: {e}", exc_info=True)
 
         return {
             "trainers": model_results,
