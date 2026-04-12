@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, timezone
 from api.api_client import get_sniper_bets
 import state.store as store
 
@@ -98,7 +97,8 @@ def render_recommendation_table(recommendations, races_df):
         # Construct row
         horse_display = f"#{bet.get('program_number', '?')} {bet.get('horse_name', 'Unknown')}"
         if outcome_str:
-            horse_display += horse_display + outcome_str
+            # horse_display += horse_display + outcome_str
+            horse_display += outcome_str
 
         bet_rows.append({
             "Race": race_col_val,

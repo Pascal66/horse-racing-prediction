@@ -3,17 +3,41 @@ import pandas as pd
 import plotly.express as px
 from api.api_client import fetch_backtest_results
 
-
 def render_backtest_tab():
     st.header("📊 Backtesting & Rentability Analysis")
-    st.info("Cette section reproduit l'analyse de rentabilité basée sur les données historiques.")
+    
+    # Bouton de rafraîchissement
+    col_ref, col_info = st.columns([1, 4])
+    
+    # On utilise un flag dans st.session_state pour savoir si on doit forcer l'update
+    if 'force_backtest' not in st.session_state:
+        st.session_state.force_backtest = False
+
+    with col_ref:
+        if st.button("🔄 Actualiser (LENT)"):
+            st.session_state.force_backtest = True
+
+    with col_info:
+        st.info("Les résultats sont mis en cache sur le disque pour un affichage instantané. L'actualisation peut prendre 2-3 minutes.")
 
     with st.spinner("Chargement des données de backtesting..."):
-        results = fetch_backtest_results()
+        # L'API client gère maintenant le paramètre force_update
+        results = fetch_backtest_results(force_update=st.session_state.force_backtest)
+        # On remet le flag à False après l'appel
+        st.session_state.force_backtest = False
 
-    if not results or "error" in results:
-        st.error(results.get("error", "Erreur lors de la récupération des données de backtesting."))
+    if not results:
+        st.error("Aucune réponse du serveur (API injoignable ou timeout).")
         return
+
+    if "error" in results:
+        st.error(f"Erreur API : {results.get('error')}")
+        with st.expander("Détails techniques (Raw JSON)"):
+            st.json(results)
+        return
+
+    if "last_updated" in results:
+        st.caption(f"📅 Dernière mise à jour complète : {results['last_updated']}")
 
     # --- Metrics Summary ---
     st.subheader("🚀 Stratégies de Paris")
@@ -23,34 +47,28 @@ def render_backtest_tab():
 
     col_s1, col_s2, col_s3 = st.columns(3)
     if sniper:
-        col_s1.metric("ROI Sniper", f"{sniper['roi']:.2f}%")
-        col_s2.metric("Taux Réussite Sniper", f"{sniper['win_rate']:.2f}%")
-        col_s3.metric("Paris Sniper", sniper['total_bets'])
-    else:
-        col_s1.info("Sniper: Pas de données")
+        col_s1.metric("ROI Sniper", f"{sniper.get('roi', 0):.2f}%")
+        col_s2.metric("Taux Réussite Sniper", f"{sniper.get('win_rate', 0):.2f}%")
+        col_s3.metric("Paris Sniper", sniper.get('total_bets', 0))
 
     col_k1, col_k2, col_k3 = st.columns(3)
     if kelly:
-        col_k1.metric("ROI Kelly (Sim)", f"{kelly['roi']:.2f}%")
-        col_k2.metric("Profit Kelly", f"{kelly['total_profit']:.2f}€")
-        col_k3.metric("Paris Kelly", kelly['total_bets'])
-    else:
-        col_k1.info("Kelly: Pas de données")
+        col_k1.metric("ROI Kelly (Sim)", f"{kelly.get('roi', 0):.2f}%")
+        col_k2.metric("Profit Kelly", f"{kelly.get('total_profit', 0):.2f}€")
+        col_k3.metric("Paris Kelly", kelly.get('total_bets', 0))
 
     composite = strategies.get("composite", {})
     if composite:
         st.subheader("🌟 Stratégie Composite (Auto-Selection)")
-        col_c1, col_c2, col_c3 = st.columns(3)
-        col_c1.metric("ROI SG", f"{composite['roi']:.2f}%", help="Simple Gagnant")
-        col_c2.metric("Win Rate", f"{composite['win_rate']:.2f}%")
-        col_c3.metric("Total Paris", composite['total_bets'])
+        c1, c2, c3 = st.columns(3)
+        c1.metric("ROI SG", f"{composite.get('roi', 0):.2f}%", help="Simple Gagnant")
+        c2.metric("Win Rate", f"{composite.get('win_rate', 0):.2f}%")
+        c3.metric("Total Paris", composite.get('total_bets', 0))
 
-        col_c4, col_c5, col_c6 = st.columns(3)
-        col_c4.metric("ROI CG", f"{composite.get('roi_cg', 0):.2f}%")
-        col_c5.metric("ROI CP", f"{composite.get('roi_cp', 0):.2f}%")
-        col_c6.metric("ROI Trio", f"{composite.get('roi_trio', 0):.2f}%")
-    else:
-        st.info("Composite: Pas de données")
+        c4, c5, c6 = st.columns(3)
+        c4.metric("ROI CG", f"{composite.get('roi_cg', 0):.2f}%")
+        c5.metric("ROI CP", f"{composite.get('roi_cp', 0):.2f}%")
+        c6.metric("ROI Trio", f"{composite.get('roi_trio', 0):.2f}%")
 
     st.divider()
 
@@ -62,26 +80,21 @@ def render_backtest_tab():
         for name, data in trainers.items():
             trainer_list.append({
                 "Trainer": name,
-                # "ROI": data["roi"],
-                # "Success Rate": data["win_rate"],
-                "ROI SG": data["roi"],
+                "ROI SG": data.get("roi", 0),
                 "ROI SP": data.get("roi_place", 0),
                 "ROI CG": data.get("roi_cg", 0),
                 "ROI CP": data.get("roi_cp", 0),
                 "ROI Trio": data.get("roi_trio", 0),
-                "Win Rate": data["win_rate"],
-                "Bets": data["total_bets"],
-                "Avg Odds": data["avg_odds"]
+                "Win Rate": data.get("win_rate", 0),
+                "Bets": data.get("total_bets", 0),
+                "Avg Odds": data.get("avg_odds", 0)
             })
 
         df_trainers = pd.DataFrame(trainer_list)
-        
         st.dataframe(
             df_trainers,
             hide_index=True,
             column_config={
-                # "Success Rate": st.column_config.NumberColumn("Success Rate", format="%.2f%%"),
-                # "ROI": st.column_config.NumberColumn("ROI", format="%.2f%%"),
                 "Win Rate": st.column_config.NumberColumn("Win Rate", format="%.2f%%"),
                 "ROI SG": st.column_config.NumberColumn("ROI SG", format="%.2f%%"),
                 "ROI SP": st.column_config.NumberColumn("ROI SP", format="%.2f%%"),
@@ -90,76 +103,41 @@ def render_backtest_tab():
                 "ROI Trio": st.column_config.NumberColumn("ROI Trio", format="%.2f%%"),
                 "Avg Odds": st.column_config.NumberColumn("Avg Odds", format="%.2f"),
             },
-            width='stretch' #use_container_width=True
+            width='stretch'
         )
 
-        # Export CSV des performances globales
+        # Export CSV
         csv_trainers = df_trainers.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📥 Télécharger Performance Trainers (CSV)",
-            data=csv_trainers,
-            file_name='backtest_trainers_performance.csv',
-            mime='text/csv',
-        )
+        st.download_button("📥 Télécharger Performance Trainers (CSV)", csv_trainers, 'backtest_trainers.csv', 'text/csv')
 
-        # Chart ROI
-        # fig = px.bar(df_trainers, x="Trainer", y="ROI", color="ROI",
-        #              title="ROI par Trainer",
-        fig = px.bar(df_trainers, x="Trainer", y="ROI SG", color="ROI SG",
-                     title="ROI SG par Trainer",
-                     color_continuous_scale="RdYlGn")
-        st.plotly_chart(fig, width='stretch') #use_container_width=True)
+        fig = px.bar(df_trainers, x="Trainer", y="ROI SG", color="ROI SG", title="ROI SG par Trainer", color_continuous_scale="RdYlGn")
+        st.plotly_chart(fig, width='stretch')
 
-        # --- Analyse Saisonnière Avancée ---
+        # --- Analyse Saisonnière ---
         st.subheader("📅 Matrice de Performance Saisonnière")
-        selected_trainer = st.selectbox("Sélectionner un modèle pour l'analyse temporelle :", list(trainers.keys()))
+        selected_trainer = st.selectbox("Sélectionner un modèle :", list(trainers.keys()))
         
         if selected_trainer:
             seasonal_data = trainers[selected_trainer].get("seasonal_analysis", {})
-            
             if seasonal_data:
-                # Transformation des données pour le heatmap
                 rows = []
-                for discipline, months in seasonal_data.items():
-                    for month, stats in months.items():
-                        rows.append({
-                            "Discipline": discipline,
-                            "Mois": int(month),
-                            "ROI": stats["roi"],
-                            "ROI_Place": stats.get("roi_place", 0.0),
-                            "Win_Rate": stats["win_rate"],
-                            "Volume": stats["count"],
-                            "Avg_Odds": stats["avg_odds"]
-                        })
+                for disc, months in seasonal_data.items():
+                    for mon, stats in months.items():
+                        rows.append({"Discipline": disc, "Mois": int(mon), "ROI": stats["roi"], "Volume": stats["count"]})
                 
                 df_seasonal = pd.DataFrame(rows)
-                
                 if not df_seasonal.empty:
-                    # Heatmap du ROI par Mois et Discipline
                     pivot_roi = df_seasonal.pivot(index="Discipline", columns="Mois", values="ROI")
-                    fig_heat = px.imshow(pivot_roi, 
-                                        labels=dict(x="Mois (1-12)", y="Discipline", color="ROI %"),
-                                        color_continuous_scale="RdYlGn",
-                                        text_auto=".0f",
-                                        title=f"Saisonnalité du ROI : {selected_trainer}")
-                    st.plotly_chart(fig_heat, width='stretch') # use_container_width=True)
-                    
-                    # Export CSV des données saisonnières
-                    csv_seasonal = df_seasonal.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        label=f"📥 Télécharger Analyse Saisonnière {selected_trainer} (CSV)",
-                        data=csv_seasonal,
-                        file_name=f'backtest_seasonal_{selected_trainer}.csv',
-                        mime='text/csv',
-                    )
-                    
-                    st.write("💡 *Conseil : Ciblez les cellules vert foncé avec un volume de paris suffisant.*")
+                    fig_heat = px.imshow(pivot_roi, labels=dict(x="Mois", y="Discipline", color="ROI %"), color_continuous_scale="RdYlGn", text_auto=".0f", title=f"Saisonnalité : {selected_trainer}")
+                    st.plotly_chart(fig_heat, width='stretch')
                 else:
-                    st.info("Pas assez de données pour l'analyse saisonnière de ce trainer.")
-
-
+                    st.info("Pas assez de données pour l'analyse saisonnière.")
     else:
         st.warning("Aucune donnée de performance pour les trainers.")
 
     st.divider()
-    st.caption("Données basées sur les rapports PMU définitifs quand disponibles, sinon sur les cotes de référence.")
+    st.caption("Données basées sur les rapports PMU définitifs quand disponibles.")
+    
+    with st.expander("🛠 Zone de Debug"):
+        st.write("Dernière réponse brute de l'API :")
+        st.json(results)

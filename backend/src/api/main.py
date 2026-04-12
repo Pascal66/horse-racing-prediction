@@ -147,7 +147,7 @@ def get_model_metrics(model_name: Optional[str] = None, segment_type: Optional[s
     return sanitized
 
 @app.get("/races/{date_code}", response_model=List[RaceSummary], tags=["Races"])
-def get_races(date_code: str, repository: RaceRepository = Depends(get_repository)) -> List[Dict[str, Any]]:
+def get_races(date_code: str, repository: RaceRepository = Depends(get_repository) ) -> List[Dict[str, Any]]:
     return repository.get_races_by_date(date_code)
 
 @app.get("/races/{race_id}/participants", response_model=List[ParticipantSummary], tags=["Races"])
@@ -157,7 +157,6 @@ def get_race_participants(race_id: int, repository: RaceRepository = Depends(get
 @app.get("/bets/sniper/{date_code}", response_model=List[BetRecommendation], tags=["Betting"])
 def get_sniper_bets(
     date_code: str, 
-    # algo: Optional[str] = "tabnet",
     algo: Optional[str] = "auto",
     repository: RaceRepository = Depends(get_repository)
 ) -> List[Dict[str, Any]]:
@@ -166,53 +165,43 @@ def get_sniper_bets(
 
     raw_participants = repository.get_daily_data_for_ml(date_code)
     if not raw_participants: return []
-    # Intelligent selection if algo="auto"
-    if algo == "auto":
-        # Note: on groupe par race pour avoir des algos différents par discipline
-        df_p = pd.DataFrame(raw_participants)
-        month = pd.to_datetime(df_p['program_date']).iloc[0].month
 
-        all_preds_win = []
-        all_preds_place = []
-        final_model_versions = []
+    df_p = pd.DataFrame(raw_participants)
+    
+    probabilities = []
+    place_probabilities = []
+    model_versions = []
 
-        for race_id, race_group in df_p.groupby('race_id'):
+    # Process race by race to handle "auto" selection per discipline
+    for race_id, race_group in df_p.groupby('race_id'):
+        selected_algo = algo
+        if algo == "auto":
+            month = pd.to_datetime(race_group['program_date']).iloc[0].month
             discipline = race_group['discipline'].iloc[0]
-            best_algo = repository.get_best_model_for_context(discipline, month)
+            selected_algo = repository.get_best_model_for_context(discipline, month)
 
-            try:
-                preds_dict, model_ver = predictor.predict_race(race_group.to_dict('records'), force_algo=best_algo)
-                all_preds_win.extend(preds_dict["win"])
-                all_preds_place.extend(preds_dict["place"])
-                final_model_versions.extend([model_ver] * len(race_group))
-            except Exception as e:
-                logger.error(f"Auto-prediction failed for race {race_id}: {e}")
-                all_preds_win.extend([0.0] * len(race_group))
-                all_preds_place.extend([0.0] * len(race_group))
-                final_model_versions.extend(["error"] * len(race_group))
-
-        probabilities = all_preds_win
-        place_probabilities = all_preds_place
-        model_version = "auto_composite"  # Pour le stockage global, mais chaque pari aura son model_version
-    else:
         try:
-            preds_dict, model_version = predictor.predict_race(raw_participants, force_algo=algo)
-            probabilities = preds_dict["win"]
-            place_probabilities = preds_dict["place"]
-        except Exception as exc:
-            logger.error(f"Inference engine failure: {exc}")
-            raise HTTPException(status_code=500, detail="Inference engine failed.")
+            preds, ver = predictor.predict_race(race_group.to_dict('records'), force_algo=selected_algo)
+            probabilities.extend(preds["win"])
+            place_probabilities.extend(preds["place"])
+            model_versions.extend([ver] * len(race_group))
+        except Exception as e:
+            logger.error(f"Prediction failed for race {race_id}: {e}")
+            probabilities.extend([0.0] * len(race_group))
+            place_probabilities.extend([0.0] * len(race_group))
+            model_versions.extend(["error"] * len(race_group))
 
-    df = pd.DataFrame(raw_participants)
+    df = df_p.copy()
     df['win_probability'] = probabilities
     df['place_probability'] = place_probabilities
+    df['model_version'] = model_versions
 
-    # Persistence des prédictions
+    # Persistence
     try:
         preds_to_save = [
             {
                 "participant_id": row["participant_id"],
-                "model_version": model_version,
+                "model_version": row["model_version"],
                 "proba_winner": row["win_probability"],
                 "proba_top3_place": row["place_probability"]
             }
@@ -222,7 +211,6 @@ def get_sniper_bets(
     except Exception as e:
         logger.error(f"Failed to persist predictions: {e}")
 
-    # Process effective odds & signals
     df['effective_odds'] = df['live_odds'].combine_first(df.get('live_odds_30mn', pd.Series([None] * len(df))))
     df['effective_odds'] = df['effective_odds'].apply(lambda x: x if x and x > 1.1 else None)
     df['effective_odds'] = df['effective_odds'].fillna(df['reference_odds']).fillna(1.0).clip(lower=1.05)
@@ -235,20 +223,14 @@ def get_sniper_bets(
         df['odds_drop'] = (df['reference_odds'] - df['effective_odds']) / df['reference_odds'].replace(0, np.nan)
         df['market_signal'] = df['odds_drop'].apply(lambda x: x if x > 0 else 0)
 
-    # Edge calculation
     raw_edge = df['win_probability'] - (1 / df['effective_odds'])
     df['edge'] = raw_edge + (df.get('market_signal', 0) * 0.15)
-    if algo == "auto":
-        df['model_version_specific'] = final_model_versions
 
     recommendations = []
-    
-    # 1. SNIPER STRATEGY
     try:
         sniper_mask = (df['edge'] >= MIN_EDGE) & (df['effective_odds'] >= MIN_ODDS) & (df['effective_odds'] <= MAX_ODDS)
         sniper_df = df[sniper_mask]
         seen_bets = set()
-
         for race_id, group in sniper_df.groupby('race_id'):
             best_bet = group.sort_values('win_probability', ascending=False).iloc[0]
             recommendations.append({
@@ -259,14 +241,11 @@ def get_sniper_bets(
                 "win_probability": float(best_bet['win_probability']),
                 "edge": float(best_bet['edge']) + float(best_bet.get('market_signal', 0) * 0.1),
                 "strategy": "Sniper" + (" (LIVE)" if best_bet['is_live'] else ""),
-                # "model_version": model_version
-                "model_version": best_bet['model_version_specific'] if algo == "auto" else model_version
+                "model_version": best_bet['model_version']
             })
             seen_bets.add((int(best_bet['race_id']), int(best_bet['program_number'])))
-    except Exception as e:
-        logger.error(f"Sniper strategy failed: {e}", exc_info=True)
+    except Exception as e: logger.error(f"Sniper strategy failed: {e}", exc_info=True)
 
-    # 2. KELLY MULTI
     try:
         df_kelly = df[df['effective_odds'] < 100.0].copy()
         kelly_report = analyze_multiple_races(df_kelly, bankroll=1000.0, kelly_fraction=0.5)
@@ -274,7 +253,6 @@ def get_sniper_bets(
             race_id = course_info['race_id']
             race_participants = df_kelly[df_kelly['race_id'] == race_id]
             if race_participants.empty: continue
-
             for prog_num, stake_frac in course_info['fractions'].items():
                 if stake_frac > 0.005:
                     p_match = race_participants[race_participants['program_number'].astype(str) == str(prog_num)]
@@ -288,21 +266,17 @@ def get_sniper_bets(
                             "win_probability": float(p_info['win_probability']), 
                             "edge": float(p_info['edge']),
                             "strategy": f"Kelly ({stake_frac:.1%})" + (" (LIVE)" if p_info.get('is_live') else ""),
-                            # "model_version": model_version
-                            "model_version": p_info['model_version_specific'] if algo == "auto" else model_version
+                            "model_version": p_info['model_version']
                         })
-    except Exception as e:
-        logger.error(f"Kelly multi-race strategy failed: {e}", exc_info=True)
+    except Exception as e: logger.error(f"Kelly strategy failed: {e}", exc_info=True)
 
     return recommendations
 
 @app.get("/races/{race_id}/predict", response_model=List[PredictionResult], tags=["Predictions"])
 def predict_race(
     race_id: int, 
-    # algo: Optional[str] = "tabnet",
     algo: Optional[str] = "auto",
-
-        repository: RaceRepository = Depends(get_repository)
+    repository: RaceRepository = Depends(get_repository)
 ) -> List[Dict[str, Any]]:
     predictor = ml_models.get("predictor")
     if predictor is None: raise HTTPException(status_code=503, detail="ML Model unavailable.")
@@ -318,7 +292,6 @@ def predict_race(
 
     results = []
     try:
-        # preds_dict, model_version = predictor.predict_race(raw_participants, force_algo=algo)
         preds_dict, model_version = predictor.predict_race(raw_participants, force_algo=selected_algo)
         win_probs = preds_dict["win"]
         place_probs = preds_dict["place"]
@@ -328,10 +301,7 @@ def predict_race(
             results.append({
                 "program_number": participant["program_number"], "horse_name": participant["horse_name"],
                 "win_probability": win_probs[index], "predicted_rank": 0,
-                # "model_version": model_version
-                "model_version": model_version,
-                "is_recommended": (algo == "auto")
-
+                "model_version": model_version
             })
             preds_to_save.append({
                 "participant_id": participant["participant_id"],
@@ -344,15 +314,17 @@ def predict_race(
         results.sort(key=lambda x: x["win_probability"], reverse=True)
         for rank, res in enumerate(results, 1): res["predicted_rank"] = rank
     except Exception as e:
-        logger.error(f"Prediction route failed: {e}", exc_info=True)
-
+        logger.error(f"Prediction failed: {e}", exc_info=True)
     return results
 
 @app.get("/backtest", tags=["ML Metrics"])
-def run_backtest(repository: RaceRepository = Depends(get_repository)):
+def run_backtest(
+    force: bool = False,
+    repository: RaceRepository = Depends(get_repository)
+):
     try:
         service = BacktestService(repository)
-        return service.run_backtest()
+        return service.run_backtest(force_update=force)
     except Exception as e:
-        logger.error(f"Backtest service failed: {e}", exc_info=True)
+        logger.error(f"Backtest failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Backtest failure.")

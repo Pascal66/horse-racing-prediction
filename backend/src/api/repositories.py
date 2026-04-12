@@ -76,6 +76,7 @@ class RaceRepository:
             LEFT JOIN bet_report br ON rb.bet_id = br.bet_id
             WHERE dp.program_date >= CURRENT_DATE - INTERVAL '1 year'
               AND rp.finish_rank IS NOT NULL 
+              AND p.proba_winner IS NOT NULL
               AND (rb.bet_family IN ('Simple', 'Couple', 'Trio'))
             ORDER BY dp.program_date DESC, r.race_id, rp.pmu_number;
         """

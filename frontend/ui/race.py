@@ -19,25 +19,6 @@ def render_race_grid():
         st.warning("No races found for this meeting.")
         return
 
-    # st.dataframe(
-    #     meeting_races, #['race_id' == store.get_selected_race()], #full_race_data[display_cols],
-    #     width="stretch",
-    #     hide_index=True,
-    #     column_config={
-    #         "predicted_rank": st.column_config.NumberColumn("Rank", format="%d 🏅"),
-    #         "program_number": "No.",
-    #         "horse_name": "Horse",
-    #         "driver_name": "Driver/Jockey",
-    #         "odds": st.column_config.NumberColumn("Odds", format="%.1f"),
-    #         "win_probability": st.column_config.ProgressColumn(
-    #             "Win Probability",
-    #             format="%.1f%%",
-    #             min_value=0,
-    #             max_value=1
-    #         )
-    #     }
-    # )
-
     # Header
     racetrack_name = meeting_races.iloc[0]['racetrack_code']
     date_str = store.get_date_code()
@@ -100,21 +81,5 @@ def render_race_tab_content(race_row):
         m1.metric("Distance", f"{race_row['distance_m']} m")
         m2.metric("Runners", f"{race_row.get('declared_runners_count', '-')}")
         m3.metric("Racetrack", race_row['racetrack_code'])
-        
-    # with col_action:
-    #     # State Management
-    #     is_analyzed = (store.get_selected_race() == race_row['race_id'])
-    #
-    #     if is_analyzed:
-    #          st.button("🔄 Refresh", key=f"btn_ref_{race_row['race_id']}")
-    #     else:
-    #         # CORRECTION: use_container_width=True -> width="stretch"
-    #         if st.button(f"🧠 Analyze C{race_row['race_number']}", key=f"btn_ana_{race_row['race_id']}", type="primary", width="stretch"):
-    #             store.set_selected_race(race_row['race_id'])
-    #             st.rerun()
-    #
-    # st.divider()
 
-    # if True: #store.get_selected_race() == race_row['race_id']:
-    #     store.set_selected_race(race_row['race_id'])
         render_analysis_view(race_row['race_id'])
