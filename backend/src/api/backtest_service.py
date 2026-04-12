@@ -75,8 +75,10 @@ class BacktestService:
 
         # 2. Analyse par Trainer
         model_results = {}
-        # On ne prend que les lignes AVEC prédiction
+        # On ne prend que les lignes AVEC prédiction et on dédoublonne les participants
+        # (car le join SQL avec les paris peut multiplier les lignes participants)
         pred_df = df[df['proba_winner'] > 0].copy()
+        pred_df = pred_df.drop_duplicates(subset=['participant_id', 'model_version'])
         
         for model in pred_df['model_version'].unique():
             if model == 'unknown' or len(model) < 3: continue
@@ -125,6 +127,7 @@ class BacktestService:
                         if comb and comb.issubset(p3): payout_trio = val; break
 
                 bets.append({
+                    "date": pd.to_datetime(best_horse['program_date']),
                     "discipline": str(best_horse['discipline']),
                     "month": int(pd.to_datetime(best_horse['program_date']).month),
                     "payout_sg": payout_sg, "payout_sp": payout_sp,
@@ -134,9 +137,33 @@ class BacktestService:
                     "odds": float(best_horse['effective_odds'])
                 })
 
-            b_df = pd.DataFrame(bets)
+            b_df = pd.DataFrame(bets).sort_values("date")
             if not b_df.empty and len(b_df) >= MIN_BETS_FOR_RELIABLE_TRAINER:
                 n = len(b_df)
+
+                # Trend Analysis (Cumulative ROI)
+                b_df['cum_profit'] = b_df['payout_sg'].cumsum() - (np.arange(len(b_df)) + 1)
+                daily_trend = b_df.groupby(b_df['date'].dt.date)['cum_profit'].last().reset_index()
+                trend_points = [{"date": str(d), "profit": float(p)} for d, p in daily_trend.values]
+
+                # Discipline Analysis
+                disc_stats = {}
+                for disc, d_group in b_df.groupby("discipline"):
+                    dn = len(d_group)
+                    disc_stats[disc] = {
+                        "roi": self._safe_float((d_group['payout_sg'].sum() - dn) / dn * 100),
+                        "count": dn
+                    }
+
+                # Seasonal Analysis
+                seasonal = {}
+                for (disc, mon), s_group in b_df.groupby(["discipline", "month"]):
+                    sn = len(s_group)
+                    seasonal.setdefault(disc, {})[int(mon)] = {
+                        "roi": self._safe_float((s_group['payout_sg'].sum() - sn) / sn * 100),
+                        "count": sn
+                    }
+
                 model_results[model] = {
                     "roi": self._safe_float((b_df['payout_sg'].sum() - n) / n * 100),
                     "roi_place": self._safe_float((b_df['payout_sp'].sum() - n) / n * 100),
@@ -146,7 +173,9 @@ class BacktestService:
                     "win_rate": self._safe_float(b_df['win'].mean() * 100),
                     "place_rate": self._safe_float(b_df['placed'].mean() * 100),
                     "total_bets": n, "avg_odds": self._safe_float(b_df['odds'].mean()),
-                    "seasonal_analysis": {} # On peut le remplir si besoin
+                    "daily_trend": trend_points,
+                    "discipline_analysis": disc_stats,
+                    "seasonal_analysis": seasonal
                 }
 
         # 3. Kelly & Sniper
