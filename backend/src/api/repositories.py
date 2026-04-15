@@ -45,7 +45,7 @@ class RaceRepository:
         finally:
             self.db_manager.release_connection(conn)
 
-    def get_backtest_data(self) -> List[Dict[str, Any]]:
+    def get_backtest_data(self, date_start: Optional[dt.date] = None, date_end: Optional[dt.date] = None) -> List[Dict[str, Any]]:
         query = """
             SELECT 
                 r.race_id,
@@ -69,16 +69,28 @@ class RaceRepository:
             LEFT JOIN prediction p ON rp.participant_id = p.participant_id
             LEFT JOIN race_bet rb ON r.race_id = rb.race_id
             LEFT JOIN bet_report br ON rb.bet_id = br.bet_id
-            WHERE dp.program_date >= CURRENT_DATE - INTERVAL '1 year'
+            WHERE 1=1
+        """
+        params = []
+        if date_start:
+            query += " AND dp.program_date >= %s"
+            params.append(date_start)
+        else:
+            query += " AND dp.program_date >= CURRENT_DATE - INTERVAL '1 year'"
+
+        if date_end:
+            query += " AND dp.program_date <= %s"
+            params.append(date_end)
+
+        query += """
               AND rp.finish_rank IS NOT NULL 
-              AND p.proba_winner IS NOT NULL
               AND (rb.bet_family IN ('Simple', 'Couple', 'Trio'))
             ORDER BY dp.program_date DESC, r.race_id, rp.pmu_number;
         """
         conn = self.db_manager.get_connection()
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-                cur.execute(query)
+                cur.execute(query, tuple(params))
                 return cur.fetchall()
         except Exception as exc:
             logger.error(f"Error fetching backtest data: {exc}", exc_info=True)
@@ -277,6 +289,44 @@ class RaceRepository:
         except Exception as exc:
             logger.error(f"Error upserting predictions: {exc}")
             return False
+        finally:
+            self.db_manager.release_connection(conn)
+
+    def upsert_daily_performance(self, performances: List[Dict[str, Any]]) -> bool:
+        if not performances:
+            return True
+        query = """
+            INSERT INTO ml_daily_performance (performance_date, model_version, discipline, bet_type, nb_bets, nb_wins, roi, avg_odds)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (performance_date, model_version, discipline, bet_type) DO UPDATE SET
+                nb_bets = EXCLUDED.nb_bets,
+                nb_wins = EXCLUDED.nb_wins,
+                roi = EXCLUDED.roi,
+                avg_odds = EXCLUDED.avg_odds;
+        """
+        params = [(p['performance_date'], p['model_version'], p['discipline'], p['bet_type'], p['nb_bets'], p['nb_wins'], p['roi'], p['avg_odds']) for p in performances]
+        conn = self.db_manager.get_connection()
+        try:
+            with conn:
+                with conn.cursor() as cur:
+                    psycopg2.extras.execute_batch(cur, query, params)
+            return True
+        except Exception as exc:
+            logger.error(f"Error upserting daily performance: {exc}")
+            return False
+        finally:
+            self.db_manager.release_connection(conn)
+
+    def get_daily_performance(self, performance_date: dt.date) -> List[Dict[str, Any]]:
+        query = "SELECT * FROM ml_daily_performance WHERE performance_date = %s"
+        conn = self.db_manager.get_connection()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute(query, (performance_date,))
+                return cur.fetchall()
+        except Exception as exc:
+            logger.error(f"Error fetching daily performance for {performance_date}: {exc}")
+            return []
         finally:
             self.db_manager.release_connection(conn)
 

@@ -96,6 +96,39 @@ def render_analysis_view(race_id: int):
                         """)
 
     with col_side:
+        # --- TRACKING HIER/AUJOURD'HUI ---
+        st.subheader("⏱️ Tracking")
+
+        today_data = backtest.get("today_live", {}).get("trainers", {})
+        yesterday_data = backtest.get("yesterday_bilan", {}).get("trainers", {})
+
+        def get_best_model_perf(period_data):
+            if not period_data: return None, None
+            best_m = None
+            best_roi = -999
+            for m, d in period_data.items():
+                if d["roi"] > best_roi:
+                    best_roi = d["roi"]
+                    best_m = m
+            return best_m, period_data[best_m] if best_m else None
+
+        t_best_m, t_perf = get_best_model_perf(today_data)
+        y_best_m, y_perf = get_best_model_perf(yesterday_data)
+
+        c1, c2 = st.columns(2)
+        with c1:
+            if t_perf:
+                st.metric("Aujourd'hui", f"{t_perf['roi']:.1f}%", f"{t_perf['win_rate']:.1f}% WR", help=f"Best: {t_best_m}")
+            else:
+                st.metric("Aujourd'hui", "N/A")
+        with c2:
+            if y_perf:
+                st.metric("Hier", f"{y_perf['roi']:.1f}%", f"{y_perf['win_rate']:.1f}% WR", help=f"Best: {y_best_m}")
+            else:
+                st.metric("Hier", "N/A")
+
+        st.divider()
+
         st.subheader("📊 Normes")
         # On récupère le contexte de la course (discipline + mois)
         if not participant_data.empty:

@@ -324,7 +324,16 @@ def run_backtest(
 ):
     try:
         service = BacktestService(repository)
-        return service.run_backtest(force_update=force)
+        base_results = service.run_backtest(force_update=force)
+
+        # Enrichir avec Hier/Aujourd'hui plus précis
+        today = pd.Timestamp.now().date()
+        yesterday = today - pd.Timedelta(days=1)
+
+        base_results["today_live"] = service.get_period_stats(today, today)
+        base_results["yesterday_bilan"] = service.get_period_stats(yesterday, yesterday)
+
+        return base_results
     except Exception as e:
         logger.error(f"Backtest failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Backtest failure.")
