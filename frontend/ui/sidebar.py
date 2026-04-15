@@ -58,7 +58,7 @@ def render_sidebar():
                 if m_races.empty:
                     return f"R{m_num} - Unknown"
                 
-                track = m_races.iloc[0]['racetrack_code']
+                track = m_races.iloc[0]['meeting_libelle']
                 
                 # Find next race time
                 now = pd.Timestamp.now(tz=timezone.utc)

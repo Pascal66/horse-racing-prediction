@@ -30,7 +30,7 @@ class DataLoader:
                     rp.participant_id, rp.race_id, rp.horse_id,
                     rp.finish_rank,
                     CASE WHEN rp.finish_rank = 1 THEN 1 ELSE 0 END AS is_winner,
-                    dp.program_date, rm.racetrack_code, rm.meeting_type, rm.audience,
+                    dp.program_date, rm.meeting_code, rm.meeting_type, rm.audience,
                     r.discipline, r.distance_m, r.track_type, r.terrain_label,
                     r.declared_runners_count, r.penetrometer,
                     h.birth_year, h.sex,

@@ -5,7 +5,7 @@ Modifier ici se propage automatiquement aux trainers et au predictor.
 """
 
 CATEGORICAL_FEATURES = [
-    'racetrack_code', 'discipline', 'track_type', 'sex',
+    'meeting_code', 'discipline', 'track_type', 'sex',
     'shoeing_status', 'jockey_name', 'trainer_name', 'terrain_label', 'meeting_type',
     'breed', 'color', 'blinkers', 'allure',
     'father_name', 'mother_name', 'maternal_grandfather_name'

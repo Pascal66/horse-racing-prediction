@@ -271,7 +271,7 @@ class TabNetTrainer:
         segments = [
             ('discipline_overall', 'discipline', 0),
             ('discipline_month', 'discipline', 'month'),
-            ('track_month', 'racetrack_code', 'month')
+            ('track_month', 'meeting_code', 'month')
         ]
         for seg_type, col, month_col in segments:
             groupby_cols = [col] if month_col == 0 else [col, month_col]

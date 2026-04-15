@@ -17,7 +17,7 @@ class MockRaceRepository:
                 "name": "Prix de Test",
                 "discipline": "HARNESS",
                 "distance_m": 2700,
-                "racetrack_code": "VINCENNES",
+                "meeting_code": "VINCENNES",
                 "declared_runners_count": 14
             }
         ]

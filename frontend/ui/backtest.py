@@ -46,19 +46,19 @@ def render_backtest_tab():
     kelly = strategies.get("kelly", {})
 
     col_s1, col_s2, col_s3 = st.columns(3)
-    if sniper:
+    if True: #sniper:
         col_s1.metric("ROI Sniper", f"{sniper.get('roi', 0):.2f}%")
         col_s2.metric("Taux Réussite Sniper", f"{sniper.get('win_rate', 0):.2f}%")
         col_s3.metric("Paris Sniper", sniper.get('total_bets', 0))
 
     col_k1, col_k2, col_k3 = st.columns(3)
-    if kelly:
+    if True: #kelly:
         col_k1.metric("ROI Kelly (Sim)", f"{kelly.get('roi', 0):.2f}%")
         col_k2.metric("Profit Kelly", f"{kelly.get('total_profit', 0):.2f}€")
         col_k3.metric("Paris Kelly", kelly.get('total_bets', 0))
 
     composite = strategies.get("composite", {})
-    if composite:
+    if True: #composite:
         st.subheader("🌟 Stratégie Composite (Auto-Selection)")
         c1, c2, c3 = st.columns(3)
         c1.metric("ROI SG", f"{composite.get('roi', 0):.2f}%", help="Simple Gagnant")
@@ -96,12 +96,19 @@ def render_backtest_tab():
             hide_index=True,
             column_config={
                 "Win Rate": st.column_config.NumberColumn("Win Rate", format="%.2f%%"),
-                "ROI SG": st.column_config.NumberColumn("ROI SG", format="%.2f%%"),
-                "ROI SP": st.column_config.NumberColumn("ROI SP", format="%.2f%%"),
-                "ROI CG": st.column_config.NumberColumn("ROI CG", format="%.2f%%"),
-                "ROI CP": st.column_config.NumberColumn("ROI CP", format="%.2f%%"),
-                "ROI Trio": st.column_config.NumberColumn("ROI Trio", format="%.2f%%"),
+                # "ROI SG": st.column_config.NumberColumn("ROI SG", format="%.2f%%"),
+                # "ROI SP": st.column_config.NumberColumn("ROI SP", format="%.2f%%"),
+                # "ROI CG": st.column_config.NumberColumn("ROI CG", format="%.2f%%"),
+                # "ROI CP": st.column_config.NumberColumn("ROI CP", format="%.2f%%"),
+                # "ROI Trio": st.column_config.NumberColumn("ROI Trio", format="%.2f%%"),
+                # "Avg Odds": st.column_config.NumberColumn("Avg Odds", format="%.2f"),
+                "ROI SG": st.column_config.NumberColumn("ROI SG", format="%.1f%%"),
+                "ROI SP": st.column_config.NumberColumn("ROI SP", format="%.1f%%"),
+                "ROI CG": st.column_config.NumberColumn("ROI CG", format="%.1f%%"),
+                "ROI CP": st.column_config.NumberColumn("ROI CP", format="%.1f%%"),
+                "ROI Trio": st.column_config.NumberColumn("ROI Trio", format="%.1f%%"),
                 "Avg Odds": st.column_config.NumberColumn("Avg Odds", format="%.2f"),
+                "Bets": st.column_config.NumberColumn("Nombre de paris"),
             },
             width='stretch'
         )
@@ -112,10 +119,43 @@ def render_backtest_tab():
 
         fig = px.bar(df_trainers, x="Trainer", y="ROI SG", color="ROI SG", title="ROI SG par Trainer", color_continuous_scale="RdYlGn")
         st.plotly_chart(fig, width='stretch')
+        st.divider()
+
+        # --- Detailed Model Analysis ---
+        st.subheader("🔍 Analyse Détaillée par Modèle")
+        selected_trainer = st.selectbox("Sélectionner un modèle pour analyse approfondie :", list(trainers.keys()))
+
+        if selected_trainer:
+            t_data = trainers[selected_trainer]
+
+            # --- ROI Evolution Trend ---
+            trend_data = t_data.get("daily_trend", [])
+            if trend_data:
+                df_trend = pd.DataFrame(trend_data)
+                df_trend['date'] = pd.to_datetime(df_trend['date'])
+                fig_trend = px.line(df_trend, x='date', y='profit',
+                                    title=f"Évolution du Profit (SG) : {selected_trainer}",
+                                    labels={'profit': 'Profit Cumulé (€)', 'date': 'Date'})
+                fig_trend.update_traces(line_color='#00CC96')
+                st.plotly_chart(fig_trend, width='stretch') # use_container_width=True)
+            else:
+                st.info("Données de tendance non disponibles pour ce modèle.")
+
+            # --- ROI by Discipline ---
+            disc_data = t_data.get("discipline_analysis", {})
+            if disc_data:
+                df_disc = pd.DataFrame(
+                    [{"Discipline": d, "ROI": s["roi"], "Bets": s["count"]} for d, s in disc_data.items()])
+                fig_disc = px.bar(df_disc, x="Discipline", y="ROI", color="ROI", text="Bets",
+                                  title=f"ROI par Discipline : {selected_trainer}",
+                                  color_continuous_scale="RdYlGn",
+                                  labels={"ROI": "ROI %", "Bets": "Nombre de paris"})
+                fig_disc.update_traces(texttemplate='%{text}', textposition='outside')
+                st.plotly_chart(fig_disc, width='stretch') # use_container_width=True)
 
         # --- Analyse Saisonnière ---
         st.subheader("📅 Matrice de Performance Saisonnière")
-        selected_trainer = st.selectbox("Sélectionner un modèle :", list(trainers.keys()))
+        # selected_trainer = st.selectbox("Sélectionner un modèle :", list(trainers.keys()))
         
         if selected_trainer:
             seasonal_data = trainers[selected_trainer].get("seasonal_analysis", {})

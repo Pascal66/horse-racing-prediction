@@ -63,7 +63,6 @@ def main():
     with tab_backtest:
         render_backtest_tab()
 
-
     with tab_admin:
         render_admin_dashboard()
 

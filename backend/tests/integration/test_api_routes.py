@@ -14,7 +14,7 @@ class MockRaceRepository:
                 "race_number": 1,
                 "discipline": "ATTELE",
                 "distance_m": 2700,
-                "racetrack_code": "VINC",
+                "meeting_code": "VINC",
                 "name": "Prix d'Integration",
                 "declared_runners_count": 12
             }

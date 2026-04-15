@@ -1,0 +1,586 @@
+C:\Users\hmaro\AppData\Roaming\Python\Scripts\uv.exe run F:/git/horse-racing-prediction/.venv/Scripts/python.exe F:\git\horse-racing-prediction\backend\src\ml\ltr_trainer.py
+2026-04-07 12:33:48,276 - ML.LTRTrainer - INFO - --- STARTING LTR WALK-FORWARD TOURNAMENT ---
+2026-04-07 12:33:48,276 - ML.Loader - INFO - Loading SQL data...
+2026-04-07 12:33:54,316 - ML.Loader - INFO - Calculating historical statistics...
+2026-04-07 12:34:04,580 - ML.LTRTrainer - INFO - --- LTR Target: GLOBAL ---
+2026-04-07 12:34:11,240 - ML.LTRTrainer - INFO - [global] Fold 1 — test 2022
+2026-04-07 12:34:23,434 - ML.LTRTrainer - INFO -   2022 → AUC=0.8187 ROI=+43.3% count=12992
+2026-04-07 12:34:23,437 - ML.LTRTrainer - INFO - [global] Fold 2 — test 2023
+2026-04-07 12:34:37,171 - ML.LTRTrainer - INFO -   2023 → AUC=0.8182 ROI=+39.2% count=12908
+2026-04-07 12:34:37,173 - ML.LTRTrainer - INFO - [global] Fold 3 — test 2024
+2026-04-07 12:34:54,746 - ML.LTRTrainer - INFO -   2024 → AUC=0.8212 ROI=+39.7% count=12973
+2026-04-07 12:34:54,749 - ML.LTRTrainer - INFO - [global] Fold 4 — test 2025
+2026-04-07 12:35:16,660 - ML.LTRTrainer - INFO -   2025 → AUC=0.8164 ROI=+41.9% count=12952
+2026-04-07 12:35:16,660 - ML.LTRTrainer - INFO - [global] Walk-forward: ROI=+41.0% ±1.6% (4 folds)
+2026-04-07 12:35:16,660 - ML.LTRTrainer - INFO - [global] Training final LTR model...
+2026-04-07 12:35:44,939 - ML.LTRTrainer - INFO - [global] LTR saved → AUC=0.8164 ROI=+41.9%
+2026-04-07 12:35:44,940 - ML.LTRTrainer - INFO -
+--- LTR FEATURE IMPORTANCES (64 features) ---
+2026-04-07 12:35:44,941 - ML.LTRTrainer - INFO -
+                         feature    importance
+             num__reference_odds 138006.590092
+           num__market_sentiment 133510.877982
+           num__odds_drift_ratio 109422.227610
+   num__reference_odds_rank_race  63919.691099
+             num__odds_drift_log  46663.099732
+              num__hist_earnings  43229.038320
+      num__hist_avg_speed_z_race  36830.320255
+          num__odds_rank_in_race  30914.638310
+                   num__odds_log  25250.193823
+       num__days_since_last_race  21768.816921
+                cat__jockey_name  21063.678794
+             num__hist_avg_speed  20701.027394
+             cat__shoeing_status  15822.959575
+               cat__trainer_name  15761.086861
+    num__reference_odds_rel_race  11975.100714
+             num__distance_delta  11192.768289
+    num__pct_races_on_discipline   7963.529560
+             num__winnings_place   6501.242802
+          num__relative_winnings   4406.982785
+         num__career_races_count   4297.226656
+        num__hist_pct_clean_runs   4007.174739
+             cat__racetrack_code   3981.766982
+            num__career_winnings   3859.876081
+num__days_since_last_race_z_race   3792.728752
+           num__speed_form_ratio   3764.310557
+    num__pct_clean_on_discipline   3404.876747
+          num__horse_age_at_race   3315.818559
+           num__avg_speed_last_3   2874.949174
+                        cat__sex   2787.733140
+        num__career_places_count   2778.956853
+               num__duo_avg_rank   2731.248420
+          num__winnings_year_now   2608.577962
+                 cat__discipline   2417.930378
+      num__duo_confidence_z_race   2284.545779
+        num__duo_win_rate_z_race   2124.779490
+         num__winnings_year_prev   1833.470610
+        num__duo_avg_rank_z_race   1825.090298
+              cat__terrain_label   1749.988856
+                 cat__track_type   1714.710918
+  num__career_winnings_rank_race   1636.661871
+    num__avg_speed_last_3_z_race   1589.388301
+               cat__meeting_type   1334.030517
+           num__winnings_victory   1246.943269
+          num__career_wins_count   1124.300678
+      num__winnings_rank_in_race    775.726518
+             num__duo_confidence    729.005800
+            num__duo_total_races    665.092518
+    num__career_places_2nd_count    582.675229
+               num__duo_win_rate    472.358900
+    num__career_places_3rd_count    453.732659
+              num__duo_best_rank    270.819182
+         num__duo_is_experienced      7.485640
+              num__is_specialist      7.328810
+          num__career_place_rate      0.000000
+            num__career_win_rate      0.000000
+                num__is_debutant      0.000000
+             num__handicap_value      0.000000
+               num__penetrometer      0.000000
+                 num__race_month      0.000000
+     num__declared_runners_count      0.000000
+                 num__distance_m      0.000000
+        num__is_unusual_distance      0.000000
+            num__handicap_weight      0.000000
+               num__mount_weight      0.000000
+2026-04-07 12:35:44,941 - ML.LTRTrainer - INFO - --------------------------------------------------
+
+2026-04-07 12:35:45,429 - ML.LTRTrainer - INFO - --- LTR Target: HAIE ---
+2026-04-07 12:35:45,950 - ML.LTRTrainer - INFO - [haie] Fold 1 — test 2022
+2026-04-07 12:35:47,059 - ML.LTRTrainer - INFO -   2022 → AUC=0.7336 ROI=+27.8% count=803
+2026-04-07 12:35:47,060 - ML.LTRTrainer - INFO - [haie] Fold 2 — test 2023
+2026-04-07 12:35:48,401 - ML.LTRTrainer - INFO -   2023 → AUC=0.7468 ROI=+27.1% count=781
+2026-04-07 12:35:48,401 - ML.LTRTrainer - INFO - [haie] Fold 3 — test 2024
+2026-04-07 12:35:50,135 - ML.LTRTrainer - INFO -   2024 → AUC=0.7491 ROI=+33.3% count=782
+2026-04-07 12:35:50,136 - ML.LTRTrainer - INFO - [haie] Fold 4 — test 2025
+2026-04-07 12:35:51,803 - ML.LTRTrainer - INFO -   2025 → AUC=0.7202 ROI=+12.1% count=787
+2026-04-07 12:35:51,803 - ML.LTRTrainer - INFO - [haie] Walk-forward: ROI=+25.1% ±7.9% (4 folds)
+2026-04-07 12:35:51,803 - ML.LTRTrainer - INFO - [haie] Training final LTR model...
+2026-04-07 12:35:54,190 - ML.LTRTrainer - INFO - [haie] LTR saved → AUC=0.7202 ROI=+12.1%
+2026-04-07 12:35:54,191 - ML.LTRTrainer - INFO -
+--- LTR FEATURE IMPORTANCES (64 features) ---
+2026-04-07 12:35:54,192 - ML.LTRTrainer - INFO -
+                         feature  importance
+           num__market_sentiment 8876.255979
+             num__reference_odds 6766.096575
+              num__hist_earnings 6117.681678
+           num__odds_drift_ratio 6037.942078
+               cat__trainer_name 3835.488169
+             cat__racetrack_code 2952.540704
+                cat__jockey_name 2737.611517
+    num__pct_races_on_discipline 2531.143057
+   num__reference_odds_rank_race 2450.362766
+    num__reference_odds_rel_race 2419.518107
+             num__distance_delta 2123.055809
+num__days_since_last_race_z_race 2088.206676
+                        cat__sex 1951.338471
+             num__odds_drift_log 1921.444485
+        num__duo_avg_rank_z_race 1907.845421
+        num__hist_pct_clean_runs 1516.851419
+              cat__terrain_label 1494.155571
+          num__relative_winnings 1392.820656
+          num__winnings_year_now 1352.269278
+  num__career_winnings_rank_race 1147.933422
+               cat__meeting_type 1051.586519
+             num__winnings_place  965.157675
+       num__days_since_last_race  919.399662
+    num__pct_clean_on_discipline  901.272645
+         num__career_races_count  843.546663
+         num__winnings_year_prev  822.675373
+            num__career_winnings  811.994518
+                 cat__discipline  810.354706
+                 cat__track_type  770.179234
+        num__duo_win_rate_z_race  732.774869
+        num__career_places_count  644.181512
+          num__horse_age_at_race  632.509313
+           num__winnings_victory  618.339003
+          num__odds_rank_in_race  602.038097
+      num__duo_confidence_z_race  556.192975
+      num__winnings_rank_in_race  448.599128
+               num__duo_avg_rank  386.350713
+            num__duo_total_races  375.015562
+      num__hist_avg_speed_z_race  370.045754
+    num__career_places_3rd_count  260.717763
+    num__career_places_2nd_count  236.113911
+                   num__odds_log  230.697950
+          num__career_wins_count  219.935303
+    num__avg_speed_last_3_z_race  159.054926
+             num__duo_confidence  136.687360
+              num__duo_best_rank  118.711706
+             num__hist_avg_speed  116.891119
+               num__duo_win_rate   97.636660
+           num__avg_speed_last_3   31.555387
+              num__is_specialist    5.232810
+           num__speed_form_ratio    5.084340
+                num__is_debutant    4.747690
+                 num__distance_m    0.000000
+          num__career_place_rate    0.000000
+            num__career_win_rate    0.000000
+             cat__shoeing_status    0.000000
+             num__handicap_value    0.000000
+               num__penetrometer    0.000000
+                 num__race_month    0.000000
+     num__declared_runners_count    0.000000
+        num__is_unusual_distance    0.000000
+               num__mount_weight    0.000000
+            num__handicap_weight    0.000000
+         num__duo_is_experienced    0.000000
+2026-04-07 12:35:54,192 - ML.LTRTrainer - INFO - --------------------------------------------------
+
+2026-04-07 12:35:54,214 - ML.LTRTrainer - INFO - --- LTR Target: ATTELE ---
+2026-04-07 12:35:57,751 - ML.LTRTrainer - INFO - [attele] Fold 1 — test 2022
+2026-04-07 12:36:03,322 - ML.LTRTrainer - INFO -   2022 → AUC=0.8367 ROI=+62.5% count=6369
+2026-04-07 12:36:03,324 - ML.LTRTrainer - INFO - [attele] Fold 2 — test 2023
+2026-04-07 12:36:10,753 - ML.LTRTrainer - INFO -   2023 → AUC=0.8414 ROI=+64.3% count=6356
+2026-04-07 12:36:10,754 - ML.LTRTrainer - INFO - [attele] Fold 3 — test 2024
+2026-04-07 12:36:20,267 - ML.LTRTrainer - INFO -   2024 → AUC=0.8482 ROI=+64.1% count=6435
+2026-04-07 12:36:20,269 - ML.LTRTrainer - INFO - [attele] Fold 4 — test 2025
+2026-04-07 12:36:31,526 - ML.LTRTrainer - INFO -   2025 → AUC=0.8425 ROI=+67.1% count=6408
+2026-04-07 12:36:31,528 - ML.LTRTrainer - INFO - [attele] Walk-forward: ROI=+64.5% ±1.7% (4 folds)
+2026-04-07 12:36:31,528 - ML.LTRTrainer - INFO - [attele] Training final LTR model...
+2026-04-07 12:36:46,702 - ML.LTRTrainer - INFO - [attele] LTR saved → AUC=0.8425 ROI=+67.1%
+2026-04-07 12:36:46,703 - ML.LTRTrainer - INFO -
+--- LTR FEATURE IMPORTANCES (64 features) ---
+2026-04-07 12:36:46,703 - ML.LTRTrainer - INFO -
+                         feature   importance
+             num__reference_odds 69772.997590
+                   num__odds_log 58205.103568
+           num__odds_drift_ratio 54045.614861
+           num__market_sentiment 50804.195254
+      num__hist_avg_speed_z_race 33154.530079
+             num__hist_avg_speed 28691.350682
+          num__odds_rank_in_race 26283.791630
+             num__odds_drift_log 25959.916964
+                cat__jockey_name 22376.705003
+   num__reference_odds_rank_race 17386.551123
+             cat__shoeing_status 17094.394536
+       num__days_since_last_race 12013.588939
+              num__hist_earnings 10155.679795
+               cat__trainer_name  6683.323757
+num__days_since_last_race_z_race  4752.546772
+             cat__racetrack_code  4677.034974
+    num__pct_races_on_discipline  4646.308091
+    num__pct_clean_on_discipline  4315.390658
+           num__speed_form_ratio  4186.105358
+        num__career_places_count  4009.276937
+               num__duo_avg_rank  3533.228295
+          num__relative_winnings  3468.476165
+            num__career_winnings  3404.317327
+             num__winnings_place  3360.394016
+    num__reference_odds_rel_race  3344.297888
+        num__hist_pct_clean_runs  3233.842606
+        num__duo_win_rate_z_race  3196.514307
+             num__distance_delta  2798.436944
+           num__avg_speed_last_3  2781.815041
+         num__career_races_count  2363.688148
+      num__duo_confidence_z_race  2112.779768
+    num__avg_speed_last_3_z_race  1767.013580
+        num__duo_avg_rank_z_race  1681.369824
+                        cat__sex  1674.474872
+          num__horse_age_at_race  1548.408506
+  num__career_winnings_rank_race  1312.072088
+          num__winnings_year_now  1275.627493
+          num__career_wins_count  1138.081463
+               cat__meeting_type  1060.132180
+         num__winnings_year_prev  1058.478740
+           num__winnings_victory  1048.888997
+              cat__terrain_label   984.579327
+                 cat__discipline   787.990571
+                 cat__track_type   698.932457
+            num__duo_total_races   653.135659
+             num__duo_confidence   517.297288
+               num__duo_win_rate   423.507338
+    num__career_places_2nd_count   411.593480
+      num__winnings_rank_in_race   385.380077
+    num__career_places_3rd_count   292.136820
+              num__duo_best_rank   125.551741
+              num__is_specialist    49.316870
+                 num__distance_m     0.000000
+          num__career_place_rate     0.000000
+            num__career_win_rate     0.000000
+                num__is_debutant     0.000000
+             num__handicap_value     0.000000
+               num__penetrometer     0.000000
+                 num__race_month     0.000000
+     num__declared_runners_count     0.000000
+        num__is_unusual_distance     0.000000
+               num__mount_weight     0.000000
+            num__handicap_weight     0.000000
+         num__duo_is_experienced     0.000000
+2026-04-07 12:36:46,703 - ML.LTRTrainer - INFO - --------------------------------------------------
+
+2026-04-07 12:36:46,921 - ML.LTRTrainer - INFO - --- LTR Target: MONTE ---
+2026-04-07 12:36:47,560 - ML.LTRTrainer - INFO - [monte] Fold 1 — test 2022
+2026-04-07 12:36:48,892 - ML.LTRTrainer - INFO -   2022 → AUC=0.8324 ROI=+82.4% count=1096
+2026-04-07 12:36:48,893 - ML.LTRTrainer - INFO - [monte] Fold 2 — test 2023
+2026-04-07 12:36:50,526 - ML.LTRTrainer - INFO -   2023 → AUC=0.8350 ROI=+94.1% count=1085
+2026-04-07 12:36:50,528 - ML.LTRTrainer - INFO - [monte] Fold 3 — test 2024
+2026-04-07 12:36:52,417 - ML.LTRTrainer - INFO -   2024 → AUC=0.8388 ROI=+76.9% count=1057
+2026-04-07 12:36:52,417 - ML.LTRTrainer - INFO - [monte] Fold 4 — test 2025
+2026-04-07 12:36:54,603 - ML.LTRTrainer - INFO -   2025 → AUC=0.8315 ROI=+75.5% count=1050
+2026-04-07 12:36:54,603 - ML.LTRTrainer - INFO - [monte] Walk-forward: ROI=+82.2% ±7.3% (4 folds)
+2026-04-07 12:36:54,603 - ML.LTRTrainer - INFO - [monte] Training final LTR model...
+2026-04-07 12:36:57,608 - ML.LTRTrainer - INFO - [monte] LTR saved → AUC=0.8315 ROI=+75.5%
+2026-04-07 12:36:57,608 - ML.LTRTrainer - INFO -
+--- LTR FEATURE IMPORTANCES (64 features) ---
+2026-04-07 12:36:57,609 - ML.LTRTrainer - INFO -
+                         feature   importance
+           num__market_sentiment 27364.081946
+           num__odds_drift_ratio 10148.532207
+      num__hist_avg_speed_z_race  8481.875276
+             num__hist_avg_speed  5556.276223
+    num__pct_races_on_discipline  5065.907555
+             num__reference_odds  5054.872521
+             num__odds_drift_log  4434.429416
+   num__reference_odds_rank_race  4041.378456
+                cat__jockey_name  3439.643691
+             cat__racetrack_code  2782.230728
+    num__reference_odds_rel_race  2647.124175
+          num__odds_rank_in_race  2496.502429
+              num__hist_earnings  2388.949817
+             cat__shoeing_status  2299.318032
+           num__speed_form_ratio  1994.715443
+               cat__trainer_name  1893.896412
+             num__distance_delta  1636.466104
+          num__relative_winnings  1442.255248
+       num__days_since_last_race  1366.518982
+        num__hist_pct_clean_runs  1342.043634
+           num__avg_speed_last_3  1332.816411
+num__days_since_last_race_z_race  1311.587340
+            num__career_winnings  1282.373219
+    num__avg_speed_last_3_z_race  1253.872661
+    num__pct_clean_on_discipline  1229.650796
+        num__duo_avg_rank_z_race  1217.435041
+             num__winnings_place  1215.682292
+         num__career_races_count  1094.934250
+                        cat__sex  1037.690176
+               cat__meeting_type  1002.894763
+                   num__odds_log   881.812007
+           num__winnings_victory   880.581020
+          num__winnings_year_now   862.905373
+        num__career_places_count   828.140173
+         num__winnings_year_prev   822.237183
+      num__duo_confidence_z_race   784.794758
+  num__career_winnings_rank_race   754.774061
+        num__duo_win_rate_z_race   732.879518
+               num__duo_avg_rank   614.991240
+          num__horse_age_at_race   534.092053
+          num__career_wins_count   477.456611
+            num__duo_total_races   385.343727
+                 cat__track_type   335.836582
+                 cat__discipline   330.367381
+    num__career_places_3rd_count   308.719318
+              cat__terrain_label   279.755760
+      num__winnings_rank_in_race   275.514070
+    num__career_places_2nd_count   269.129915
+             num__duo_confidence   220.683580
+               num__duo_win_rate   181.580063
+              num__duo_best_rank    54.454809
+         num__duo_is_experienced     2.985020
+                 num__distance_m     0.000000
+          num__career_place_rate     0.000000
+            num__career_win_rate     0.000000
+                num__is_debutant     0.000000
+             num__handicap_value     0.000000
+               num__penetrometer     0.000000
+                 num__race_month     0.000000
+     num__declared_runners_count     0.000000
+              num__is_specialist     0.000000
+        num__is_unusual_distance     0.000000
+            num__handicap_weight     0.000000
+               num__mount_weight     0.000000
+2026-04-07 12:36:57,609 - ML.LTRTrainer - INFO - --------------------------------------------------
+
+2026-04-07 12:36:57,643 - ML.LTRTrainer - INFO - --- LTR Target: STEEPLECHASE ---
+2026-04-07 12:36:57,926 - ML.LTRTrainer - INFO - [steeplechase] Fold 1 — test 2022
+2026-04-07 12:36:58,809 - ML.LTRTrainer - INFO -   2022 → AUC=0.7427 ROI=+28.2% count=513
+2026-04-07 12:36:58,811 - ML.LTRTrainer - INFO - [steeplechase] Fold 2 — test 2023
+2026-04-07 12:36:59,792 - ML.LTRTrainer - INFO -   2023 → AUC=0.7188 ROI=+22.6% count=481
+2026-04-07 12:36:59,792 - ML.LTRTrainer - INFO - [steeplechase] Fold 3 — test 2024
+2026-04-07 12:37:01,008 - ML.LTRTrainer - INFO -   2024 → AUC=0.7368 ROI=+18.9% count=501
+2026-04-07 12:37:01,009 - ML.LTRTrainer - INFO - [steeplechase] Fold 4 — test 2025
+2026-04-07 12:37:02,242 - ML.LTRTrainer - INFO -   2025 → AUC=0.7498 ROI=+18.4% count=508
+2026-04-07 12:37:02,243 - ML.LTRTrainer - INFO - [steeplechase] Walk-forward: ROI=+22.0% ±3.9% (4 folds)
+2026-04-07 12:37:02,243 - ML.LTRTrainer - INFO - [steeplechase] Training final LTR model...
+2026-04-07 12:37:04,002 - ML.LTRTrainer - INFO - [steeplechase] LTR saved → AUC=0.7498 ROI=+18.4%
+2026-04-07 12:37:04,003 - ML.LTRTrainer - INFO -
+--- LTR FEATURE IMPORTANCES (64 features) ---
+2026-04-07 12:37:04,004 - ML.LTRTrainer - INFO -
+                         feature  importance
+           num__market_sentiment 5890.843852
+    num__reference_odds_rel_race 3429.738958
+           num__odds_drift_ratio 3302.307199
+             num__reference_odds 3198.019072
+              num__hist_earnings 3097.047820
+               cat__trainer_name 2431.345725
+             cat__racetrack_code 2220.925667
+                cat__jockey_name 1952.837682
+    num__pct_races_on_discipline 1895.868046
+             num__distance_delta 1596.009033
+num__days_since_last_race_z_race 1527.829121
+        num__duo_avg_rank_z_race 1378.480125
+             num__winnings_place 1210.086148
+              cat__terrain_label 1185.128644
+                        cat__sex 1145.305457
+          num__relative_winnings 1124.263894
+        num__hist_pct_clean_runs 1105.316011
+             num__odds_drift_log 1098.424518
+       num__days_since_last_race 1051.924368
+          num__winnings_year_now 1029.754369
+         num__winnings_year_prev  976.029263
+         num__career_races_count  963.377283
+    num__pct_clean_on_discipline  927.702138
+            num__career_winnings  820.976488
+               cat__meeting_type  807.460606
+        num__duo_win_rate_z_race  793.143669
+  num__career_winnings_rank_race  786.080743
+      num__duo_confidence_z_race  785.403568
+   num__reference_odds_rank_race  723.096561
+        num__career_places_count  675.470832
+           num__winnings_victory  657.890102
+          num__horse_age_at_race  528.989389
+               num__duo_avg_rank  482.496779
+                 cat__discipline  466.286883
+                 cat__track_type  423.382447
+      num__winnings_rank_in_race  339.855682
+            num__duo_total_races  285.758359
+          num__career_wins_count  277.057809
+    num__career_places_3rd_count  255.875828
+      num__hist_avg_speed_z_race  232.063623
+    num__career_places_2nd_count  228.312007
+             num__duo_confidence  211.222202
+          num__odds_rank_in_race  195.975540
+                   num__odds_log  116.981410
+              num__duo_best_rank   95.861510
+               num__duo_win_rate   85.166971
+    num__avg_speed_last_3_z_race   53.587324
+           num__avg_speed_last_3   46.165052
+             num__hist_avg_speed    6.639025
+           num__speed_form_ratio    0.986128
+             num__handicap_value    0.000000
+     num__declared_runners_count    0.000000
+                 num__distance_m    0.000000
+          num__career_place_rate    0.000000
+            num__career_win_rate    0.000000
+                num__is_debutant    0.000000
+             cat__shoeing_status    0.000000
+               num__penetrometer    0.000000
+                 num__race_month    0.000000
+               num__mount_weight    0.000000
+              num__is_specialist    0.000000
+        num__is_unusual_distance    0.000000
+            num__handicap_weight    0.000000
+         num__duo_is_experienced    0.000000
+2026-04-07 12:37:04,004 - ML.LTRTrainer - INFO - --------------------------------------------------
+
+2026-04-07 12:37:04,013 - ML.LTRTrainer - INFO - --- LTR Target: PLAT ---
+2026-04-07 12:37:06,606 - ML.LTRTrainer - INFO - [plat] Fold 1 — test 2022
+2026-04-07 12:37:10,970 - ML.LTRTrainer - INFO -   2022 → AUC=0.7836 ROI=+6.8% count=4131
+2026-04-07 12:37:10,972 - ML.LTRTrainer - INFO - [plat] Fold 2 — test 2023
+2026-04-07 12:37:16,045 - ML.LTRTrainer - INFO -   2023 → AUC=0.7812 ROI=+4.4% count=4132
+2026-04-07 12:37:16,046 - ML.LTRTrainer - INFO - [plat] Fold 3 — test 2024
+2026-04-07 12:37:22,571 - ML.LTRTrainer - INFO -   2024 → AUC=0.7791 ROI=+3.5% count=4120
+2026-04-07 12:37:22,572 - ML.LTRTrainer - INFO - [plat] Fold 4 — test 2025
+2026-04-07 12:37:30,329 - ML.LTRTrainer - INFO -   2025 → AUC=0.7737 ROI=+0.4% count=4115
+2026-04-07 12:37:30,329 - ML.LTRTrainer - INFO - [plat] Walk-forward: ROI=+3.8% ±2.3% (4 folds)
+2026-04-07 12:37:30,329 - ML.LTRTrainer - INFO - [plat] Training final LTR model...
+2026-04-07 12:37:40,436 - ML.LTRTrainer - INFO - [plat] LTR saved → AUC=0.7737 ROI=+0.4%
+2026-04-07 12:37:40,437 - ML.LTRTrainer - INFO -
+--- LTR FEATURE IMPORTANCES (64 features) ---
+2026-04-07 12:37:40,438 - ML.LTRTrainer - INFO -
+                         feature   importance
+             num__reference_odds 39459.952687
+           num__odds_drift_ratio 38091.336024
+           num__market_sentiment 33349.885581
+   num__reference_odds_rank_race 26252.515871
+              num__hist_earnings 22369.520047
+    num__reference_odds_rel_race 13721.139445
+             num__distance_delta 12776.120159
+             num__odds_drift_log  9358.549007
+               cat__trainer_name  7069.051347
+       num__days_since_last_race  5830.510763
+                cat__jockey_name  3515.588531
+         num__career_races_count  3150.225996
+          num__odds_rank_in_race  3146.880309
+                        cat__sex  3138.323182
+             cat__racetrack_code  3104.607064
+          num__relative_winnings  2693.269333
+          num__winnings_year_now  2582.454412
+            num__career_winnings  2573.071072
+             num__winnings_place  2425.118079
+num__days_since_last_race_z_race  2348.958837
+        num__duo_avg_rank_z_race  2292.230385
+          num__horse_age_at_race  2259.927987
+  num__career_winnings_rank_race  2101.613357
+         num__winnings_year_prev  1706.597732
+        num__duo_win_rate_z_race  1683.526358
+              cat__terrain_label  1681.470500
+               cat__meeting_type  1629.808576
+                 cat__track_type  1604.320741
+      num__duo_confidence_z_race  1472.266600
+           num__winnings_victory  1466.151091
+               num__duo_avg_rank  1101.480361
+        num__career_places_count  1066.475800
+                 cat__discipline   987.080269
+      num__winnings_rank_in_race   919.907101
+    num__career_places_3rd_count   829.550627
+            num__duo_total_races   723.773107
+    num__pct_races_on_discipline   723.600204
+             num__duo_confidence   684.788037
+        num__hist_pct_clean_runs   672.097520
+          num__career_wins_count   661.864144
+    num__career_places_2nd_count   630.277909
+                   num__odds_log   601.123107
+             cat__shoeing_status   589.713720
+      num__hist_avg_speed_z_race   515.509799
+               num__duo_win_rate   352.532191
+    num__pct_clean_on_discipline   290.643032
+    num__avg_speed_last_3_z_race   266.066681
+              num__duo_best_rank   266.066331
+             num__hist_avg_speed   128.367740
+           num__speed_form_ratio    88.072150
+           num__avg_speed_last_3    71.646970
+              num__is_specialist    16.360960
+                 num__distance_m     0.000000
+          num__career_place_rate     0.000000
+            num__career_win_rate     0.000000
+                num__is_debutant     0.000000
+             num__handicap_value     0.000000
+               num__penetrometer     0.000000
+                 num__race_month     0.000000
+     num__declared_runners_count     0.000000
+        num__is_unusual_distance     0.000000
+               num__mount_weight     0.000000
+            num__handicap_weight     0.000000
+         num__duo_is_experienced     0.000000
+2026-04-07 12:37:40,438 - ML.LTRTrainer - INFO - --------------------------------------------------
+
+2026-04-07 12:37:40,593 - ML.LTRTrainer - INFO - --- LTR Target: CROSS ---
+2026-04-07 12:37:40,791 - ML.LTRTrainer - INFO - [cross] Fold 1 — test 2022
+2026-04-07 12:37:41,203 - ML.LTRTrainer - INFO -   2022 → AUC=0.7018 ROI=+0.6% count=80
+2026-04-07 12:37:41,204 - ML.LTRTrainer - INFO - [cross] Fold 2 — test 2023
+2026-04-07 12:37:41,678 - ML.LTRTrainer - INFO -   2023 → AUC=0.6701 ROI=-11.6% count=73
+2026-04-07 12:37:41,678 - ML.LTRTrainer - INFO - [cross] Fold 3 — test 2024
+2026-04-07 12:37:42,221 - ML.LTRTrainer - INFO -   2024 → AUC=0.7412 ROI=-5.1% count=78
+2026-04-07 12:37:42,221 - ML.LTRTrainer - INFO - [cross] Fold 4 — test 2025
+2026-04-07 12:37:42,818 - ML.LTRTrainer - INFO -   2025 → AUC=0.8233 ROI=+61.9% count=84
+2026-04-07 12:37:42,818 - ML.LTRTrainer - INFO - [cross] Walk-forward: ROI=+11.4% ±29.5% (4 folds)
+2026-04-07 12:37:42,818 - ML.LTRTrainer - INFO - [cross] Training final LTR model...
+2026-04-07 12:37:43,562 - ML.LTRTrainer - INFO - [cross] LTR saved → AUC=0.8233 ROI=+61.9%
+2026-04-07 12:37:43,563 - ML.LTRTrainer - INFO -
+--- LTR FEATURE IMPORTANCES (64 features) ---
+2026-04-07 12:37:43,564 - ML.LTRTrainer - INFO -
+                         feature  importance
+             num__reference_odds 1105.298422
+             cat__racetrack_code  617.993628
+              num__hist_earnings  565.984845
+           num__market_sentiment  535.609493
+           num__odds_drift_ratio  446.623228
+               cat__trainer_name  436.474988
+                cat__jockey_name  426.485573
+                        cat__sex  393.475696
+          num__relative_winnings  350.139983
+             num__distance_delta  328.707676
+        num__hist_pct_clean_runs  316.696389
+    num__pct_races_on_discipline  306.891306
+              cat__terrain_label  281.745422
+        num__duo_avg_rank_z_race  280.620317
+num__days_since_last_race_z_race  277.402032
+         num__career_races_count  256.705760
+    num__reference_odds_rel_race  213.034104
+         num__winnings_year_prev  208.421812
+    num__pct_clean_on_discipline  198.950478
+          num__winnings_year_now  194.675406
+  num__career_winnings_rank_race  174.126834
+                 cat__discipline  160.435341
+               cat__meeting_type  154.235858
+        num__career_places_count  152.893804
+            num__career_winnings  135.565283
+   num__reference_odds_rank_race  124.725685
+           num__winnings_victory  120.682062
+                 cat__track_type  118.983263
+               num__duo_avg_rank  114.872812
+      num__duo_confidence_z_race  112.024192
+       num__days_since_last_race  100.087207
+          num__career_wins_count   97.130082
+          num__horse_age_at_race   94.026984
+             num__odds_drift_log   91.433168
+             num__winnings_place   80.877121
+        num__duo_win_rate_z_race   77.946765
+    num__career_places_2nd_count   65.079168
+    num__career_places_3rd_count   58.689424
+      num__winnings_rank_in_race   38.079211
+                   num__odds_log   23.611264
+               num__duo_win_rate   21.686852
+              num__duo_best_rank   21.432588
+            num__duo_total_races   19.194894
+          num__odds_rank_in_race   11.799216
+             num__duo_confidence   11.118805
+              num__is_specialist    0.531980
+    num__avg_speed_last_3_z_race    0.447476
+             cat__shoeing_status    0.000000
+             num__handicap_value    0.000000
+               num__penetrometer    0.000000
+                 num__race_month    0.000000
+     num__declared_runners_count    0.000000
+                 num__distance_m    0.000000
+          num__career_place_rate    0.000000
+            num__career_win_rate    0.000000
+                num__is_debutant    0.000000
+        num__is_unusual_distance    0.000000
+               num__mount_weight    0.000000
+           num__avg_speed_last_3    0.000000
+            num__handicap_weight    0.000000
+             num__hist_avg_speed    0.000000
+           num__speed_form_ratio    0.000000
+         num__duo_is_experienced    0.000000
+      num__hist_avg_speed_z_race    0.000000
+
+Specialty,Status,Winner Algo,Best LogLoss,Current ROI,Win Rate
+STEEPLECHASE_LTR, Active,LTR_ONLY,1.1199768082073827,18.858267716535313,122.73622047244086
+GLOBAL_LTR, Active,LTR_ONLY,1.1158023968904969,48.194444444444514,149.42727840199746
+ATTELE_LTR, Active,LTR_ONLY,1.052005799814336,53.11017478152311,153.76560549313362
+MONTE_LTR, Active,LTR_ONLY,1.0471147025172416,50.495238095238015,154.39999999999984
+HAIE_LTR, Active,LTR_ONLY,1.0424614478422427,25.62897077509526,120.38119440914863
+CROSS_LTR, Active,LTR_ONLY,1.0024864519262808,52.38095238095239,162.97619047619048
+PLAT_LTR, Active,LTR_ONLY,0.9431681382267482,-2.1142162818955264,99.34629404617253
+

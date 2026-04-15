@@ -1,0 +1,783 @@
+C:\Users\hmaro\AppData\Roaming\Python\Scripts\uv.exe run F:/git/horse-racing-prediction/.venv/Scripts/python.exe F:\git\horse-racing-prediction\backend\src\ml\trainer_tabnet_gpu.py
+Extension for Scikit-learn* enabled (https://github.com/uxlfoundation/scikit-learn-intelex)
+2026-04-14 11:26:59,849 - ML.TabnetTrainer - INFO - --- STARTING TABNET WALK-FORWARD TOURNAMENT ---
+2026-04-14 11:26:59,879 - ML.Loader - INFO - Loading SQL data...
+2026-04-14 11:27:05,060 - ML.Loader - INFO - Calculating historical statistics...
+2026-04-14 11:27:16,595 - ML.TabnetTrainer - INFO - Data Loaded: (618019, 47) rows
+2026-04-14 11:27:16,678 - ML.TabnetTrainer - INFO - --- Training Target: GLOBAL ---
+2026-04-14 11:27:23,346 - ML.TabnetTrainer - INFO - [global] WF Fold 1 (Test year 2022)
+
+
+
+Early stopping occurred at epoch 35 with best_epoch = 25 and best_val_0_auc = 0.80351
+2026-04-14 11:33:32,151 - ML.TabnetTrainer - INFO -   Fold 2022 Result -> ROI: +15.7% | AUC: 0.7890
+2026-04-14 11:33:32,154 - ML.TabnetTrainer - INFO - [global] WF Fold 2 (Test year 2023)
+
+Early stopping occurred at epoch 30 with best_epoch = 20 and best_val_0_auc = 0.8006
+
+
+2026-04-14 11:42:20,450 - ML.TabnetTrainer - INFO -   Fold 2023 Result -> ROI: +11.5% | AUC: 0.7809
+2026-04-14 11:42:20,454 - ML.TabnetTrainer - INFO - [global] WF Fold 3 (Test year 2024)
+
+Early stopping occurred at epoch 29 with best_epoch = 19 and best_val_0_auc = 0.8021
+
+
+2026-04-14 11:53:32,370 - ML.TabnetTrainer - INFO -   Fold 2024 Result -> ROI: +15.4% | AUC: 0.7814
+2026-04-14 11:53:32,374 - ML.TabnetTrainer - INFO - [global] WF Fold 4 (Test year 2025)
+
+Early stopping occurred at epoch 42 with best_epoch = 32 and best_val_0_auc = 0.80408
+
+
+2026-04-14 12:13:22,712 - ML.TabnetTrainer - INFO -   Fold 2025 Result -> ROI: +11.2% | AUC: 0.7769
+2026-04-14 12:13:22,712 - ML.TabnetTrainer - INFO - [global] Backtest OK (Avg ROI: +13.5%). Training PRODUCTION model...
+2026-04-14 12:13:33,782 - ML.TabnetTrainer - INFO -     Training Fold 1/3...
+
+Early stopping occurred at epoch 37 with best_epoch = 27 and best_val_0_auc = 0.79994
+
+
+2026-04-14 12:32:55,653 - ML.TabnetTrainer - INFO -     Training Fold 2/3...
+
+Early stopping occurred at epoch 24 with best_epoch = 14 and best_val_0_auc = 0.79877
+
+
+2026-04-14 12:46:15,374 - ML.TabnetTrainer - INFO -     Training Fold 3/3...
+
+
+
+Early stopping occurred at epoch 36 with best_epoch = 26 and best_val_0_auc = 0.80166
+
+--- TABNET FEATURE IMPORTANCES (65 features) ---
+                         feature   importance
+           num__market_sentiment 5.271496e-01
+           num__speed_form_ratio 8.194342e-02
+              num__hist_earnings 8.155283e-02
+             num__winnings_place 6.272758e-02
+num__days_since_last_race_z_race 3.923213e-02
+              num__is_specialist 3.046621e-02
+                   num__odds_log 2.033882e-02
+             num__handicap_value 1.749636e-02
+               num__proba_tabnet 1.568133e-02
+             cat__shoeing_status 1.495935e-02
+                cat__jockey_name 1.247068e-02
+      num__duo_confidence_z_race 1.225572e-02
+             num__distance_delta 1.152444e-02
+           num__odds_drift_ratio 9.292386e-03
+                num__is_debutant 9.021408e-03
+           num__avg_speed_last_3 7.727349e-03
+        num__duo_win_rate_z_race 7.545682e-03
+    num__pct_clean_on_discipline 7.252693e-03
+        num__career_places_count 4.317094e-03
+                 num__distance_m 3.898220e-03
+               cat__trainer_name 3.816434e-03
+    num__avg_speed_last_3_z_race 3.228286e-03
+             num__odds_drift_log 3.041353e-03
+       num__days_since_last_race 2.416947e-03
+              cat__terrain_label 2.210864e-03
+            num__duo_total_races 1.764186e-03
+            num__handicap_weight 1.492662e-03
+         num__duo_is_experienced 7.521986e-04
+          num__relative_winnings 6.617797e-04
+             num__hist_avg_speed 6.150959e-04
+    num__reference_odds_rel_race 5.226352e-04
+                        cat__sex 4.797079e-04
+    num__pct_races_on_discipline 4.464788e-04
+               num__duo_win_rate 4.145244e-04
+   num__reference_odds_rank_race 3.358298e-04
+          num__odds_rank_in_race 2.585354e-04
+           num__winnings_victory 1.914823e-04
+               cat__meeting_type 1.614960e-04
+          num__horse_age_at_race 1.010525e-04
+             num__reference_odds 4.968227e-05
+               cat__meeting_code 4.019093e-05
+                 cat__track_type 3.616873e-05
+        num__hist_pct_clean_runs 2.808934e-05
+  num__career_winnings_rank_race 2.034981e-05
+      num__hist_avg_speed_z_race 1.664424e-05
+         num__career_races_count 1.425828e-05
+    num__career_places_3rd_count 5.337639e-06
+              num__duo_best_rank 5.259351e-06
+               num__duo_avg_rank 4.270733e-06
+        num__is_unusual_distance 3.465200e-06
+     num__declared_runners_count 3.118462e-06
+          num__career_place_rate 2.878075e-06
+      num__winnings_rank_in_race 2.277328e-06
+          num__winnings_year_now 8.960875e-07
+            num__career_win_rate 3.740143e-07
+             num__duo_confidence 3.345009e-07
+         num__winnings_year_prev 3.191737e-07
+    num__career_places_2nd_count 3.046210e-07
+               num__penetrometer 2.552748e-07
+          num__career_wins_count 2.358621e-07
+        num__duo_avg_rank_z_race 2.066015e-07
+                 cat__discipline 1.230174e-07
+            num__career_winnings 7.932438e-08
+                 num__race_month 2.480970e-08
+               num__mount_weight 0.000000e+00
+--------------------------------------------------
+
+2026-04-14 13:05:53,819 - ML.TabnetTrainer - INFO - --- Training Target: MONTE ---
+2026-04-14 13:05:54,961 - ML.TabnetTrainer - INFO - [monte] WF Fold 1 (Test year 2022)
+
+Early stopping occurred at epoch 26 with best_epoch = 16 and best_val_0_auc = 0.82359
+
+
+2026-04-14 13:06:13,775 - ML.TabnetTrainer - INFO -   Fold 2022 Result -> ROI: +30.2% | AUC: 0.8043
+2026-04-14 13:06:13,777 - ML.TabnetTrainer - INFO - [monte] WF Fold 2 (Test year 2023)
+
+
+
+Early stopping occurred at epoch 27 with best_epoch = 17 and best_val_0_auc = 0.8261
+2026-04-14 13:06:46,237 - ML.TabnetTrainer - INFO -   Fold 2023 Result -> ROI: +28.0% | AUC: 0.8161
+2026-04-14 13:06:46,237 - ML.TabnetTrainer - INFO - [monte] WF Fold 3 (Test year 2024)
+
+Early stopping occurred at epoch 23 with best_epoch = 13 and best_val_0_auc = 0.81473
+
+
+2026-04-14 13:07:24,468 - ML.TabnetTrainer - INFO -   Fold 2024 Result -> ROI: +28.8% | AUC: 0.8063
+2026-04-14 13:07:24,469 - ML.TabnetTrainer - INFO - [monte] WF Fold 4 (Test year 2025)
+
+Early stopping occurred at epoch 31 with best_epoch = 21 and best_val_0_auc = 0.82562
+
+
+2026-04-14 13:08:28,419 - ML.TabnetTrainer - INFO -   Fold 2025 Result -> ROI: +39.0% | AUC: 0.8152
+2026-04-14 13:08:28,419 - ML.TabnetTrainer - INFO - [monte] Backtest OK (Avg ROI: +31.5%). Training PRODUCTION model...
+2026-04-14 13:08:29,000 - ML.TabnetTrainer - INFO -     Training Fold 1/3...
+
+
+
+Early stopping occurred at epoch 39 with best_epoch = 29 and best_val_0_auc = 0.82193
+2026-04-14 13:09:46,753 - ML.TabnetTrainer - INFO -     Training Fold 2/3...
+
+
+
+Early stopping occurred at epoch 32 with best_epoch = 22 and best_val_0_auc = 0.82114
+2026-04-14 13:10:53,964 - ML.TabnetTrainer - INFO -     Training Fold 3/3...
+
+Early stopping occurred at epoch 26 with best_epoch = 16 and best_val_0_auc = 0.81429
+
+
+
+--- TABNET FEATURE IMPORTANCES (65 features) ---
+                         feature  importance
+           num__market_sentiment    0.363580
+           num__speed_form_ratio    0.060684
+    num__reference_odds_rel_race    0.058775
+    num__pct_clean_on_discipline    0.034324
+        num__duo_win_rate_z_race    0.029913
+           num__avg_speed_last_3    0.023978
+              num__hist_earnings    0.022893
+          num__odds_rank_in_race    0.021500
+                   num__odds_log    0.021109
+             cat__shoeing_status    0.019926
+          num__horse_age_at_race    0.018321
+            num__career_winnings    0.014806
+        num__duo_avg_rank_z_race    0.014714
+             num__reference_odds    0.014446
+num__days_since_last_race_z_race    0.013650
+         num__career_races_count    0.013646
+    num__pct_races_on_discipline    0.012565
+            num__handicap_weight    0.011973
+               num__proba_tabnet    0.011466
+    num__avg_speed_last_3_z_race    0.010874
+            num__career_win_rate    0.010775
+         num__winnings_year_prev    0.009848
+             num__distance_delta    0.009190
+        num__hist_pct_clean_runs    0.009011
+               num__duo_avg_rank    0.008216
+               cat__meeting_type    0.008129
+                cat__jockey_name    0.008046
+    num__career_places_3rd_count    0.007998
+             num__winnings_place    0.007832
+     num__declared_runners_count    0.007297
+   num__reference_odds_rank_race    0.006716
+             num__duo_confidence    0.006389
+               cat__meeting_code    0.006274
+                 num__distance_m    0.006222
+             num__hist_avg_speed    0.005675
+  num__career_winnings_rank_race    0.005563
+      num__duo_confidence_z_race    0.005447
+                 cat__track_type    0.005402
+              cat__terrain_label    0.005355
+         num__duo_is_experienced    0.004942
+             num__handicap_value    0.004878
+               cat__trainer_name    0.004657
+              num__is_specialist    0.004119
+                 num__race_month    0.003899
+          num__career_place_rate    0.003654
+           num__winnings_victory    0.003450
+      num__winnings_rank_in_race    0.003431
+          num__relative_winnings    0.003085
+            num__duo_total_races    0.002875
+               num__penetrometer    0.002838
+               num__duo_win_rate    0.002826
+          num__career_wins_count    0.002755
+        num__career_places_count    0.002442
+              num__duo_best_rank    0.002252
+       num__days_since_last_race    0.002166
+               num__mount_weight    0.002157
+      num__hist_avg_speed_z_race    0.002123
+    num__career_places_2nd_count    0.002042
+                        cat__sex    0.001876
+                num__is_debutant    0.001057
+          num__winnings_year_now    0.001000
+                 cat__discipline    0.000938
+           num__odds_drift_ratio    0.000869
+             num__odds_drift_log    0.000627
+        num__is_unusual_distance    0.000514
+--------------------------------------------------
+
+2026-04-14 13:11:54,558 - ML.TabnetTrainer - INFO - --- Training Target: ATTELE ---
+2026-04-14 13:11:57,771 - ML.TabnetTrainer - INFO - [attele] WF Fold 1 (Test year 2022)
+
+
+
+Early stopping occurred at epoch 34 with best_epoch = 24 and best_val_0_auc = 0.84032
+2026-04-14 13:14:24,308 - ML.TabnetTrainer - INFO -   Fold 2022 Result -> ROI: +28.3% | AUC: 0.8227
+2026-04-14 13:14:24,312 - ML.TabnetTrainer - INFO - [attele] WF Fold 2 (Test year 2023)
+
+
+
+Early stopping occurred at epoch 32 with best_epoch = 22 and best_val_0_auc = 0.83797
+2026-04-14 13:17:41,642 - ML.TabnetTrainer - INFO -   Fold 2023 Result -> ROI: +25.3% | AUC: 0.8209
+2026-04-14 13:17:41,645 - ML.TabnetTrainer - INFO - [attele] WF Fold 3 (Test year 2024)
+
+
+
+Early stopping occurred at epoch 33 with best_epoch = 23 and best_val_0_auc = 0.83661
+2026-04-14 13:22:42,932 - ML.TabnetTrainer - INFO -   Fold 2024 Result -> ROI: +24.1% | AUC: 0.8258
+2026-04-14 13:22:42,934 - ML.TabnetTrainer - INFO - [attele] WF Fold 4 (Test year 2025)
+
+
+
+Early stopping occurred at epoch 37 with best_epoch = 27 and best_val_0_auc = 0.83423
+2026-04-14 13:29:15,671 - ML.TabnetTrainer - INFO -   Fold 2025 Result -> ROI: +23.2% | AUC: 0.8177
+2026-04-14 13:29:15,671 - ML.TabnetTrainer - INFO - [attele] Backtest OK (Avg ROI: +25.2%). Training PRODUCTION model...
+2026-04-14 13:29:19,466 - ML.TabnetTrainer - INFO -     Training Fold 1/3...
+
+Early stopping occurred at epoch 34 with best_epoch = 24 and best_val_0_auc = 0.83319
+
+
+2026-04-14 13:35:42,470 - ML.TabnetTrainer - INFO -     Training Fold 2/3...
+
+Early stopping occurred at epoch 41 with best_epoch = 31 and best_val_0_auc = 0.83648
+
+
+2026-04-14 13:43:08,993 - ML.TabnetTrainer - INFO -     Training Fold 3/3...
+
+
+
+Early stopping occurred at epoch 27 with best_epoch = 17 and best_val_0_auc = 0.83486
+
+--- TABNET FEATURE IMPORTANCES (65 features) ---
+                         feature   importance
+           num__market_sentiment 5.357793e-01
+           num__speed_form_ratio 1.126414e-01
+    num__reference_odds_rel_race 7.296228e-02
+              num__hist_earnings 4.710602e-02
+             num__reference_odds 3.969588e-02
+             cat__shoeing_status 2.423181e-02
+          num__career_place_rate 1.428846e-02
+                   num__odds_log 1.356448e-02
+            num__career_winnings 1.280980e-02
+               num__proba_tabnet 1.180042e-02
+               cat__trainer_name 1.174665e-02
+             num__winnings_place 1.068267e-02
+          num__odds_rank_in_race 1.037372e-02
+     num__declared_runners_count 1.008487e-02
+             num__odds_drift_log 9.954725e-03
+num__days_since_last_race_z_race 9.371313e-03
+        num__duo_win_rate_z_race 6.678579e-03
+    num__avg_speed_last_3_z_race 6.238365e-03
+   num__reference_odds_rank_race 5.192006e-03
+      num__hist_avg_speed_z_race 4.903496e-03
+           num__winnings_victory 4.114501e-03
+               cat__meeting_type 4.035430e-03
+                 cat__track_type 3.855007e-03
+    num__career_places_2nd_count 3.210287e-03
+    num__pct_clean_on_discipline 2.267497e-03
+      num__duo_confidence_z_race 1.920766e-03
+         num__career_races_count 1.795345e-03
+              num__is_specialist 1.400590e-03
+                 cat__discipline 1.201432e-03
+            num__duo_total_races 1.112722e-03
+          num__relative_winnings 8.342668e-04
+        num__career_places_count 5.389579e-04
+             num__handicap_value 4.348403e-04
+                 num__race_month 3.911678e-04
+               num__duo_avg_rank 3.751706e-04
+               num__duo_win_rate 3.431282e-04
+            num__handicap_weight 2.852339e-04
+        num__hist_pct_clean_runs 2.815775e-04
+          num__horse_age_at_race 2.296815e-04
+              num__duo_best_rank 1.971189e-04
+             num__duo_confidence 1.504427e-04
+           num__odds_drift_ratio 1.276119e-04
+               num__penetrometer 1.023824e-04
+                 num__distance_m 9.924079e-05
+         num__winnings_year_prev 8.778534e-05
+             num__distance_delta 8.608916e-05
+          num__winnings_year_now 7.898950e-05
+         num__duo_is_experienced 6.485259e-05
+             num__hist_avg_speed 5.100576e-05
+                cat__jockey_name 4.228120e-05
+                        cat__sex 3.279693e-05
+        num__is_unusual_distance 2.388154e-05
+    num__pct_races_on_discipline 2.281253e-05
+          num__career_wins_count 2.226515e-05
+      num__winnings_rank_in_race 2.136281e-05
+  num__career_winnings_rank_race 1.598019e-05
+               cat__meeting_code 1.084960e-05
+            num__career_win_rate 6.711964e-06
+           num__avg_speed_last_3 6.560121e-06
+        num__duo_avg_rank_z_race 5.714159e-06
+    num__career_places_3rd_count 4.139357e-06
+                num__is_debutant 2.379966e-06
+              cat__terrain_label 2.084612e-06
+       num__days_since_last_race 7.526274e-07
+               num__mount_weight 2.206779e-08
+--------------------------------------------------
+
+2026-04-14 13:48:25,703 - ML.TabnetTrainer - INFO - --- Training Target: PLAT ---
+2026-04-14 13:48:28,729 - ML.TabnetTrainer - INFO - [plat] WF Fold 1 (Test year 2022)
+
+Early stopping occurred at epoch 24 with best_epoch = 14 and best_val_0_auc = 0.75563
+
+
+2026-04-14 13:50:04,486 - ML.TabnetTrainer - INFO -   Fold 2022 Result -> ROI: -0.6% | AUC: 0.7623
+2026-04-14 13:50:04,488 - ML.TabnetTrainer - INFO - [plat] WF Fold 2 (Test year 2023)
+
+Early stopping occurred at epoch 30 with best_epoch = 20 and best_val_0_auc = 0.7646
+
+
+2026-04-14 13:53:03,449 - ML.TabnetTrainer - INFO -   Fold 2023 Result -> ROI: -10.8% | AUC: 0.7004
+2026-04-14 13:53:03,451 - ML.TabnetTrainer - INFO - [plat] WF Fold 3 (Test year 2024)
+
+
+
+Early stopping occurred at epoch 28 with best_epoch = 18 and best_val_0_auc = 0.76886
+2026-04-14 13:57:27,834 - ML.TabnetTrainer - INFO -   Fold 2024 Result -> ROI: -11.9% | AUC: 0.7376
+2026-04-14 13:57:27,836 - ML.TabnetTrainer - INFO - [plat] WF Fold 4 (Test year 2025)
+
+
+
+Early stopping occurred at epoch 32 with best_epoch = 22 and best_val_0_auc = 0.76918
+2026-04-14 14:03:52,397 - ML.TabnetTrainer - INFO -   Fold 2025 Result -> ROI: -9.5% | AUC: 0.7385
+2026-04-14 14:03:52,397 - ML.TabnetTrainer - INFO - [plat] Backtest OK (Avg ROI: -8.2%). Training PRODUCTION model...
+2026-04-14 14:03:56,735 - ML.TabnetTrainer - INFO -     Training Fold 1/3...
+
+
+
+Early stopping occurred at epoch 24 with best_epoch = 14 and best_val_0_auc = 0.76312
+2026-04-14 14:09:13,008 - ML.TabnetTrainer - INFO -     Training Fold 2/3...
+
+Early stopping occurred at epoch 31 with best_epoch = 21 and best_val_0_auc = 0.75938
+
+
+2026-04-14 14:15:57,010 - ML.TabnetTrainer - INFO -     Training Fold 3/3...
+
+
+
+Early stopping occurred at epoch 33 with best_epoch = 23 and best_val_0_auc = 0.76118
+
+--- TABNET FEATURE IMPORTANCES (65 features) ---
+                         feature  importance
+           num__market_sentiment    0.459821
+              num__hist_earnings    0.090597
+   num__reference_odds_rank_race    0.051400
+             num__reference_odds    0.044608
+                   num__odds_log    0.033318
+       num__days_since_last_race    0.030180
+             num__distance_delta    0.029442
+    num__reference_odds_rel_race    0.027157
+num__days_since_last_race_z_race    0.024342
+        num__career_places_count    0.021347
+             num__duo_confidence    0.019073
+                 num__distance_m    0.016547
+         num__career_races_count    0.016067
+               cat__trainer_name    0.012191
+          num__winnings_year_now    0.008472
+         num__winnings_year_prev    0.008407
+           num__winnings_victory    0.006620
+          num__career_place_rate    0.006487
+           num__speed_form_ratio    0.006103
+  num__career_winnings_rank_race    0.006101
+            num__handicap_weight    0.006024
+        num__hist_pct_clean_runs    0.005705
+            num__duo_total_races    0.005266
+             cat__shoeing_status    0.005045
+          num__career_wins_count    0.004489
+            num__career_winnings    0.004476
+                cat__jockey_name    0.004358
+          num__relative_winnings    0.004198
+           num__odds_drift_ratio    0.004169
+               num__penetrometer    0.004022
+        num__duo_win_rate_z_race    0.003804
+        num__duo_avg_rank_z_race    0.003399
+        num__is_unusual_distance    0.003057
+             num__odds_drift_log    0.002383
+                num__is_debutant    0.002246
+    num__pct_races_on_discipline    0.002037
+            num__career_win_rate    0.002011
+             num__hist_avg_speed    0.001765
+           num__avg_speed_last_3    0.001476
+               num__duo_avg_rank    0.001469
+               num__duo_win_rate    0.001249
+               cat__meeting_code    0.001206
+    num__career_places_2nd_count    0.000967
+    num__career_places_3rd_count    0.000886
+    num__avg_speed_last_3_z_race    0.000874
+              cat__terrain_label    0.000792
+      num__hist_avg_speed_z_race    0.000730
+                 cat__discipline    0.000643
+      num__duo_confidence_z_race    0.000465
+                 num__race_month    0.000433
+         num__duo_is_experienced    0.000395
+               cat__meeting_type    0.000336
+          num__horse_age_at_race    0.000318
+              num__is_specialist    0.000208
+               num__proba_tabnet    0.000199
+    num__pct_clean_on_discipline    0.000126
+     num__declared_runners_count    0.000126
+               num__mount_weight    0.000087
+          num__odds_rank_in_race    0.000082
+             num__winnings_place    0.000076
+                 cat__track_type    0.000056
+             num__handicap_value    0.000045
+              num__duo_best_rank    0.000015
+      num__winnings_rank_in_race    0.000005
+                        cat__sex    0.000004
+--------------------------------------------------
+
+2026-04-14 14:22:47,549 - ML.TabnetTrainer - INFO - --- Training Target: HAIE ---
+2026-04-14 14:22:48,127 - ML.TabnetTrainer - INFO - [haie] WF Fold 1 (Test year 2022)
+
+Early stopping occurred at epoch 31 with best_epoch = 21 and best_val_0_auc = 0.71105
+
+
+2026-04-14 14:23:04,658 - ML.TabnetTrainer - INFO -   Fold 2022 Result -> ROI: +2.7% | AUC: 0.7058
+2026-04-14 14:23:04,659 - ML.TabnetTrainer - INFO - [haie] WF Fold 2 (Test year 2023)
+
+
+
+Early stopping occurred at epoch 34 with best_epoch = 24 and best_val_0_auc = 0.74618
+2026-04-14 14:23:30,594 - ML.TabnetTrainer - INFO -   Fold 2023 Result -> ROI: +24.3% | AUC: 0.6891
+2026-04-14 14:23:30,595 - ML.TabnetTrainer - INFO - [haie] WF Fold 3 (Test year 2024)
+
+Early stopping occurred at epoch 20 with best_epoch = 10 and best_val_0_auc = 0.73947
+
+
+2026-04-14 14:23:52,249 - ML.TabnetTrainer - INFO -   Fold 2024 Result -> ROI: -2.7% | AUC: 0.7169
+2026-04-14 14:23:52,249 - ML.TabnetTrainer - INFO - [haie] WF Fold 4 (Test year 2025)
+
+
+
+Early stopping occurred at epoch 29 with best_epoch = 19 and best_val_0_auc = 0.74644
+2026-04-14 14:24:31,149 - ML.TabnetTrainer - INFO -   Fold 2025 Result -> ROI: -4.8% | AUC: 0.7172
+2026-04-14 14:24:31,149 - ML.TabnetTrainer - INFO - [haie] Backtest OK (Avg ROI: +4.9%). Training PRODUCTION model...
+2026-04-14 14:24:31,548 - ML.TabnetTrainer - INFO -     Training Fold 1/3...
+
+
+
+Early stopping occurred at epoch 40 with best_epoch = 30 and best_val_0_auc = 0.73405
+2026-04-14 14:25:28,660 - ML.TabnetTrainer - INFO -     Training Fold 2/3...
+
+Early stopping occurred at epoch 23 with best_epoch = 13 and best_val_0_auc = 0.72274
+
+
+2026-04-14 14:26:02,300 - ML.TabnetTrainer - INFO -     Training Fold 3/3...
+
+
+
+Early stopping occurred at epoch 23 with best_epoch = 13 and best_val_0_auc = 0.74085
+
+--- TABNET FEATURE IMPORTANCES (65 features) ---
+                         feature  importance
+           num__market_sentiment    0.279142
+    num__reference_odds_rel_race    0.075449
+              num__hist_earnings    0.068230
+             num__reference_odds    0.040190
+   num__reference_odds_rank_race    0.033720
+               num__duo_avg_rank    0.026116
+    num__pct_clean_on_discipline    0.024221
+        num__duo_avg_rank_z_race    0.022633
+num__days_since_last_race_z_race    0.022127
+                cat__jockey_name    0.021467
+                num__is_debutant    0.019056
+        num__hist_pct_clean_runs    0.018514
+             num__winnings_place    0.017911
+            num__duo_total_races    0.017686
+        num__is_unusual_distance    0.017290
+         num__career_races_count    0.017211
+        num__duo_win_rate_z_race    0.016612
+    num__pct_races_on_discipline    0.016266
+         num__duo_is_experienced    0.013403
+    num__career_places_3rd_count    0.013294
+             num__distance_delta    0.012785
+            num__career_winnings    0.010948
+             num__hist_avg_speed    0.010094
+           num__speed_form_ratio    0.008971
+               num__penetrometer    0.008913
+          num__horse_age_at_race    0.008614
+    num__career_places_2nd_count    0.007858
+              num__is_specialist    0.007651
+           num__odds_drift_ratio    0.007276
+             num__odds_drift_log    0.007029
+               cat__trainer_name    0.007008
+                        cat__sex    0.006999
+               cat__meeting_type    0.006990
+  num__career_winnings_rank_race    0.006896
+              cat__terrain_label    0.006421
+             cat__shoeing_status    0.006075
+               num__proba_tabnet    0.005806
+      num__winnings_rank_in_race    0.005319
+               cat__meeting_code    0.005280
+                 num__distance_m    0.005203
+          num__career_wins_count    0.005021
+            num__handicap_weight    0.004941
+      num__hist_avg_speed_z_race    0.004830
+          num__odds_rank_in_race    0.004434
+          num__career_place_rate    0.003870
+                 num__race_month    0.003523
+                 cat__track_type    0.003363
+               num__duo_win_rate    0.003161
+     num__declared_runners_count    0.003058
+           num__winnings_victory    0.002923
+        num__career_places_count    0.002811
+                 cat__discipline    0.002591
+      num__duo_confidence_z_race    0.002531
+             num__duo_confidence    0.002521
+          num__winnings_year_now    0.002227
+            num__career_win_rate    0.002208
+           num__avg_speed_last_3    0.002154
+    num__avg_speed_last_3_z_race    0.002149
+                   num__odds_log    0.001964
+              num__duo_best_rank    0.001919
+               num__mount_weight    0.001696
+         num__winnings_year_prev    0.001329
+       num__days_since_last_race    0.001004
+          num__relative_winnings    0.000550
+             num__handicap_value    0.000549
+--------------------------------------------------
+
+2026-04-14 14:26:38,126 - ML.TabnetTrainer - INFO - --- Training Target: STEEPLECHASE ---
+2026-04-14 14:26:38,510 - ML.TabnetTrainer - INFO - [steeplechase] WF Fold 1 (Test year 2022)
+
+Early stopping occurred at epoch 34 with best_epoch = 24 and best_val_0_auc = 0.75
+
+
+2026-04-14 14:26:48,380 - ML.TabnetTrainer - INFO -   Fold 2022 Result -> ROI: -1.1% | AUC: 0.6938
+2026-04-14 14:26:48,381 - ML.TabnetTrainer - INFO - [steeplechase] WF Fold 2 (Test year 2023)
+
+
+
+Early stopping occurred at epoch 25 with best_epoch = 15 and best_val_0_auc = 0.74187
+2026-04-14 14:26:58,412 - ML.TabnetTrainer - INFO -   Fold 2023 Result -> ROI: +1.4% | AUC: 0.6729
+2026-04-14 14:26:58,413 - ML.TabnetTrainer - INFO - [steeplechase] WF Fold 3 (Test year 2024)
+
+Early stopping occurred at epoch 27 with best_epoch = 17 and best_val_0_auc = 0.73156
+
+
+2026-04-14 14:27:12,509 - ML.TabnetTrainer - INFO -   Fold 2024 Result -> ROI: -6.8% | AUC: 0.6506
+2026-04-14 14:27:12,510 - ML.TabnetTrainer - INFO - [steeplechase] WF Fold 4 (Test year 2025)
+
+Early stopping occurred at epoch 36 with best_epoch = 26 and best_val_0_auc = 0.7179
+
+
+2026-04-14 14:27:35,485 - ML.TabnetTrainer - INFO -   Fold 2025 Result -> ROI: -2.5% | AUC: 0.7030
+2026-04-14 14:27:35,485 - ML.TabnetTrainer - INFO - [steeplechase] Backtest OK (Avg ROI: -2.2%). Training PRODUCTION model...
+2026-04-14 14:27:35,701 - ML.TabnetTrainer - INFO -     Training Fold 1/3...
+
+Early stopping occurred at epoch 27 with best_epoch = 17 and best_val_0_auc = 0.73219
+
+
+2026-04-14 14:27:54,965 - ML.TabnetTrainer - INFO -     Training Fold 2/3...
+
+
+
+Early stopping occurred at epoch 22 with best_epoch = 12 and best_val_0_auc = 0.73405
+2026-04-14 14:28:11,069 - ML.TabnetTrainer - INFO -     Training Fold 3/3...
+
+
+
+Early stopping occurred at epoch 14 with best_epoch = 4 and best_val_0_auc = 0.74524
+
+--- TABNET FEATURE IMPORTANCES (65 features) ---
+                         feature  importance
+           num__market_sentiment    0.237373
+    num__reference_odds_rel_race    0.062769
+            num__career_winnings    0.040878
+   num__reference_odds_rank_race    0.025949
+               num__proba_tabnet    0.024478
+              num__hist_earnings    0.024222
+        num__is_unusual_distance    0.023910
+         num__duo_is_experienced    0.023653
+          num__odds_rank_in_race    0.023440
+       num__days_since_last_race    0.022699
+        num__duo_avg_rank_z_race    0.020783
+    num__pct_clean_on_discipline    0.020214
+           num__avg_speed_last_3    0.019762
+             num__reference_odds    0.019367
+              num__duo_best_rank    0.018081
+                 num__distance_m    0.017136
+             num__hist_avg_speed    0.016309
+         num__career_races_count    0.016016
+    num__career_places_2nd_count    0.013709
+     num__declared_runners_count    0.013642
+      num__hist_avg_speed_z_race    0.013623
+               num__duo_avg_rank    0.012557
+           num__speed_form_ratio    0.012487
+          num__winnings_year_now    0.011397
+    num__career_places_3rd_count    0.010969
+             num__duo_confidence    0.010635
+            num__handicap_weight    0.010398
+               cat__trainer_name    0.010214
+               num__duo_win_rate    0.009896
+            num__duo_total_races    0.009597
+          num__relative_winnings    0.009469
+           num__winnings_victory    0.009440
+        num__career_places_count    0.009302
+             num__odds_drift_log    0.009171
+        num__duo_win_rate_z_race    0.009163
+               cat__meeting_code    0.008372
+  num__career_winnings_rank_race    0.008241
+        num__hist_pct_clean_runs    0.008145
+    num__avg_speed_last_3_z_race    0.008002
+           num__odds_drift_ratio    0.007957
+                 num__race_month    0.007590
+      num__duo_confidence_z_race    0.007115
+          num__horse_age_at_race    0.006337
+              cat__terrain_label    0.005997
+          num__career_wins_count    0.005875
+num__days_since_last_race_z_race    0.005633
+                num__is_debutant    0.005620
+              num__is_specialist    0.005601
+                        cat__sex    0.005595
+         num__winnings_year_prev    0.005271
+      num__winnings_rank_in_race    0.005035
+             num__distance_delta    0.005017
+               cat__meeting_type    0.004667
+                 cat__track_type    0.004467
+                   num__odds_log    0.004444
+            num__career_win_rate    0.004443
+                 cat__discipline    0.004236
+             cat__shoeing_status    0.003956
+               num__mount_weight    0.003561
+               num__penetrometer    0.003381
+             num__handicap_value    0.003254
+          num__career_place_rate    0.003167
+             num__winnings_place    0.002790
+                cat__jockey_name    0.002355
+    num__pct_races_on_discipline    0.001164
+--------------------------------------------------
+
+2026-04-14 14:28:22,649 - ML.TabnetTrainer - INFO - --- Training Target: CROSS ---
+2026-04-14 14:28:22,889 - ML.TabnetTrainer - INFO - [cross] WF Fold 1 (Test year 2022)
+
+Early stopping occurred at epoch 10 with best_epoch = 0 and best_val_0_auc = 0.47381
+
+
+2026-04-14 14:28:23,229 - ML.TabnetTrainer - INFO -   Fold 2022 Result -> ROI: +5.4% | AUC: 0.5197
+2026-04-14 14:28:23,230 - ML.TabnetTrainer - INFO - [cross] WF Fold 2 (Test year 2023)
+
+
+
+Early stopping occurred at epoch 10 with best_epoch = 0 and best_val_0_auc = 0.56393
+2026-04-14 14:28:23,561 - ML.TabnetTrainer - INFO -   Fold 2023 Result -> ROI: +99.7% | AUC: 0.5744
+2026-04-14 14:28:23,561 - ML.TabnetTrainer - INFO - [cross] WF Fold 3 (Test year 2024)
+
+
+Stop training because you reached max_epochs = 50 with best_epoch = 40 and best_val_0_auc = 0.75792
+2026-04-14 14:28:27,907 - ML.TabnetTrainer - INFO -   Fold 2024 Result -> ROI: +25.8% | AUC: 0.7069
+2026-04-14 14:28:27,907 - ML.TabnetTrainer - INFO - [cross] WF Fold 4 (Test year 2025)
+
+
+Stop training because you reached max_epochs = 50 with best_epoch = 45 and best_val_0_auc = 0.77167
+2026-04-14 14:28:31,763 - ML.TabnetTrainer - INFO -   Fold 2025 Result -> ROI: -58.5% | AUC: 0.4981
+2026-04-14 14:28:31,764 - ML.TabnetTrainer - INFO - [cross] Backtest OK (Avg ROI: +18.1%). Training PRODUCTION model...
+2026-04-14 14:28:31,818 - ML.TabnetTrainer - INFO -     Training Fold 1/3...
+
+Early stopping occurred at epoch 32 with best_epoch = 22 and best_val_0_auc = 0.681
+
+
+2026-04-14 14:28:34,536 - ML.TabnetTrainer - INFO -     Training Fold 2/3...
+
+
+
+Early stopping occurred at epoch 33 with best_epoch = 23 and best_val_0_auc = 0.75966
+2026-04-14 14:28:37,365 - ML.TabnetTrainer - INFO -     Training Fold 3/3...
+
+
+
+Early stopping occurred at epoch 34 with best_epoch = 24 and best_val_0_auc = 0.75319
+
+--- TABNET FEATURE IMPORTANCES (65 features) ---
+                         feature  importance
+           num__market_sentiment    0.044689
+    num__reference_odds_rel_race    0.043950
+                 num__race_month    0.041428
+              num__is_specialist    0.034982
+        num__duo_avg_rank_z_race    0.033205
+   num__reference_odds_rank_race    0.030571
+               num__penetrometer    0.029628
+            num__duo_total_races    0.028409
+           num__winnings_victory    0.025440
+          num__relative_winnings    0.025165
+    num__career_places_2nd_count    0.022371
+                 num__distance_m    0.022340
+                cat__jockey_name    0.021002
+            num__career_winnings    0.020290
+         num__duo_is_experienced    0.019979
+        num__career_places_count    0.019098
+        num__hist_pct_clean_runs    0.019000
+num__days_since_last_race_z_race    0.018544
+    num__pct_clean_on_discipline    0.018535
+       num__days_since_last_race    0.018503
+              num__hist_earnings    0.018299
+        num__is_unusual_distance    0.017578
+          num__career_wins_count    0.016619
+    num__career_places_3rd_count    0.015700
+      num__winnings_rank_in_race    0.015302
+        num__duo_win_rate_z_race    0.015040
+             num__winnings_place    0.014761
+  num__career_winnings_rank_race    0.014759
+             cat__shoeing_status    0.014320
+         num__career_races_count    0.014162
+               num__duo_avg_rank    0.013319
+           num__speed_form_ratio    0.013009
+          num__winnings_year_now    0.012966
+               cat__meeting_code    0.011605
+             num__distance_delta    0.011461
+      num__duo_confidence_z_race    0.011300
+             num__reference_odds    0.010974
+             num__duo_confidence    0.010792
+               num__mount_weight    0.010766
+      num__hist_avg_speed_z_race    0.010622
+          num__horse_age_at_race    0.010231
+               cat__trainer_name    0.009920
+              num__duo_best_rank    0.009652
+    num__avg_speed_last_3_z_race    0.009577
+                        cat__sex    0.009482
+             num__hist_avg_speed    0.009161
+     num__declared_runners_count    0.008952
+            num__career_win_rate    0.008872
+    num__pct_races_on_discipline    0.008731
+                   num__odds_log    0.008603
+             num__odds_drift_log    0.008199
+              cat__terrain_label    0.007833
+                 cat__track_type    0.007752
+           num__odds_drift_ratio    0.007506
+            num__handicap_weight    0.007473
+               num__proba_tabnet    0.007089
+               num__duo_win_rate    0.006373
+                 cat__discipline    0.006272
+             num__handicap_value    0.006035
+         num__winnings_year_prev    0.005941
+               cat__meeting_type    0.005906
+           num__avg_speed_last_3    0.005336
+          num__odds_rank_in_race    0.005015
+                num__is_debutant    0.004899
+          num__career_place_rate    0.004714
+--------------------------------------------------
+
+
+Process finished with exit code 0

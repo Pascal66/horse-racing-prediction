@@ -10,7 +10,10 @@ class RaceSummary(BaseModel):
     discipline: str
     distance_m: int
     track_type: Optional[str]
-    racetrack_code: str
+    meeting_code: str
+    meeting_libelle: str
+    racetrack_libelle: str
+    meeting_type: str
     declared_runners_count: int
     start_timestamp: Optional[int]
     timezone_offset: Optional[int]
@@ -25,6 +28,7 @@ class ParticipantSummary(BaseModel):
     jockey_name: Optional[str]
     trainer_name: Optional[str]
     reference_odds: Optional[float]
+    live_odds_30mn: Optional[float]
     live_odds: Optional[float]
     shoeing_status: Optional[str] = None
     blinkers: Optional[str] = None
@@ -32,6 +36,7 @@ class ParticipantSummary(BaseModel):
     owner_name: Optional[str] = None
     finish_rank: Optional[int] = None
     incident_code: Optional[str] = None
+    program_date: datetime
 
 class PredictionResult(BaseModel):
     program_number: int

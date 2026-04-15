@@ -20,12 +20,14 @@ def render_race_grid():
         return
 
     # Header
-    racetrack_name = meeting_races.iloc[0]['racetrack_code']
+    # print(meeting_races.head())
+
+    meeting_name = meeting_races.iloc[0]['meeting_libelle']
     date_str = store.get_date_code()
     # Format date for better display (DD/MM/YYYY)
     formatted_date = f"{date_str[:2]}/{date_str[2:4]}/{date_str[4:]}"
 
-    st.markdown(f"## 🏟️ Meeting {selected_meeting} : {racetrack_name} ({formatted_date})")
+    st.markdown(f"## 🏟️ Meeting {selected_meeting} : {meeting_name} ({formatted_date})")
 
     # Create Tabs
     # race_labels = [f"C{r['race_number']}" for _, r in meeting_races.iterrows()]
@@ -80,6 +82,6 @@ def render_race_tab_content(race_row):
         m1, m2, m3 = st.columns(3)
         m1.metric("Distance", f"{race_row['distance_m']} m")
         m2.metric("Runners", f"{race_row.get('declared_runners_count', '-')}")
-        m3.metric("Racetrack", race_row['racetrack_code'])
+        m3.metric("Racetrack", f"PRIX {race_row['racetrack_libelle']}")
 
         render_analysis_view(race_row['race_id'])

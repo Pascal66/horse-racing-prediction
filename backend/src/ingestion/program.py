@@ -57,8 +57,8 @@ class ProgramIngestor(BaseIngestor):
         """Inserts a race meeting (Reunion) and returns its ID."""
         num_officiel = meeting_data.get("numOfficiel")
         meeting_type = self._safe_truncate("meeting_type", meeting_data.get("nature"), 50)
-        racetrack_code = self._safe_truncate("racetrack_code", (meeting_data.get("hippodrome") or {}).get("code"), 30)
-        racetrack_libelle = self._safe_truncate("racetrack_libelle", (meeting_data.get("hippodrome") or {}).get("libelleCourt"), 30)
+        meeting_code = self._safe_truncate("meeting_code", (meeting_data.get("hippodrome") or {}).get("code"), 30)
+        meeting_libelle = self._safe_truncate("meeting_libelle", (meeting_data.get("hippodrome") or {}).get("libelleCourt"), 30)
         audience = self._safe_truncate("audience", meeting_data.get("audience"), 30)
         temp = (meeting_data.get("meteo") or {}).get("temperature")
         wind = (meeting_data.get("meteo") or {}).get("directionVent")
@@ -67,21 +67,22 @@ class ProgramIngestor(BaseIngestor):
         cursor.execute(
             """
             INSERT INTO race_meeting (
-                program_id, meeting_number, meeting_type, audience,
-                racetrack_code, racetrack_libelle, weather_temperature, weather_wind, weather_windspeed
+                program_id, meeting_number, meeting_type, audience, meeting_code, meeting_libelle,
+                weather_temperature, weather_wind, weather_windspeed
             )
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (program_id, meeting_number) 
             DO UPDATE SET 
                 audience = EXCLUDED.audience,
-                racetrack_libelle = EXCLUDED.racetrack_libelle,
+                meeting_code = EXCLUDED.meeting_code,
+                meeting_libelle = EXCLUDED.meeting_libelle,
                 weather_temperature = EXCLUDED.weather_temperature,
                 weather_wind = EXCLUDED.weather_wind,
                 weather_windspeed = EXCLUDED.weather_windspeed,
                 updated_at = NOW()
             RETURNING meeting_id;
             """,
-            (program_id, num_officiel, meeting_type, audience, racetrack_code, racetrack_libelle, temp, wind, windspeed),
+            (program_id, num_officiel, meeting_type, audience, meeting_code, meeting_libelle, temp, wind, windspeed),
         )
         row = cursor.fetchone()
         if row:
@@ -95,6 +96,9 @@ class ProgramIngestor(BaseIngestor):
     def _insert_race(self, cursor, meeting_id: int, race_data: dict):
         """Inserts a single race record."""
         race_number = race_data.get("numOrdre")
+
+        racetrack_libelle = self._safe_truncate("racetrack_libelle", (race_data.get("libelleCourt") or {}), 30)
+
         raw_status = race_data.get("statut")
         race_status = STATUS_MAP.get(raw_status, raw_status[:10] if raw_status else None)
         raw_track = race_data.get("typePiste")
@@ -134,9 +138,9 @@ class ProgramIngestor(BaseIngestor):
                 distance_m, track_type, terrain_label, penetrometer,
                 declared_runners_count, conditions_text, race_status,
                 race_duration_s, race_status_category,
-                start_timestamp, timezone_offset, prize_money, speciality
+                start_timestamp, timezone_offset, prize_money, speciality, raceTrack_libelle
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (meeting_id, race_number) 
             DO UPDATE SET
                 race_status = EXCLUDED.race_status,
@@ -144,6 +148,7 @@ class ProgramIngestor(BaseIngestor):
                 terrain_label = EXCLUDED.terrain_label,
                 penetrometer = EXCLUDED.penetrometer,
                 declared_runners_count = EXCLUDED.declared_runners_count,
+                racetrack_libelle = EXCLUDED.racetrack_libelle,
                 updated_at = NOW();
             """,
             (
@@ -151,7 +156,7 @@ class ProgramIngestor(BaseIngestor):
                 distance_m, track_type, terrain_label, penetrometer_value,
                 declared_runners, conditions, race_status,
                 race_duration_s, race_status_category,
-                start_timestamp, timezone_offset, prize_money, specialty
+                start_timestamp, timezone_offset, prize_money, specialty, racetrack_libelle
             ),
         )
 

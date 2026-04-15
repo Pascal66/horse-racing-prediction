@@ -21,7 +21,7 @@ def sample_data():
         'career_winnings': [5000, 10000, 0],
         'career_races_count': [5, 10, 0],     # One debutant
         'weather_temperature': [None, None, None], # Missing temp
-        'racetrack_code': ['VINC', 'VINC', 'VINC']
+        'meeting_code': ['VINC', 'VINC', 'VINC']
     }
     df = pd.DataFrame(data)
     # SAFETY: Ensure dates are actual timestamps

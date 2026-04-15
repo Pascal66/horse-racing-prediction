@@ -1,232 +1,105 @@
-*** trainer_hyperstack.py
-2026-03-28 15:00:32,290 - ML.HyperStackTrainer - INFO - --- AutoML Tournament for Target: GLOBAL ---
-2026-03-29 17:43:23,412 - ML.HyperStackTrainer - INFO - Data Loaded: (538249, 44) rows
+C:\Users\hmaro\AppData\Roaming\Python\Scripts\uv.exe run F:/git/horse-racing-prediction/.venv/Scripts/python.exe F:\git\horse-racing-prediction\backend\src\ml\trainer_hyperstack.py -X gil=0
+2026-04-14 14:34:43,863 - ML.HyperStackTrainer - INFO - --- STARTING HYPERSTACK WALK-FORWARD TOURNAMENT ---
+2026-04-14 14:34:43,890 - ML.Loader - INFO - Loading SQL data...
+2026-04-14 14:34:49,151 - ML.Loader - INFO - Calculating historical statistics...
+2026-04-14 14:34:59,687 - ML.HyperStackTrainer - INFO - --- AutoML for Target: GLOBAL ---
+Extension for Scikit-learn* enabled (https://github.com/uxlfoundation/scikit-learn-intelex)
+2026-04-14 14:35:56,115 - ML.HyperStackTrainer - INFO - [global] WF Fold 1/4
+2026-04-14 14:36:58,295 - ML.HyperStackTrainer - INFO - [global] WF Fold 2/4
+2026-04-14 14:38:18,939 - ML.HyperStackTrainer - INFO - [global] WF Fold 3/4
+2026-04-14 14:40:01,622 - ML.HyperStackTrainer - INFO - [global] WF Fold 4/4
+2026-04-14 14:42:06,822 - ML.HyperStackTrainer - INFO - [global] Backtest OK (+17.8%). Optimizing Production Model...
+[I 2026-04-14 14:42:19,772] Using an existing study with name 'hs_global_prod' instead of creating a new one.
+[I 2026-04-14 14:44:40,064] Trial 16 finished with value: -0.214693526345092 and parameters: {'xgb_n_estimators': 650, 'xgb_max_depth': 5, 'xgb_lr': 0.02633933174160475, 'xgb_sub': 0.8669803775745677, 'xgb_col': 0.8641798278759483, 'lgbm_n_estimators': 521, 'lgbm_max_depth': 3, 'lgbm_lr': 0.024089917220737056, 'lgbm_leaves': 34, 'cat_iter': 402, 'cat_depth': 5, 'cat_lr': 0.03910672977994244}. Best is trial 1 with value: -0.3865915428769857.
+[I 2026-04-14 14:47:54,095] Trial 17 finished with value: -0.19519326483440202 and parameters: {'xgb_n_estimators': 313, 'xgb_max_depth': 3, 'xgb_lr': 0.010014348600006398, 'xgb_sub': 0.7561701648431686, 'xgb_col': 0.783881445034329, 'lgbm_n_estimators': 836, 'lgbm_max_depth': 4, 'lgbm_lr': 0.014061549164819581, 'lgbm_leaves': 53, 'cat_iter': 707, 'cat_depth': 7, 'cat_lr': 0.02713738307165748}. Best is trial 1 with value: -0.3865915428769857.
+[I 2026-04-14 14:50:37,268] Trial 18 finished with value: -0.2103187056064535 and parameters: {'xgb_n_estimators': 711, 'xgb_max_depth': 4, 'xgb_lr': 0.0381220962006126, 'xgb_sub': 0.823128339110315, 'xgb_col': 0.7436303727483676, 'lgbm_n_estimators': 310, 'lgbm_max_depth': 5, 'lgbm_lr': 0.02579747926087896, 'lgbm_leaves': 28, 'cat_iter': 600, 'cat_depth': 6, 'cat_lr': 0.06485642847960942}. Best is trial 1 with value: -0.3865915428769857.
+2026-04-14 14:54:35,374 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7993 ROI=+20.6% count=10205
+2026-04-14 14:54:35,374 - ML.HyperStackTrainer - INFO - [global] Walk-forward: AUC=0.7993 ROI=+20.6% ±0.0% (1 folds)
+2026-04-14 14:54:35,374 - ML.HyperStackTrainer - INFO - [global] Entraînement modèle final...
+2026-04-14 14:56:57,777 - ML.HyperStackTrainer - INFO - [global] Final → AUC=0.7815 ROI=+12.5% count=10205
+2026-04-14 14:56:58,473 - ML.HyperStackTrainer - INFO - --- AutoML for Target: MONTE ---
+2026-04-14 14:57:02,720 - ML.HyperStackTrainer - INFO - [monte] WF Fold 1/4
+2026-04-14 14:57:26,552 - ML.HyperStackTrainer - INFO - [monte] WF Fold 2/4
+2026-04-14 14:57:53,025 - ML.HyperStackTrainer - INFO - [monte] WF Fold 3/4
+2026-04-14 14:58:21,548 - ML.HyperStackTrainer - INFO - [monte] WF Fold 4/4
+2026-04-14 14:58:51,409 - ML.HyperStackTrainer - INFO - [monte] Backtest OK (+42.2%). Optimizing Production Model...
+[I 2026-04-14 14:58:51,976] Using an existing study with name 'hs_monte_prod' instead of creating a new one.
+[I 2026-04-14 14:59:28,101] Trial 12 finished with value: -0.5452472211575298 and parameters: {'xgb_n_estimators': 823, 'xgb_max_depth': 3, 'xgb_lr': 0.05530235224920153, 'xgb_sub': 0.7076119546647074, 'xgb_col': 0.8594991514267447, 'lgbm_n_estimators': 788, 'lgbm_max_depth': 5, 'lgbm_lr': 0.06910271578898121, 'lgbm_leaves': 34, 'cat_iter': 485, 'cat_depth': 6, 'cat_lr': 0.05212553670620136}. Best is trial 1 with value: -0.7684760630797297.
+[I 2026-04-14 14:59:57,825] Trial 13 finished with value: -0.5144691452663843 and parameters: {'xgb_n_estimators': 321, 'xgb_max_depth': 3, 'xgb_lr': 0.0321427373042676, 'xgb_sub': 0.7653909816375578, 'xgb_col': 0.875023795240184, 'lgbm_n_estimators': 992, 'lgbm_max_depth': 3, 'lgbm_lr': 0.04335128981882977, 'lgbm_leaves': 47, 'cat_iter': 316, 'cat_depth': 7, 'cat_lr': 0.024518266739194498}. Best is trial 1 with value: -0.7684760630797297.
+[I 2026-04-14 15:00:48,203] Trial 14 finished with value: -0.5020889229589869 and parameters: {'xgb_n_estimators': 698, 'xgb_max_depth': 3, 'xgb_lr': 0.061991024005738506, 'xgb_sub': 0.8488332265177598, 'xgb_col': 0.8360878131691591, 'lgbm_n_estimators': 862, 'lgbm_max_depth': 4, 'lgbm_lr': 0.010042056975723093, 'lgbm_leaves': 20, 'cat_iter': 675, 'cat_depth': 6, 'cat_lr': 0.014676174712481714}. Best is trial 1 with value: -0.7684760630797297.
+2026-04-14 15:01:37,827 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8377 ROI=+62.3% count=871
+2026-04-14 15:01:37,828 - ML.HyperStackTrainer - INFO - [monte] Walk-forward: AUC=0.8377 ROI=+62.3% ±0.0% (1 folds)
+2026-04-14 15:01:37,828 - ML.HyperStackTrainer - INFO - [monte] Entraînement modèle final...
+2026-04-14 15:02:14,874 - ML.HyperStackTrainer - INFO - [monte] Final → AUC=0.8221 ROI=+35.0% count=871
+2026-04-14 15:02:14,928 - ML.HyperStackTrainer - INFO - --- AutoML for Target: ATTELE ---
+2026-04-14 15:02:41,269 - ML.HyperStackTrainer - INFO - [attele] WF Fold 1/4
+2026-04-14 15:03:33,325 - ML.HyperStackTrainer - INFO - [attele] WF Fold 2/4
+2026-04-14 15:04:31,520 - ML.HyperStackTrainer - INFO - [attele] WF Fold 3/4
+2026-04-14 15:05:34,387 - ML.HyperStackTrainer - INFO - [attele] WF Fold 4/4
+2026-04-14 15:06:51,728 - ML.HyperStackTrainer - INFO - [attele] Backtest OK (+28.2%). Optimizing Production Model...
+[I 2026-04-14 15:06:56,258] Using an existing study with name 'hs_attele_prod' instead of creating a new one.
+[I 2026-04-14 15:08:52,619] Trial 14 finished with value: -0.36432599300267227 and parameters: {'xgb_n_estimators': 752, 'xgb_max_depth': 4, 'xgb_lr': 0.05046779316891928, 'xgb_sub': 0.7685033936263259, 'xgb_col': 0.7606401552091385, 'lgbm_n_estimators': 820, 'lgbm_max_depth': 4, 'lgbm_lr': 0.019400739538947873, 'lgbm_leaves': 53, 'cat_iter': 658, 'cat_depth': 6, 'cat_lr': 0.02535292297782784}. Best is trial 0 with value: -0.612193922073042.
+[I 2026-04-14 15:10:20,649] Trial 15 finished with value: -0.37097345132743104 and parameters: {'xgb_n_estimators': 309, 'xgb_max_depth': 6, 'xgb_lr': 0.038039763374097556, 'xgb_sub': 0.7204487311129458, 'xgb_col': 0.8084669560668032, 'lgbm_n_estimators': 461, 'lgbm_max_depth': 5, 'lgbm_lr': 0.04288805060667714, 'lgbm_leaves': 44, 'cat_iter': 494, 'cat_depth': 7, 'cat_lr': 0.04639638911995542}. Best is trial 0 with value: -0.612193922073042.
+[I 2026-04-14 15:12:42,285] Trial 16 finished with value: -0.3415764560609141 and parameters: {'xgb_n_estimators': 545, 'xgb_max_depth': 4, 'xgb_lr': 0.010527720495733651, 'xgb_sub': 0.8444633473031162, 'xgb_col': 0.73660205880181, 'lgbm_n_estimators': 748, 'lgbm_max_depth': 3, 'lgbm_lr': 0.019733091117723638, 'lgbm_leaves': 31, 'cat_iter': 788, 'cat_depth': 6, 'cat_lr': 0.0260192571890108}. Best is trial 0 with value: -0.612193922073042.
+2026-04-14 15:14:38,765 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8398 ROI=+34.6% count=4232
+2026-04-14 15:14:38,766 - ML.HyperStackTrainer - INFO - [attele] Walk-forward: AUC=0.8398 ROI=+34.6% ±0.0% (1 folds)
+2026-04-14 15:14:38,766 - ML.HyperStackTrainer - INFO - [attele] Entraînement modèle final...
+2026-04-14 15:16:07,871 - ML.HyperStackTrainer - INFO - [attele] Final → AUC=0.8202 ROI=+30.0% count=4232
+2026-04-14 15:16:08,128 - ML.HyperStackTrainer - INFO - --- AutoML for Target: PLAT ---
+2026-04-14 15:16:30,165 - ML.HyperStackTrainer - INFO - [plat] WF Fold 1/4
+2026-04-14 15:17:21,558 - ML.HyperStackTrainer - INFO - [plat] WF Fold 2/4
+2026-04-14 15:18:19,486 - ML.HyperStackTrainer - INFO - [plat] WF Fold 3/4
+2026-04-14 15:19:22,863 - ML.HyperStackTrainer - INFO - [plat] WF Fold 4/4
+2026-04-14 15:20:37,758 - ML.HyperStackTrainer - INFO - [plat] Backtest OK (-0.2%). Optimizing Production Model...
+[I 2026-04-14 15:20:41,586] Using an existing study with name 'hs_plat_prod' instead of creating a new one.
+[I 2026-04-14 15:21:59,564] Trial 12 finished with value: 0.010161009573539994 and parameters: {'xgb_n_estimators': 550, 'xgb_max_depth': 5, 'xgb_lr': 0.010332819317472975, 'xgb_sub': 0.8205934844579326, 'xgb_col': 0.898901567338128, 'lgbm_n_estimators': 740, 'lgbm_max_depth': 6, 'lgbm_lr': 0.018170325494103926, 'lgbm_leaves': 24, 'cat_iter': 317, 'cat_depth': 6, 'cat_lr': 0.02122066089915572}. Best is trial 0 with value: -0.02676677307110863.
+[I 2026-04-14 15:23:26,429] Trial 13 finished with value: -0.010017406440384874 and parameters: {'xgb_n_estimators': 797, 'xgb_max_depth': 5, 'xgb_lr': 0.06414562186317199, 'xgb_sub': 0.7474867232916309, 'xgb_col': 0.8541851220468419, 'lgbm_n_estimators': 692, 'lgbm_max_depth': 6, 'lgbm_lr': 0.02077123267720556, 'lgbm_leaves': 21, 'cat_iter': 437, 'cat_depth': 5, 'cat_lr': 0.04059104938759234}. Best is trial 0 with value: -0.02676677307110863.
+[I 2026-04-14 15:25:00,143] Trial 14 finished with value: 0.0013707571801549166 and parameters: {'xgb_n_estimators': 462, 'xgb_max_depth': 4, 'xgb_lr': 0.03415969123552855, 'xgb_sub': 0.8167885394792244, 'xgb_col': 0.8280068835098773, 'lgbm_n_estimators': 875, 'lgbm_max_depth': 5, 'lgbm_lr': 0.011411154317130223, 'lgbm_leaves': 59, 'cat_iter': 411, 'cat_depth': 6, 'cat_lr': 0.02047076549877309}. Best is trial 0 with value: -0.02676677307110863.
+2026-04-14 15:26:30,090 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7691 ROI=+2.9% count=3955
+2026-04-14 15:26:30,091 - ML.HyperStackTrainer - INFO - [plat] Walk-forward: AUC=0.7691 ROI=+2.9% ±0.0% (1 folds)
+2026-04-14 15:26:30,091 - ML.HyperStackTrainer - INFO - [plat] Entraînement modèle final...
+2026-04-14 15:27:54,553 - ML.HyperStackTrainer - INFO - [plat] Final → AUC=0.7477 ROI=-7.0% count=3955
+2026-04-14 15:27:54,814 - ML.HyperStackTrainer - INFO - --- AutoML for Target: HAIE ---
+2026-04-14 15:27:58,580 - ML.HyperStackTrainer - INFO - [haie] WF Fold 1/4
+2026-04-14 15:28:10,800 - ML.HyperStackTrainer - INFO - [haie] WF Fold 2/4
+2026-04-14 15:28:38,440 - ML.HyperStackTrainer - INFO - [haie] WF Fold 3/4
+2026-04-14 15:29:08,273 - ML.HyperStackTrainer - INFO - [haie] WF Fold 4/4
+2026-04-14 15:29:40,105 - ML.HyperStackTrainer - INFO - [haie] Backtest OK (+7.7%). Optimizing Production Model...
+[I 2026-04-14 15:29:40,608] Using an existing study with name 'hs_haie_prod' instead of creating a new one.
+[I 2026-04-14 15:30:39,421] Trial 12 finished with value: -0.10019704433497564 and parameters: {'xgb_n_estimators': 989, 'xgb_max_depth': 4, 'xgb_lr': 0.037646928587351275, 'xgb_sub': 0.7419415433189286, 'xgb_col': 0.8920947738653331, 'lgbm_n_estimators': 798, 'lgbm_max_depth': 4, 'lgbm_lr': 0.02370779185573736, 'lgbm_leaves': 26, 'cat_iter': 774, 'cat_depth': 7, 'cat_lr': 0.03248579540748096}. Best is trial 0 with value: -0.28035972621284594.
+[I 2026-04-14 15:31:14,810] Trial 13 finished with value: -0.04628078817733981 and parameters: {'xgb_n_estimators': 805, 'xgb_max_depth': 6, 'xgb_lr': 0.07662833652853177, 'xgb_sub': 0.8103299945537404, 'xgb_col': 0.7567675511195078, 'lgbm_n_estimators': 785, 'lgbm_max_depth': 5, 'lgbm_lr': 0.058709154244509884, 'lgbm_leaves': 27, 'cat_iter': 447, 'cat_depth': 6, 'cat_lr': 0.02061537824276834}. Best is trial 0 with value: -0.28035972621284594.
+[I 2026-04-14 15:32:09,626] Trial 14 finished with value: -0.06716748768472924 and parameters: {'xgb_n_estimators': 868, 'xgb_max_depth': 5, 'xgb_lr': 0.029831000849770445, 'xgb_sub': 0.8596879062411151, 'xgb_col': 0.8544891140273968, 'lgbm_n_estimators': 899, 'lgbm_max_depth': 6, 'lgbm_lr': 0.021424395750201383, 'lgbm_leaves': 27, 'cat_iter': 631, 'cat_depth': 7, 'cat_lr': 0.014658049486088445}. Best is trial 0 with value: -0.28035972621284594.
+2026-04-14 15:33:10,788 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7772 ROI=+28.0% count=688
+2026-04-14 15:33:10,788 - ML.HyperStackTrainer - INFO - [haie] Walk-forward: AUC=0.7772 ROI=+28.0% ±0.0% (1 folds)
+2026-04-14 15:33:10,788 - ML.HyperStackTrainer - INFO - [haie] Entraînement modèle final...
+2026-04-14 15:33:49,645 - ML.HyperStackTrainer - INFO - [haie] Final → AUC=0.7245 ROI=-1.2% count=688
+2026-04-14 15:33:49,681 - ML.HyperStackTrainer - INFO - --- AutoML for Target: STEEPLECHASE ---
+2026-04-14 15:33:51,918 - ML.HyperStackTrainer - INFO - [steeplechase] WF Fold 1/4
+2026-04-14 15:34:01,165 - ML.HyperStackTrainer - INFO - [steeplechase] WF Fold 2/4
+2026-04-14 15:34:12,104 - ML.HyperStackTrainer - INFO - [steeplechase] WF Fold 3/4
+2026-04-14 15:34:23,761 - ML.HyperStackTrainer - INFO - [steeplechase] WF Fold 4/4
+2026-04-14 15:34:49,671 - ML.HyperStackTrainer - INFO - [steeplechase] Backtest OK (+11.5%). Optimizing Production Model...
+[I 2026-04-14 15:34:49,974] Using an existing study with name 'hs_steeplechase_prod' instead of creating a new one.
+[I 2026-04-14 15:35:24,764] Trial 12 finished with value: -0.17391852162956756 and parameters: {'xgb_n_estimators': 491, 'xgb_max_depth': 5, 'xgb_lr': 0.035414499034647676, 'xgb_sub': 0.7526702502117671, 'xgb_col': 0.8241188772482303, 'lgbm_n_estimators': 995, 'lgbm_max_depth': 5, 'lgbm_lr': 0.010063841996829056, 'lgbm_leaves': 60, 'cat_iter': 559, 'cat_depth': 6, 'cat_lr': 0.024334196440370662}. Best is trial 0 with value: -0.3165649993916951.
+[I 2026-04-14 15:36:07,352] Trial 13 finished with value: -0.1231835363292735 and parameters: {'xgb_n_estimators': 420, 'xgb_max_depth': 3, 'xgb_lr': 0.020130294710599926, 'xgb_sub': 0.8171170162968386, 'xgb_col': 0.8239677288937745, 'lgbm_n_estimators': 687, 'lgbm_max_depth': 6, 'lgbm_lr': 0.04804612745969072, 'lgbm_leaves': 47, 'cat_iter': 661, 'cat_depth': 6, 'cat_lr': 0.027578259370246806}. Best is trial 0 with value: -0.3165649993916951.
+[I 2026-04-14 15:36:32,617] Trial 14 finished with value: -0.1601427971440572 and parameters: {'xgb_n_estimators': 548, 'xgb_max_depth': 5, 'xgb_lr': 0.028780940462353015, 'xgb_sub': 0.7291654383057928, 'xgb_col': 0.7651916482618167, 'lgbm_n_estimators': 717, 'lgbm_max_depth': 5, 'lgbm_lr': 0.029498798588006626, 'lgbm_leaves': 52, 'cat_iter': 450, 'cat_depth': 4, 'cat_lr': 0.057828096570777816}. Best is trial 0 with value: -0.3165649993916951.
+2026-04-14 15:37:18,534 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8381 ROI=+73.3% count=399
+2026-04-14 15:37:18,534 - ML.HyperStackTrainer - INFO - [steeplechase] Walk-forward: AUC=0.8381 ROI=+73.3% ±0.0% (1 folds)
+2026-04-14 15:37:18,534 - ML.HyperStackTrainer - INFO - [steeplechase] Entraînement modèle final...
+2026-04-14 15:37:44,644 - ML.HyperStackTrainer - INFO - [steeplechase] Final → AUC=0.7701 ROI=+12.8% count=399
+2026-04-14 15:37:44,672 - ML.HyperStackTrainer - INFO - --- AutoML for Target: CROSS ---
+2026-04-14 15:37:45,476 - ML.HyperStackTrainer - INFO - [cross] WF Fold 1/4
+2026-04-14 15:37:51,163 - ML.HyperStackTrainer - INFO - [cross] WF Fold 2/4
+2026-04-14 15:37:58,480 - ML.HyperStackTrainer - INFO - [cross] WF Fold 3/4
+2026-04-14 15:38:06,051 - ML.HyperStackTrainer - INFO - [cross] WF Fold 4/4
+2026-04-14 15:38:13,931 - ML.HyperStackTrainer - INFO - [cross] Backtest OK (+33.2%). Optimizing Production Model...
+[I 2026-04-14 15:38:14,194] Using an existing study with name 'hs_cross_prod' instead of creating a new one.
+[I 2026-04-14 15:38:35,249] Trial 12 finished with value: -0.3872403560830859 and parameters: {'xgb_n_estimators': 995, 'xgb_max_depth': 3, 'xgb_lr': 0.055674037966732905, 'xgb_sub': 0.8356558737439133, 'xgb_col': 0.7615100844870089, 'lgbm_n_estimators': 774, 'lgbm_max_depth': 5, 'lgbm_lr': 0.027321815668186065, 'lgbm_leaves': 37, 'cat_iter': 677, 'cat_depth': 7, 'cat_lr': 0.06462023553802612}. Best is trial 4 with value: -0.8677130044843049.
+[I 2026-04-14 15:38:50,740] Trial 13 finished with value: -0.36587537091988115 and parameters: {'xgb_n_estimators': 773, 'xgb_max_depth': 3, 'xgb_lr': 0.09741352984343592, 'xgb_sub': 0.8213513490498765, 'xgb_col': 0.8374125580022507, 'lgbm_n_estimators': 456, 'lgbm_max_depth': 6, 'lgbm_lr': 0.012432120784045793, 'lgbm_leaves': 20, 'cat_iter': 789, 'cat_depth': 6, 'cat_lr': 0.09551552612347303}. Best is trial 4 with value: -0.8677130044843049.
+[I 2026-04-14 15:39:00,983] Trial 14 finished with value: -0.1709198813056377 and parameters: {'xgb_n_estimators': 504, 'xgb_max_depth': 4, 'xgb_lr': 0.05463227425559856, 'xgb_sub': 0.868979312258527, 'xgb_col': 0.7163586660668764, 'lgbm_n_estimators': 909, 'lgbm_max_depth': 5, 'lgbm_lr': 0.056352918196560346, 'lgbm_leaves': 52, 'cat_iter': 457, 'cat_depth': 5, 'cat_lr': 0.04809617239950889}. Best is trial 4 with value: -0.8677130044843049.
+2026-04-14 15:39:23,071 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.9996 ROI=+419.0% count=60
+2026-04-14 15:39:23,071 - ML.HyperStackTrainer - INFO - [cross] Walk-forward: AUC=0.9996 ROI=+419.0% ±0.0% (1 folds)
+2026-04-14 15:39:23,071 - ML.HyperStackTrainer - INFO - [cross] Entraînement modèle final...
+2026-04-14 15:39:30,722 - ML.HyperStackTrainer - INFO - [cross] Final → AUC=0.7908 ROI=+18.5% count=60
 
-New OptimaStudy with 20 trials
-2026-03-30 10:01:57,915 - ML.HyperStackTrainer - INFO - Target global Contextual HS Metrics: {'logloss': 0.2817324036570134, 'auc': 0.7915392339557984, 'roi': np.float64(33.704092339979134), 'win_rate': np.float64(1.3370409233997913), 'avg_odds': np.float64(30.19432244785364), 'count': 2859}
-With sklearn.metrics.roc_auc_score: running accelerated version on CPU
-2026-03-30 12:42:17,412 - ML.HyperStackTrainer - INFO - Target global Contextual HS Metrics: {'logloss': 0.2816779070313624, 'auc': 0.7919811088320918, 'roi': np.float64(32.62022630834522), 'win_rate': np.float64(1.3262022630834522), 'avg_odds': np.float64(30.231019261438146), 'count': 2828}
-Probleme 1 minimize->Maximize
-2026-03-30 13:16:59,380 - ML.HyperStackTrainer - INFO - Target global Contextual HS Metrics: {'logloss': 0.28141308676362836, 'auc': 0.7923740912351338, 'roi': np.float64(31.753269706610183), 'win_rate': np.float64(1.3175326970661019), 'avg_odds': np.float64(30.247349889962642), 'count': 2829}
-Problème 2 - n_jobs=-1 dans study.optimize est dangereux
-2026-03-30 13:45:16,833 - ML.HyperStackTrainer - INFO - Target global Contextual HS Metrics: {'logloss': 0.28176421521055056, 'auc': 0.7923091680482989, 'roi': np.float64(30.494524902861237), 'win_rate': np.float64(1.3049452490286124), 'avg_odds': np.float64(30.261411347245765), 'count': 2831}
-Problème 3 Need to restart a new optima study with 5 trials
-2026-03-30 14:20:20,632 - ML.HyperStackTrainer - INFO - Target global Contextual HS Metrics: {'logloss': 0.28143660005611665, 'auc': 0.7933709414267266, 'roi': np.float64(30.86541858000712), 'win_rate': np.float64(1.308654185800071), 'avg_odds': np.float64(30.25993860317973), 'count': 2831}
-Using Tabnet feature
-2026-03-31 12:15:39,803 - ML.HyperStackTrainer - INFO - Target global Contextual HS Metrics: {'logloss': 0.28144947719865315, 'auc': 0.7921268589464633, 'roi': np.float64(32.78751753155688), 'win_rate': np.float64(1.3278751753155689), 'avg_odds': np.float64(30.410569329000687), 'count': 2852}
-2026-04-02 10:26:34,470 - ML.HyperStackTrainer - INFO - Target global Contextual HS Metrics: {'logloss': 0.27809209673789453, 'auc': 0.7946525639147659, 'roi': np.float64(29.833101529902724), 'win_rate': 37.13490959666203, 'avg_odds': np.float64(30.57347153155919), 'count': 2876}
-2026-04-02 14:20:30,060 - ML.HyperStackTrainer - INFO - Target global Contextual HS Metrics: {'logloss': 0.278485034399696, 'auc': 0.7956559907654486, 'roi': np.float64(31.75481611208412), 'win_rate': np.float64(1.3175481611208413), 'avg_odds': np.float64(30.639995956305427), 'count': 2855}
-2026-04-03 08:01:54,277 - ML.HyperStackTrainer - INFO - Target global Contextual HS Metrics: {'logloss': 0.2761133158696805, 'auc': 0.8093602840903265, 'roi': np.float64(22.827826086956577), 'win_rate': np.float64(1.2282782608695657), 'avg_odds': np.float64(30.667346280568918), 'count': 2875}
-
-
-2026-03-28 15:08:08,287 - ML.HyperStackTrainer - INFO - --- AutoML Tournament for Target: STEEPLECHASE ---
-New OptimaStudy with 20 trials
-2026-03-30 10:17:37,381 - ML.HyperStackTrainer - INFO - Target steeplechase Contextual HS Metrics: {'logloss': 0.37793671771081017, 'auc': 0.6936182336182336, 'roi': np.float64(-1.3158198810372224e-14), 'win_rate': np.float64(0.9999999999999999), 'avg_odds': np.float64(16.098416886543536), 'count': 108}
-With sklearn.metrics.roc_auc_score: running accelerated version on CPU
-2026-03-30 12:43:17,951 - ML.HyperStackTrainer - INFO - Target steeplechase Contextual HS Metrics: {'logloss': 0.3786544555998784, 'auc': 0.687977207977208, 'roi': np.float64(-1.3158198810372224e-14), 'win_rate': np.float64(0.9999999999999999), 'avg_odds': np.float64(16.098416886543536), 'count': 108}
-Probleme 1 minimize->Maximize
-2026-03-30 13:17:50,576 - ML.HyperStackTrainer - INFO - Target steeplechase Contextual HS Metrics: {'logloss': 0.3796390275012913, 'auc': 0.6908404558404558, 'roi': np.float64(3.7962962962962914), 'win_rate': np.float64(1.037962962962963), 'avg_odds': np.float64(16.098416886543532), 'count': 108}
-Problème 2 - n_jobs=-1 dans study.optimize est dangereux
-2026-03-30 13:46:13,630 - ML.HyperStackTrainer - INFO - Target steeplechase Contextual HS Metrics: {'logloss': 0.38066252300803544, 'auc': 0.6835042735042735, 'roi': np.float64(-0.2777777777778015), 'win_rate': np.float64(0.997222222222222), 'avg_odds': np.float64(16.098416886543532), 'count': 108}
-Problème 3 Need to restart a new optima study with 5 trials
-2026-03-30 14:23:21,778 - ML.HyperStackTrainer - INFO - Target steeplechase Contextual HS Metrics: {'logloss': 0.3805511262663561, 'auc': 0.6842877492877493, 'roi': np.float64(-9.907407407407423), 'win_rate': np.float64(0.9009259259259258), 'avg_odds': np.float64(16.098416886543532), 'count': 108}
-Using Tabnet feature
-2026-03-31 12:17:55,119 - ML.HyperStackTrainer - INFO - Target steeplechase Contextual HS Metrics: {'logloss': 0.37707392961665576, 'auc': 0.6912535612535613, 'roi': np.float64(-1.851851851851865), 'win_rate': np.float64(0.9814814814814814), 'avg_odds': np.float64(16.098416886543536), 'count': 108}
-2026-04-02 10:28:57,149 - ML.HyperStackTrainer - INFO - Target steeplechase Contextual HS Metrics: {'logloss': 0.3746223594708469, 'auc': 0.7229793528893366, 'roi': np.float64(4.903846153846121), 'win_rate': 34.61538461538461, 'avg_odds': np.float64(16.07818181818182), 'count': 104}
-2026-04-02 14:24:01,831 - ML.HyperStackTrainer - INFO - Target steeplechase Contextual HS Metrics: {'logloss': 0.3767065936628766, 'auc': 0.7311311846909229, 'roi': np.float64(-12.019230769230797), 'win_rate': np.float64(0.8798076923076921), 'avg_odds': np.float64(16.078181818181818), 'count': 104}
-2026-04-03 08:17:55,815 - ML.HyperStackTrainer - INFO - Target steeplechase Contextual HS Metrics: {'logloss': 0.36113146398668144, 'auc': 0.7355678841115735, 'roi': np.float64(-4.190476190476209), 'win_rate': np.float64(0.9580952380952379), 'avg_odds': np.float64(16.033886583679116), 'count': 105}
-
-
-2026-03-28 15:08:45,415 - ML.HyperStackTrainer - INFO - --- AutoML Tournament for Target: HAIE ---
-With New OptimaStudy with 20 trials
-2026-03-30 10:35:58,321 - ML.HyperStackTrainer - INFO - Target haie Contextual HS Metrics: {'logloss': 0.33469118193621594, 'auc': 0.7273486747170956, 'roi': np.float64(2.397660818713447), 'win_rate': np.float64(1.0239766081871344), 'avg_odds': np.float64(19.315181753385602), 'count': 171}
-Ssklearn.metrics.roc_auc_score: running accelerated version on CPU
-2026-03-30 12:44:52,918 - ML.HyperStackTrainer - INFO - Target haie Contextual HS Metrics: {'logloss': 0.33442899279290056, 'auc': 0.728150869598238, 'roi': np.float64(9.35672514619883), 'win_rate': np.float64(1.0935672514619883), 'avg_odds': np.float64(19.315181753385602), 'count': 171}
-Probleme 1 minimize->Maximize
-2026-03-30 13:19:01,053 - ML.HyperStackTrainer - INFO - Target haie Contextual HS Metrics: {'logloss': 0.34210143031796825, 'auc': 0.721272879167616, 'roi': np.float64(-1.6374269005848021), 'win_rate': np.float64(0.983625730994152), 'avg_odds': np.float64(19.315181753385602), 'count': 171}
-Problème 2 - n_jobs=-1 dans study.optimize est dangereux
-2026-03-30 13:47:23,487 - ML.HyperStackTrainer - INFO - Target haie Contextual HS Metrics: {'logloss': 0.34146761654225205, 'auc': 0.7206937799043063, 'roi': np.float64(-1.6374269005848021), 'win_rate': np.float64(0.983625730994152), 'avg_odds': np.float64(19.315181753385602), 'count': 171}
-Problème 3 Need to restart a new optima study with 5 trials
-Using Tabnet feature
-2026-03-31 12:19:32,341 - ML.HyperStackTrainer - INFO - Target haie Contextual HS Metrics: {'logloss': 0.34986753517369135, 'auc': 0.7151923369028632, 'roi': np.float64(3.040935672514613), 'win_rate': np.float64(1.0304093567251462), 'avg_odds': np.float64(19.315181753385602), 'count': 171}
-2026-04-02 10:32:02,171 - ML.HyperStackTrainer - INFO - Target haie Contextual HS Metrics: {'logloss': 0.3405459196205228, 'auc': 0.7100791916733504, 'roi': np.float64(14.104046242774555), 'win_rate': 35.83815028901734, 'avg_odds': np.float64(19.588367203924317), 'count': 173}
-2026-04-02 14:27:09,828 - ML.HyperStackTrainer - INFO - Target haie Contextual HS Metrics: {'logloss': 0.33889606029060326, 'auc': 0.7190121155638397, 'roi': np.float64(10.00000000000002), 'win_rate': np.float64(1.1), 'avg_odds': np.float64(19.57891061452514), 'count': 174}
-2026-04-03 08:21:01,287 - ML.HyperStackTrainer - INFO - Target haie Contextual HS Metrics: {'logloss': 0.327316312693121, 'auc': 0.747550639884736, 'roi': np.float64(4.166666666666666), 'win_rate': np.float64(1.0416666666666667), 'avg_odds': np.float64(19.711737089201876), 'count': 180}
-
-
-2026-03-28 15:11:06,721 - ML.HyperStackTrainer - INFO - --- AutoML Tournament for Target: MONTE ---
-New OptimaStudy with 20 trials
-2026-03-30 10:52:06,890 - ML.HyperStackTrainer - INFO - Target monte Contextual HS Metrics: {'logloss': 0.31878248701006184, 'auc': 0.8096518026633772, 'roi': np.float64(30.243902439024406), 'win_rate': np.float64(1.302439024390244), 'avg_odds': np.float64(27.678494993930475), 'count': 246}
-With sklearn.metrics.roc_auc_score: running accelerated version on CPU
-2026-03-30 12:46:27,503 - ML.HyperStackTrainer - INFO - Target monte Contextual HS Metrics: {'logloss': 0.31534261926823226, 'auc': 0.8162676859116207, 'roi': np.float64(31.983471074380184), 'win_rate': np.float64(1.3198347107438018), 'avg_odds': np.float64(27.78158269345471), 'count': 242}
-Probleme 1 minimize->Maximize
-2026-03-30 13:21:17,595 - ML.HyperStackTrainer - INFO - Target monte Contextual HS Metrics: {'logloss': 0.31435460012320965, 'auc': 0.8159867004605783, 'roi': np.float64(34.38016528925621), 'win_rate': np.float64(1.3438016528925623), 'avg_odds': np.float64(27.878687653369784), 'count': 242}
-Problème 2 - n_jobs=-1 dans study.optimize est dangereux
-2026-03-30 13:49:41,913 - ML.HyperStackTrainer - INFO - Target monte Contextual HS Metrics: {'logloss': 0.3145427573095157, 'auc': 0.8155294372635561, 'roi': np.float64(34.444444444444464), 'win_rate': np.float64(1.3444444444444446), 'avg_odds': np.float64(27.905724277443596), 'count': 243}
-Problème 3 Need to restart a new optima study with 5 trials
-2026-03-30 14:30:21,267 - ML.HyperStackTrainer - INFO - Target monte Contextual HS Metrics: {'logloss': 0.3135288079986582, 'auc': 0.8180249196062427, 'roi': np.float64(33.1275720164609), 'win_rate': np.float64(1.331275720164609), 'avg_odds': np.float64(27.8879732263459), 'count': 243}
-Using Tabnet feature
-2026-03-31 12:21:53,726 - ML.HyperStackTrainer - INFO - Target monte Contextual HS Metrics: {'logloss': 0.3156025573361759, 'auc': 0.8063771171214336, 'roi': np.float64(58.21138211382117), 'win_rate': np.float64(1.5821138211382118), 'avg_odds': np.float64(28.031938156584506), 'count': 246}
-2026-04-02 10:35:05,694 - ML.HyperStackTrainer - INFO - Target monte Contextual HS Metrics: {'logloss': 0.3130528142320417, 'auc': 0.8153186838472158, 'roi': np.float64(50.8536585365854), 'win_rate': 43.08943089430895, 'avg_odds': np.float64(28.604495105747418), 'count': 246}
-2026-04-02 14:30:01,270 - ML.HyperStackTrainer - INFO - Target monte Contextual HS Metrics: {'logloss': 0.3139436596217353, 'auc': 0.8187054187758859, 'roi': np.float64(56.382113821138255), 'win_rate': np.float64(1.5638211382113825), 'avg_odds': np.float64(28.604495105747414), 'count': 246}
-2026-04-03 08:24:50,758 - ML.HyperStackTrainer - INFO - Target monte Contextual HS Metrics: {'logloss': 0.309622015126403, 'auc': 0.8105963199984415, 'roi': np.float64(38.72950819672131), 'win_rate': np.float64(1.3872950819672132), 'avg_odds': np.float64(28.57870808045517), 'count': 244}
-
-2026-03-28 15:13:21,723 - ML.HyperStackTrainer - INFO - --- AutoML Tournament for Target: ATTELE ---
-With New OptimaStudy with 20 trials
-2026-03-30 11:25:29,971 - ML.HyperStackTrainer - INFO - Target attele Contextual HS Metrics: {'logloss': 0.27483343362877627, 'auc': 0.8251021835680395, 'roi': np.float64(79.10810810810813), 'win_rate': np.float64(1.791081081081081), 'avg_odds': np.float64(37.47989368341401), 'count': 1480}
-sklearn.metrics.roc_auc_score: running accelerated version on CPU
-2026-03-30 12:49:51,947 - ML.HyperStackTrainer - INFO - Target attele Contextual HS Metrics: {'logloss': 0.2746949186890754, 'auc': 0.8251095576399599, 'roi': np.float64(80.12162162162167), 'win_rate': np.float64(1.8012162162162166), 'avg_odds': np.float64(37.47989368341401), 'count': 1480}
-Probleme 1 minimize->Maximize
-2026-03-30 13:24:37,239 - ML.HyperStackTrainer - INFO - Target attele Contextual HS Metrics: {'logloss': 0.2746915434709158, 'auc': 0.8255172824107962, 'roi': np.float64(78.92686261107309), 'win_rate': np.float64(1.789268626110731), 'avg_odds': np.float64(37.576614408156566), 'count': 1463}
-Problème 2 - n_jobs=-1 dans study.optimize est dangereux
-2026-03-30 13:53:11,950 - ML.HyperStackTrainer - INFO - Target attele Contextual HS Metrics: {'logloss': 0.27459703150825004, 'auc': 0.8256703300106055, 'roi': np.float64(74.76775956284143), 'win_rate': np.float64(1.7476775956284143), 'avg_odds': np.float64(37.59505164208783), 'count': 1464}
-Problème 3 Need to restart a new optima study with 5 trials
-2026-03-30 14:41:19,998 - ML.HyperStackTrainer - INFO - Target attele Contextual HS Metrics: {'logloss': 0.27452032168271817, 'auc': 0.825842895959828, 'roi': np.float64(60.60792349726771), 'win_rate': np.float64(1.6060792349726771), 'avg_odds': np.float64(37.59505164208783), 'count': 1464}
-Using Tabnet feature
-2026-03-31 12:29:49,132 - ML.HyperStackTrainer - INFO - Target attele Contextual HS Metrics: {'logloss': 0.27321985101856944, 'auc': 0.8237223770252842, 'roi': np.float64(60.92265943012218), 'win_rate': np.float64(1.6092265943012218), 'avg_odds': np.float64(37.774018969903075), 'count': 1474}
-2026-04-02 10:43:29,944 - ML.HyperStackTrainer - INFO - Target attele Contextual HS Metrics: {'logloss': 0.27037496198369615, 'auc': 0.8277918687464041, 'roi': np.float64(55.307224848075556), 'win_rate': 41.72856178257934, 'avg_odds': np.float64(38.05267792784753), 'count': 1481}
-2026-04-02 14:38:57,565 - ML.HyperStackTrainer - INFO - Target attele Contextual HS Metrics: {'logloss': 0.2709447093789513, 'auc': 0.8292360411959201, 'roi': np.float64(58.75169606512893), 'win_rate': np.float64(1.5875169606512893), 'avg_odds': np.float64(38.11689865559055), 'count': 1474}
-2026-04-03 08:14:14,331 - ML.HyperStackTrainer - INFO - Target attele Contextual HS Metrics: {'logloss': 0.28337571135800277, 'auc': 0.846805401882633, 'roi': np.float64(42.840755735492586), 'win_rate': np.float64(1.4284075573549257), 'avg_odds': np.float64(38.19707129237919), 'count': 1482}
-
-
-2026-03-28 15:18:14,062 - ML.HyperStackTrainer - INFO - --- AutoML Tournament for Target: PLAT ---
-With New OptimaStudy with 20 trials
-2026-03-30 11:55:54,003 - ML.HyperStackTrainer - INFO - Target plat Contextual HS Metrics: {'logloss': 0.2693147237284645, 'auc': 0.7340956829414022, 'roi': np.float64(-11.600481347773805), 'win_rate': np.float64(0.8839951865222619), 'avg_odds': np.float64(22.773563818675576), 'count': 831}
-sklearnex - INFO - sklearn.metrics.roc_auc_score: running accelerated version on CPU
-2026-03-30 12:53:20,456 - ML.HyperStackTrainer - INFO - Target plat Contextual HS Metrics: {'logloss': 0.26930393978953154, 'auc': 0.733734383071181, 'roi': np.float64(-8.941034897713633), 'win_rate': np.float64(0.9105896510228637), 'avg_odds': np.float64(22.773563818675576), 'count': 831}
-Probleme 1 minimize->Maximize
-2026-03-30 13:27:56,741 - ML.HyperStackTrainer - INFO - Target plat Contextual HS Metrics: {'logloss': 0.26976734996118873, 'auc': 0.7328343678897046, 'roi': np.float64(-14.380264741275624), 'win_rate': np.float64(0.8561973525872437), 'avg_odds': np.float64(22.77356381867558), 'count': 831}
-Problème 2 - n_jobs=-1 dans study.optimize est dangereux
-2026-03-30 13:56:51,355 - ML.HyperStackTrainer - INFO - Target plat Contextual HS Metrics: {'logloss': 0.26956527285559634, 'auc': 0.7325930883954198, 'roi': np.float64(-11.456077015643835), 'win_rate': np.float64(0.8854392298435616), 'avg_odds': np.float64(22.77356381867558), 'count': 831}
-Problème 3 Need to restart a new optima study with 5 trials
-2026-03-30 14:48:54,110 - ML.HyperStackTrainer - INFO - Target plat Contextual HS Metrics: {'logloss': 0.26991287622028887, 'auc': 0.7316820621702794, 'roi': np.float64(-11.468110709988002), 'win_rate': np.float64(0.88531889290012), 'avg_odds': np.float64(22.77356381867558), 'count': 831}
-Using Tabnet feature
-2026-03-31 12:36:15,746 - ML.HyperStackTrainer - INFO - Target plat Contextual HS Metrics: {'logloss': 0.27050769192799595, 'auc': 0.7266196706597162, 'roi': np.float64(-13.75903614457836), 'win_rate': np.float64(0.8624096385542164), 'avg_odds': np.float64(22.899727891156463), 'count': 830}
-2026-04-02 10:49:30,051 - ML.HyperStackTrainer - INFO - Target plat Contextual HS Metrics: {'logloss': 0.2709881818562691, 'auc': 0.7268282133178884, 'roi': np.float64(-7.240566037735846), 'win_rate': 26.53301886792453, 'avg_odds': np.float64(22.90940249641907), 'count': 848}
-2026-04-02 14:45:31,651 - ML.HyperStackTrainer - INFO - Target plat Contextual HS Metrics: {'logloss': 0.2711580597315351, 'auc': 0.729788559926376, 'roi': np.float64(-9.066985645933036), 'win_rate': np.float64(0.9093301435406697), 'avg_odds': np.float64(22.932709113607988), 'count': 836}
-2026-04-03 08:31:54,608 - ML.HyperStackTrainer - INFO - Target plat Contextual HS Metrics: {'logloss': 0.2677160139918463, 'auc': 0.7330430325104547, 'roi': np.float64(-12.5714285714286), 'win_rate': np.float64(0.874285714285714), 'avg_odds': np.float64(22.94838075530264), 'count': 840}
-
-
-2026-03-28 15:24:11,178 - ML.HyperStackTrainer - INFO - --- AutoML Tournament for Target: CROSS ---
-With New OptimaStudy with 20 trials
-2026-03-30 11:58:32,676 - ML.HyperStackTrainer - INFO - Target cross Contextual HS Metrics: {'logloss': 0.3681192537043018, 'auc': 0.8242601388381439, 'roi': np.float64(18.695652173913047), 'win_rate': np.float64(1.1869565217391305), 'avg_odds': np.float64(14.562676056338029), 'count': 23}
-sklearn.metrics.roc_auc_score: running accelerated version on CPU
-2026-03-30 12:53:51,399 - ML.HyperStackTrainer - INFO - Target cross Contextual HS Metrics: {'logloss': 0.3688276014840731, 'auc': 0.824625502374863, 'roi': np.float64(18.695652173913047), 'win_rate': np.float64(1.1869565217391305), 'avg_odds': np.float64(14.562676056338029), 'count': 23}
-Probleme 1 minimize->Maximize
-2026-03-30 13:28:26,886 - ML.HyperStackTrainer - INFO - Target cross Contextual HS Metrics: {'logloss': 0.3672407010773601, 'auc': 0.8231640482279868, 'roi': np.float64(18.695652173913047), 'win_rate': np.float64(1.1869565217391305), 'avg_odds': np.float64(14.562676056338029), 'count': 23}
-Problème 2 - n_jobs=-1 dans study.optimize est dangereux
-2026-03-30 13:57:27,229 - ML.HyperStackTrainer - INFO - Target cross Contextual HS Metrics: {'logloss': 0.36956743518644436, 'auc': 0.8173182316404822, 'roi': np.float64(18.695652173913047), 'win_rate': np.float64(1.1869565217391305), 'avg_odds': np.float64(14.562676056338029), 'count': 23}
-Problème 3 Need to restart a new optima study with 5 trials
-2026-03-30 14:50:43,266 - ML.HyperStackTrainer - INFO - Target cross Contextual HS Metrics: {'logloss': 0.37635794343833745, 'auc': 0.7997807818779685, 'roi': np.float64(18.695652173913047), 'win_rate': np.float64(1.1869565217391305), 'avg_odds': np.float64(14.562676056338026), 'count': 23}
-Using Tabnet feature
-2026-03-31 12:36:51,247 - ML.HyperStackTrainer - INFO - Target cross Contextual HS Metrics: {'logloss': 0.3994076580760207, 'auc': 0.7840701497990501, 'roi': np.float64(20.434782608695663), 'win_rate': np.float64(1.2043478260869567), 'avg_odds': np.float64(14.562676056338029), 'count': 23}
-2026-04-02 10:50:46,994 - ML.HyperStackTrainer - INFO - Target cross Contextual HS Metrics: {'logloss': 0.3813278317008799, 'auc': 0.798, 'roi': np.float64(10.83333333333334), 'win_rate': 50.0, 'avg_odds': np.float64(14.36979865771812), 'count': 24}
-2026-04-02 14:46:25,664 - ML.HyperStackTrainer - INFO - Target cross Contextual HS Metrics: {'logloss': 0.3614783410036444, 'auc': 0.825, 'roi': np.float64(22.083333333333336), 'win_rate': np.float64(1.2208333333333334), 'avg_odds': np.float64(14.36979865771812), 'count': 24}
-2026-04-03 08:33:02,991 - ML.HyperStackTrainer - INFO - Target cross Contextual HS Metrics: {'logloss': 0.3626791981799737, 'auc': 0.8433333333333334, 'roi': np.float64(23.750000000000014), 'win_rate': np.float64(1.2375), 'avg_odds': np.float64(14.36979865771812), 'count': 24}
-
-Solution — Walk-Forward annuel (TimeSeriesSplit)
-2026-04-06 09:07:03,134 - ML.HyperStackTrainer - INFO - Data Loaded: (764649, 51) rows
-2026-04-06 09:07:03,218 - ML.HyperStackTrainer - INFO - --- AutoML for Target: GLOBAL ---
-2026-04-06 09:08:52,465 - ML.HyperStackTrainer - INFO - Walk-forward: années complètes 2020-2025, 4 folds, test final=2025, prod=2026 (30346 lignes ignorées dans l'éval)
-2026-04-06 09:08:52,562 - ML.HyperStackTrainer - INFO - [global] Fold 1/4 — test 2022
-2026-04-06 09:10:21,877 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.8026 ROI=+30.6% count=12992
-2026-04-06 09:10:21,879 - ML.HyperStackTrainer - INFO - [global] Fold 2/4 — test 2023
-2026-04-06 09:12:19,273 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.8030 ROI=+31.0% count=12908
-2026-04-06 09:12:19,277 - ML.HyperStackTrainer - INFO - [global] Fold 3/4 — test 2024
-2026-04-06 09:14:47,947 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.8059 ROI=+27.4% count=12973
-2026-04-06 09:14:47,950 - ML.HyperStackTrainer - INFO - [global] Fold 4/4 — test 2025
-2026-04-06 09:17:31,184 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8018 ROI=+25.5% count=12952
-2026-04-06 09:17:31,184 - ML.HyperStackTrainer - INFO - [global] Walk-forward: AUC=0.8033 ROI=+28.6% ±2.3% (4 folds)
-2026-04-06 09:17:31,184 - ML.HyperStackTrainer - INFO - [global] Entraînement modèle final...
-2026-04-03 08:01:54,277 - ML.HyperStackTrainer - INFO - Target global Contextual HS Metrics: {'logloss': 0.2761133158696805, 'auc': 0.8093602840903265, 'roi': np.float64(22.827826086956577), 'win_rate': np.float64(1.2282782608695657), 'avg_odds': np.float64(30.667346280568918), 'count': 2875}
-2026-04-06 09:34:12,403 - ML.HyperStackTrainer - INFO - [global] Final → AUC=0.8039 ROI=+23.3% count=12952
-
-2026-04-06 09:34:12,929 - ML.HyperStackTrainer - INFO - --- AutoML for Target: ATTELE ---
-2026-04-06 09:35:05,615 - ML.HyperStackTrainer - INFO - Walk-forward: années complètes 2020-2025, 4 folds, test final=2025, prod=2026 (15385 lignes ignorées dans l'éval)
-2026-04-06 09:35:05,653 - ML.HyperStackTrainer - INFO - [attele] Fold 1/4 — test 2022
-2026-04-06 09:36:08,649 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.8298 ROI=+43.6% count=6369
-2026-04-06 09:36:08,651 - ML.HyperStackTrainer - INFO - [attele] Fold 2/4 — test 2023
-2026-04-06 09:37:20,209 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.8315 ROI=+46.0% count=6356
-2026-04-06 09:37:20,211 - ML.HyperStackTrainer - INFO - [attele] Fold 3/4 — test 2024
-2026-04-06 09:38:47,916 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.8364 ROI=+38.4% count=6435
-2026-04-06 09:38:47,918 - ML.HyperStackTrainer - INFO - [attele] Fold 4/4 — test 2025
-2026-04-06 09:40:29,487 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8327 ROI=+35.7% count=6408
-2026-04-06 09:40:29,487 - ML.HyperStackTrainer - INFO - [attele] Walk-forward: AUC=0.8326 ROI=+41.0% ±4.1% (4 folds)
-2026-04-06 09:40:29,487 - ML.HyperStackTrainer - INFO - [attele] Entraînement modèle final...
-2026-04-03 08:14:14,331 - ML.HyperStackTrainer - INFO - Target attele Contextual HS Metrics: {'logloss': 0.28337571135800277, 'auc': 0.846805401882633, 'roi': np.float64(42.840755735492586), 'win_rate': np.float64(1.4284075573549257), 'avg_odds': np.float64(38.19707129237919), 'count': 1482}
-2026-04-06 09:49:24,306 - ML.HyperStackTrainer - INFO - [attele] Final → AUC=0.8329 ROI=+36.7% count=6408
-
-2026-04-06 09:49:24,558 - ML.HyperStackTrainer - INFO - --- AutoML for Target: STEEPLECHASE ---
-2026-04-06 09:49:27,559 - ML.HyperStackTrainer - INFO - Walk-forward: années complètes 2020-2025, 4 folds, test final=2025, prod=2026 (768 lignes ignorées dans l'éval)
-2026-04-06 09:49:27,563 - ML.HyperStackTrainer - INFO - [steeplechase] Fold 1/4 — test 2022
-2026-04-06 09:49:39,333 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.7556 ROI=+34.5% count=513
-2026-04-06 09:49:39,334 - ML.HyperStackTrainer - INFO - [steeplechase] Fold 2/4 — test 2023
-2026-04-06 09:49:52,234 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7458 ROI=+21.9% count=481
-2026-04-06 09:49:52,234 - ML.HyperStackTrainer - INFO - [steeplechase] Fold 3/4 — test 2024
-2026-04-06 09:50:21,442 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7606 ROI=+8.7% count=501
-2026-04-06 09:50:21,443 - ML.HyperStackTrainer - INFO - [steeplechase] Fold 4/4 — test 2025
-2026-04-06 09:50:53,830 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7794 ROI=+31.6% count=508
-2026-04-06 09:50:53,830 - ML.HyperStackTrainer - INFO - [steeplechase] Walk-forward: AUC=0.7604 ROI=+24.2% ±10.1% (4 folds)
-2026-04-06 09:50:53,830 - ML.HyperStackTrainer - INFO - [steeplechase] Entraînement modèle final...
-2026-04-03 08:17:55,815 - ML.HyperStackTrainer - INFO - Target steeplechase Contextual HS Metrics: {'logloss': 0.36113146398668144, 'auc': 0.7355678841115735, 'roi': np.float64(-4.190476190476209), 'win_rate': np.float64(0.9580952380952379), 'avg_odds': np.float64(16.033886583679116), 'count': 105}
-2026-04-06 09:54:51,491 - ML.HyperStackTrainer - INFO - [steeplechase] Final → AUC=0.7834 ROI=+29.8% count=508
-
-026-04-06 09:54:51,509 - ML.HyperStackTrainer - INFO - --- AutoML for Target: HAIE ---
-2026-04-06 09:54:57,343 - ML.HyperStackTrainer - INFO - Walk-forward: années complètes 2020-2025, 4 folds, test final=2025, prod=2026 (1548 lignes ignorées dans l'éval)
-2026-04-06 09:54:57,349 - ML.HyperStackTrainer - INFO - [haie] Fold 1/4 — test 2022
-2026-04-06 09:55:12,387 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.7571 ROI=+19.3% count=803
-2026-04-06 09:55:12,387 - ML.HyperStackTrainer - INFO - [haie] Fold 2/4 — test 2023
-2026-04-06 09:55:49,052 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7569 ROI=+17.8% count=781
-2026-04-06 09:55:49,053 - ML.HyperStackTrainer - INFO - [haie] Fold 3/4 — test 2024
-2026-04-06 09:56:30,004 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7615 ROI=+19.3% count=782
-2026-04-06 09:56:30,005 - ML.HyperStackTrainer - INFO - [haie] Fold 4/4 — test 2025
-2026-04-06 09:57:10,183 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7440 ROI=+11.7% count=787
-2026-04-06 09:57:10,183 - ML.HyperStackTrainer - INFO - [haie] Walk-forward: AUC=0.7549 ROI=+17.0% ±3.1% (4 folds)
-2026-04-06 09:57:10,183 - ML.HyperStackTrainer - INFO - [haie] Entraînement modèle final...
-2026-04-03 08:21:01,287 - ML.HyperStackTrainer - INFO - Target haie Contextual HS Metrics: {'logloss': 0.327316312693121, 'auc': 0.747550639884736, 'roi': np.float64(4.166666666666666), 'win_rate': np.float64(1.0416666666666667), 'avg_odds': np.float64(19.711737089201876), 'count': 180}
-2026-04-06 10:01:02,588 - ML.HyperStackTrainer - INFO - [haie] Final → AUC=0.7409 ROI=+5.3% count=787
-
-2026-04-06 10:01:02,611 - ML.HyperStackTrainer - INFO - --- AutoML for Target: MONTE ---
-2026-04-06 10:01:10,142 - ML.HyperStackTrainer - INFO - Walk-forward: années complètes 2020-2025, 4 folds, test final=2025, prod=2026 (2067 lignes ignorées dans l'éval)
-2026-04-06 10:01:10,148 - ML.HyperStackTrainer - INFO - [monte] Fold 1/4 — test 2022
-2026-04-06 10:01:50,911 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.8233 ROI=+58.8% count=1096
-2026-04-06 10:01:50,912 - ML.HyperStackTrainer - INFO - [monte] Fold 2/4 — test 2023
-2026-04-06 10:02:36,391 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.8299 ROI=+63.8% count=1085
-2026-04-06 10:02:36,392 - ML.HyperStackTrainer - INFO - [monte] Fold 3/4 — test 2024
-2026-04-06 10:03:26,131 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.8343 ROI=+59.8% count=1057
-2026-04-06 10:03:26,131 - ML.HyperStackTrainer - INFO - [monte] Fold 4/4 — test 2025
-2026-04-06 10:04:16,986 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8276 ROI=+50.0% count=1050
-2026-04-06 10:04:16,986 - ML.HyperStackTrainer - INFO - [monte] Walk-forward: AUC=0.8288 ROI=+58.1% ±5.0% (4 folds)
-2026-04-06 10:04:16,987 - ML.HyperStackTrainer - INFO - [monte] Entraînement modèle final...
-2026-04-03 08:24:50,758 - ML.HyperStackTrainer - INFO - Target monte Contextual HS Metrics: {'logloss': 0.309622015126403, 'auc': 0.8105963199984415, 'roi': np.float64(38.72950819672131), 'win_rate': np.float64(1.3872950819672132), 'avg_odds': np.float64(28.57870808045517), 'count': 244}
-2026-04-06 10:07:42,768 - ML.HyperStackTrainer - INFO - [monte] Final → AUC=0.8294 ROI=+50.0% count=1050
-
-2026-04-06 10:07:42,806 - ML.HyperStackTrainer - INFO - --- AutoML for Target: PLAT ---
-2026-04-06 10:08:19,500 - ML.HyperStackTrainer - INFO - Walk-forward: années complètes 2020-2025, 4 folds, test final=2025, prod=2026 (10419 lignes ignorées dans l'éval)
-2026-04-06 10:08:19,525 - ML.HyperStackTrainer - INFO - [plat] Fold 1/4 — test 2022
-2026-04-06 10:09:26,149 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.7785 ROI=-4.3% count=4131
-2026-04-06 10:09:26,151 - ML.HyperStackTrainer - INFO - [plat] Fold 2/4 — test 2023
-2026-04-06 10:10:32,669 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7733 ROI=-5.6% count=4132
-2026-04-06 10:10:32,671 - ML.HyperStackTrainer - INFO - [plat] Fold 3/4 — test 2024
-2026-04-06 10:11:49,864 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7734 ROI=-5.3% count=4120
-2026-04-06 10:11:49,866 - ML.HyperStackTrainer - INFO - [plat] Fold 4/4 — test 2025
-2026-04-06 10:13:20,755 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7690 ROI=-7.6% count=4115
-2026-04-06 10:13:20,756 - ML.HyperStackTrainer - INFO - [plat] Walk-forward: AUC=0.7735 ROI=-5.7% ±1.2% (4 folds)
-2026-04-06 10:13:20,756 - ML.HyperStackTrainer - INFO - [plat] Entraînement modèle final...
-2026-04-03 08:31:54,608 - ML.HyperStackTrainer - INFO - Target plat Contextual HS Metrics: {'logloss': 0.2677160139918463, 'auc': 0.7330430325104547, 'roi': np.float64(-12.5714285714286), 'win_rate': np.float64(0.874285714285714), 'avg_odds': np.float64(22.94838075530264), 'count': 840}
-2026-04-06 10:23:42,231 - ML.HyperStackTrainer - INFO - [plat] Final → AUC=0.7694 ROI=-9.7% count=4115
-
-2026-04-06 10:23:42,413 - ML.HyperStackTrainer - INFO - --- AutoML for Target: CROSS ---
-2026-04-06 10:23:43,489 - ML.HyperStackTrainer - INFO - Walk-forward: années complètes 2020-2025, 4 folds, test final=2025, prod=2026 (159 lignes ignorées dans l'éval)
-2026-04-06 10:23:43,490 - ML.HyperStackTrainer - INFO - [cross] Fold 1/4 — test 2022
-2026-04-06 10:23:51,312 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.6910 ROI=+64.6% count=80
-2026-04-06 10:23:51,313 - ML.HyperStackTrainer - INFO - [cross] Fold 2/4 — test 2023
-2026-04-06 10:24:00,023 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7459 ROI=+18.5% count=73
-2026-04-06 10:24:00,024 - ML.HyperStackTrainer - INFO - [cross] Fold 3/4 — test 2024
-2026-04-06 10:24:08,684 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7767 ROI=+41.4% count=78
-2026-04-06 10:24:08,684 - ML.HyperStackTrainer - INFO - [cross] Fold 4/4 — test 2025
-2026-04-06 10:24:17,494 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8180 ROI=+75.4% count=84
-2026-04-06 10:24:17,494 - ML.HyperStackTrainer - INFO - [cross] Walk-forward: AUC=0.7579 ROI=+50.0% ±21.9% (4 folds)
-2026-04-06 10:24:17,494 - ML.HyperStackTrainer - INFO - [cross] Entraînement modèle final...
-2026-04-03 08:33:02,991 - ML.HyperStackTrainer - INFO - Target cross Contextual HS Metrics: {'logloss': 0.3626791981799737, 'auc': 0.8433333333333334, 'roi': np.float64(23.750000000000014), 'win_rate': np.float64(1.2375), 'avg_odds': np.float64(14.36979865771812), 'count': 24}
-2026-04-06 10:25:32,571 - ML.HyperStackTrainer - INFO - [cross] Final → AUC=0.8234 ROI=+68.3% count=84
+Process finished with exit code 0

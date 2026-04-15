@@ -23,9 +23,6 @@ class RaceRepository:
         self.db_manager = DatabaseManager()
 
     def get_model_metrics(self, model_name: Optional[str] = None, segment_type: Optional[str] = None) -> List[Dict[str, Any]]:
-        """
-        Retrieves ML model performance metrics from the database.
-        """
         query = "SELECT * FROM ml_model_metrics WHERE 1=1"
         params = []
         if model_name:
@@ -49,9 +46,6 @@ class RaceRepository:
             self.db_manager.release_connection(conn)
 
     def get_backtest_data(self) -> List[Dict[str, Any]]:
-        """
-        Retrieves historical races, participants, predictions, and betting results for backtesting.
-        """
         query = """
             SELECT 
                 r.race_id,
@@ -62,6 +56,7 @@ class RaceRepository:
                 rp.finish_rank,
                 rp.reference_odds,
                 rp.live_odds,
+                rp.live_odds_30mn,
                 p.model_version,
                 p.proba_winner,
                 p.proba_top3_place,
@@ -80,7 +75,6 @@ class RaceRepository:
               AND (rb.bet_family IN ('Simple', 'Couple', 'Trio'))
             ORDER BY dp.program_date DESC, r.race_id, rp.pmu_number;
         """
-
         conn = self.db_manager.get_connection()
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
@@ -93,37 +87,24 @@ class RaceRepository:
             self.db_manager.release_connection(conn)
 
     def get_races_by_date(self, date_code: str) -> List[Dict[str, Any]]:
-        """
-        Retrieves all races scheduled for a specific date.
-        """
         try:
             target_date = dt.datetime.strptime(date_code, "%d%m%Y").date()
         except ValueError:
-            logger.warning(f"Invalid date format provided: {date_code}", exc_info=True)
             return []
 
         query = """
             SELECT 
-                r.race_id, 
-                rm.meeting_number, 
-                r.race_number, 
-                dp.program_date,
-                r.discipline, 
-                r.distance_m, 
-                r.track_type,
-                rm.racetrack_code, rm.racetrack_libelle, rm.meeting_type, rm.weather_windspeed,
-                r.declared_runners_count,
-                r.start_timestamp,
-                r.timezone_offset,
-                r.prize_money,
-                r.speciality
+                r.race_id, rm.meeting_number, r.race_number, dp.program_date,
+                r.discipline, r.distance_m, r.track_type,
+                rm.meeting_code, rm.meeting_libelle, rm.meeting_type, rm.weather_windspeed,
+                r.declared_runners_count, r.start_timestamp, r.timezone_offset, r.prize_money, r.speciality,
+                r.racetrack_libelle
             FROM race r
             JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
             JOIN daily_program dp ON rm.program_id = dp.program_id
             WHERE dp.program_date = %s AND rm.audience = 'NATIONAL'
             ORDER BY rm.meeting_number, r.race_number;
         """
-        
         conn = self.db_manager.get_connection()
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
@@ -136,27 +117,19 @@ class RaceRepository:
             self.db_manager.release_connection(conn)
 
     def get_participants_by_race(self, race_id: int) -> List[Dict[str, Any]]:
-        """
-        Retrieves basic participant details for a specific race.
-        """
         query = """
             SELECT 
-                rp.pmu_number AS program_number, 
-                h.horse_name, 
-                rp.age,
-                h.sex,
-                d.actor_name AS jockey_name, 
-                t.actor_name AS trainer_name, 
-                rp.reference_odds,
-                rp.live_odds,
-                ls.code AS shoeing_status,
-                rp.blinkers,
-                rp.handicap_value,
-                o.actor_name AS owner_name,
-                rp.finish_rank, li.code AS incident_code
-
+                rp.pmu_number AS program_number, h.horse_name, rp.age, h.sex,
+                d.actor_name AS jockey_name, t.actor_name AS trainer_name, 
+                rp.reference_odds, rp.live_odds, rp.live_odds_30mn,
+                ls.code AS shoeing_status, rp.blinkers, rp.handicap_value,
+                o.actor_name AS owner_name, rp.finish_rank, li.code AS incident_code,
+                dp.program_date, r.discipline
             FROM race_participant rp
             JOIN horse h ON rp.horse_id = h.horse_id
+            JOIN race r ON rp.race_id = r.race_id            
+            JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
+            JOIN daily_program dp ON rm.program_id = dp.program_id
             LEFT JOIN lookup_shoeing ls ON rp.shoeing_id = ls.shoeing_id
             LEFT JOIN lookup_incident li ON rp.incident_id = li.incident_id
             LEFT JOIN racing_actor d ON rp.driver_jockey_id = d.actor_id
@@ -165,7 +138,6 @@ class RaceRepository:
             WHERE rp.race_id = %s
             ORDER BY rp.pmu_number;
         """
-        
         conn = self.db_manager.get_connection()
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
@@ -178,50 +150,24 @@ class RaceRepository:
             self.db_manager.release_connection(conn)
 
     def get_race_data_for_ml(self, race_id: int) -> List[Dict[str, Any]]:
-        """
-        Extracts comprehensive feature sets for the Machine Learning pipeline.
-        """
         query = """
             WITH horse_stats AS (
-                SELECT 
-                    horse_id,
-                    COUNT(*) as hist_races,
-                    AVG(finish_place) as hist_avg_rank,
-                    AVG(reduction_km) as hist_avg_speed,
-                    SUM(prize_money) as hist_earnings
+                SELECT horse_id, COUNT(*) as hist_races, AVG(finish_place) as hist_avg_rank,
+                       AVG(reduction_km) as hist_avg_speed, SUM(prize_money) as hist_earnings
                 FROM horse_race_history
                 WHERE horse_id IN (SELECT horse_id FROM race_participant WHERE race_id = %s)
                 GROUP BY horse_id
             )
-            
             SELECT 
-                rp.participant_id,
-                rp.race_id, 
-                rp.pmu_number AS program_number, 
-                h.horse_name,
-                dp.program_date, 
-                r.distance_m, 
-                r.declared_runners_count,
-                rm.racetrack_code, rm.racetrack_libelle, rm.meeting_type, rm.weather_windspeed,
-                r.discipline, 
-                r.track_type,
-                rm.weather_wind,
-                rm.weather_temperature, 
-                r.terrain_label,
-                rp.age, 
-                rp.career_winnings, 
-                rp.career_races_count, 
-                h.birth_year,
-                rp.reference_odds, 
-                rp.live_odds, 
-                rp.live_odds_30mn,
-                COALESCE(hs.hist_avg_speed, %s) as hist_avg_speed, 
-                COALESCE(hs.hist_earnings, 0) as hist_earnings,
-                COALESCE(hs.hist_races, 0) as hist_races,
-                ls.code AS shoeing_status,
-                h.sex,
-                d.actor_name AS jockey_name,
-                t.actor_name AS trainer_name
+                rp.participant_id, rp.race_id, rp.pmu_number AS program_number, h.horse_name,
+                dp.program_date, r.distance_m, r.declared_runners_count,
+                rm.meeting_code, rm.meeting_libelle, rm.meeting_type, rm.weather_windspeed,
+                r.discipline, r.track_type, rm.weather_wind, rm.weather_temperature, r.terrain_label,
+                rp.age, rp.career_winnings, rp.career_races_count, h.birth_year,
+                rp.reference_odds, rp.live_odds, rp.live_odds_30mn,
+                COALESCE(hs.hist_avg_speed, %s) as hist_avg_speed, COALESCE(hs.hist_earnings, 0) as hist_earnings,
+                COALESCE(hs.hist_races, 0) as hist_races, ls.code AS shoeing_status,
+                h.sex, d.actor_name AS jockey_name, t.actor_name AS trainer_name, r.racetrack_libelle
             FROM race_participant rp
             JOIN race r ON rp.race_id = r.race_id
             JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
@@ -234,7 +180,6 @@ class RaceRepository:
             WHERE rp.race_id = %s
             ORDER BY rp.pmu_number;
         """
-        
         conn = self.db_manager.get_connection()
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
@@ -247,65 +192,35 @@ class RaceRepository:
             self.db_manager.release_connection(conn)
 
     def get_daily_data_for_ml(self, date_code: str) -> List[Dict[str, Any]]:
-        """
-        Batch retrieval for all races on a specific day.
-        """
         try:
             target_date = dt.datetime.strptime(date_code, "%d%m%Y").date()
         except ValueError:
-            logger.warning(f"Invalid date format: {date_code}")
             return []
 
         query = """
             WITH horse_stats AS (
-                SELECT 
-                    horse_id,
-                    COUNT(*) as hist_races,
-                    AVG(finish_place) as hist_avg_rank,
-                    AVG(reduction_km) as hist_avg_speed,
-                    SUM(prize_money) as hist_earnings
+                SELECT horse_id, COUNT(*) as hist_races, AVG(finish_place) as hist_avg_rank,
+                       AVG(reduction_km) as hist_avg_speed, SUM(prize_money) as hist_earnings
                 FROM horse_race_history
                 WHERE horse_id IN (
-                    SELECT rp.horse_id 
-                    FROM race_participant rp
+                    SELECT rp.horse_id FROM race_participant rp
                     JOIN race r ON rp.race_id = r.race_id
-                    JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
-                    JOIN daily_program dp ON rm.program_id = dp.program_id
+                    JOIN daily_program dp ON r.meeting_id IN (SELECT meeting_id FROM race_meeting rm WHERE program_id = dp.program_id)
                     WHERE dp.program_date = %s
                 )
                 GROUP BY horse_id
             )
-            
             SELECT 
-                rp.participant_id,
-                rp.race_id, 
-                rm.meeting_number,
-                r.race_number,
-                rp.pmu_number AS program_number, 
-                h.horse_name,
-                dp.program_date, 
-                r.distance_m, 
-                r.declared_runners_count,
-                rm.racetrack_code, rm.racetrack_libelle, rm.meeting_type, rm.weather_windspeed,
-                r.discipline, 
-                r.track_type,
-                rm.weather_wind, 
-                rm.weather_temperature, 
-                r.terrain_label,
-                rp.age, 
-                rp.career_winnings, 
-                rp.career_races_count, 
-                h.birth_year,
-                rp.reference_odds, 
-                rp.live_odds, 
-                rp.live_odds_30mn,
-                COALESCE(hs.hist_avg_speed, %s) as hist_avg_speed,
-                COALESCE(hs.hist_earnings, 0) as hist_earnings,
-                COALESCE(hs.hist_races, 0) as hist_races,
-                ls.code AS shoeing_status,
-                h.sex,
-                d.actor_name AS jockey_name,
-                t.actor_name AS trainer_name
+                rp.participant_id, rp.race_id, rm.meeting_number, r.race_number,
+                rp.pmu_number AS program_number, h.horse_name, dp.program_date, 
+                r.distance_m, r.declared_runners_count,
+                rm.meeting_code, rm.meeting_libelle, rm.meeting_type, rm.weather_windspeed,
+                r.discipline, r.track_type, rm.weather_wind, rm.weather_temperature, r.terrain_label,
+                rp.age, rp.career_winnings, rp.career_races_count, h.birth_year,
+                rp.reference_odds, rp.live_odds, rp.live_odds_30mn,
+                COALESCE(hs.hist_avg_speed, %s) as hist_avg_speed, COALESCE(hs.hist_earnings, 0) as hist_earnings,
+                COALESCE(hs.hist_races, 0) as hist_races, ls.code AS shoeing_status,
+                h.sex, d.actor_name AS jockey_name, t.actor_name AS trainer_name, r.racetrack_libelle
             FROM race_participant rp
             JOIN race r ON rp.race_id = r.race_id
             JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
@@ -318,7 +233,6 @@ class RaceRepository:
             WHERE dp.program_date = %s AND rm.audience = 'NATIONAL'
             ORDER BY rp.race_id, rp.pmu_number;
         """
-        
         conn = self.db_manager.get_connection()
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
@@ -333,21 +247,26 @@ class RaceRepository:
     def upsert_predictions(self, predictions: List[Dict[str, Any]]) -> bool:
         """
         Saves prediction results to the database.
-        Expected format: List of {'participant_id': int, 'model_version': str, 'proba_winner': float}
+        SECURITY: Does NOT update if the race is already finished (finish_rank exists).
         """
         if not predictions:
             return True
 
+        # Query checking if participant already has a finish_rank
         query = """
             INSERT INTO prediction (participant_id, model_version, proba_winner, proba_top3_place)
-            VALUES (%s, %s, %s, %s)
+            SELECT %s, %s, %s, %s
+            WHERE NOT EXISTS (
+                SELECT 1 FROM race_participant 
+                WHERE participant_id = %s AND finish_rank IS NOT NULL
+            )
             ON CONFLICT (participant_id, model_version) DO UPDATE SET
                 proba_winner = EXCLUDED.proba_winner,
                 proba_top3_place = EXCLUDED.proba_top3_place,
                 created_at = CURRENT_TIMESTAMP;
         """
 
-        params = [(p['participant_id'], p['model_version'], p['proba_winner'], p.get('proba_top3_place')) for p in predictions]
+        params = [(p['participant_id'], p['model_version'], p['proba_winner'], p.get('proba_top3_place'), p['participant_id']) for p in predictions]
 
         conn = self.db_manager.get_connection()
         try:
@@ -362,16 +281,10 @@ class RaceRepository:
             self.db_manager.release_connection(conn)
 
     def get_best_model_for_context(self, discipline: str, month: int) -> Optional[str]:
-        """
-        Identifie le nom du modèle (algorithm) ayant le meilleur ROI
-        historique pour une discipline et un mois donnés.
-        """
         query = """
-             SELECT algorithm 
-             FROM ml_model_metrics 
+             SELECT algorithm FROM ml_model_metrics 
              WHERE segment_value = %s AND test_month = %s AND segment_type = 'discipline_month'
-             ORDER BY roi DESC 
-             LIMIT 1;
+             ORDER BY roi DESC LIMIT 1;
          """
         conn = self.db_manager.get_connection()
         try:
