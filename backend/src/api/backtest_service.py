@@ -66,6 +66,7 @@ class BacktestService:
                 
                 # 1. Simple (3 mises par course)
                 stats['SG']["staked"] += 3; stats['SP']["staked"] += 3
+                race_won_sg, race_won_sp = False, False
                 
                 for p in p_nums:
                     h_row = group[group['program_number'] == p].iloc[0]
@@ -77,14 +78,17 @@ class BacktestService:
                     for c, v in div_map.get('SG', []):
                         if {p} == c or (p != 0 and c == {0}): g_sg = v; break
                     if g_sg == 0 and h_row['finish_rank'] == 1: g_sg = eff_odds
-                    if g_sg > 0: stats['SG']["wins"] += 1
+                    if g_sg > 0: race_won_sg = True
                     stats['SG']["return"] += g_sg
 
                     for c, v in div_map.get('SP', []):
                         if {p} == c or (p != 0 and c == {0}): g_sp = v; break
                     if g_sp == 0 and 1 <= h_row['finish_rank'] <= 3: g_sp = 1.1
-                    if g_sp > 0: stats['SP']["wins"] += 1
+                    if g_sp > 0: race_won_sp = True
                     stats['SP']["return"] += g_sp
+
+                if race_won_sg: stats['SG']["wins"] += 1
+                if race_won_sp: stats['SP']["wins"] += 1
 
                 # 2. Couple (3 combinaisons)
                 if len(p_nums) >= 2:
@@ -92,17 +96,20 @@ class BacktestService:
                     combos = [{p_nums[0], p_nums[1]}]
                     if len(p_nums) == 3: combos.extend([{p_nums[0], p_nums[2]}, {p_nums[1], p_nums[2]}])
                     
+                    race_won_cg, race_won_cp = False, False
                     for combo in combos:
                         for c, v in div_map.get('CG', []):
                             if c and c.issubset(combo):
                                 stats['CG']["return"] += v
-                                stats['CG']["wins"] += 1
+                                race_won_cg = True
                                 break
                         for c, v in div_map.get('CP', []):
                             if c and c.issubset(combo):
                                 stats['CP']["return"] += v
-                                stats['CP']["wins"] += 1
+                                race_won_cp = True
                                 break
+                    if race_won_cg: stats['CG']["wins"] += 1
+                    if race_won_cp: stats['CP']["wins"] += 1
 
                 # 3. Trio (1 mise)
                 if len(p_nums) == 3:
@@ -135,16 +142,22 @@ class BacktestService:
                 
                 profit = self._safe_float(tr - tm)
                 max_profit = max(max_profit, profit)
-                suffix = f"_{bt.lower()}" if bt != 'SG' else ""
-                data[f"profit{suffix}"] = profit
-                data[f"roi{suffix}"] = self._safe_float((tr - tm) / tm * 100) if tm > 0 else -100.0
-                data[f"nb_bets{suffix if suffix else '_sg'}"] = int(tm)
-                data[f"nb_wins{suffix if suffix else '_sg'}"] = int(tw)
+
+                if bt == 'SG':
+                    data['profit'] = profit
+                    data['roi'] = self._safe_float((tr - tm) / tm * 100) if tm > 0 else -100.0
+                    data['count'] = int(tm)
+                    data['nb_wins'] = int(tw)
+                else:
+                    suffix = f"_{bt.lower()}"
+                    data[f"profit{suffix}"] = profit
+                    data[f"roi{suffix}"] = self._safe_float((tr - tm) / tm * 100) if tm > 0 else -100.0
+                    data[f"nb_bets{suffix}"] = int(tm)
+                    data[f"nb_wins{suffix}"] = int(tw)
             
             data["max_daily_profit"] = max_profit
-            # Win Rate global basé sur le nombre de paris gagnés (SG)
-            data["win_rate"] = self._safe_float(data["nb_wins_sg"] / data["nb_bets_sg"] * 100) if data["nb_bets_sg"] > 0 else 0
-            data["count"] = int(data["nb_bets_sg"])
+            # Win Rate global basé sur le nombre de courses gagnées (SG)
+            data["win_rate"] = self._safe_float(data["nb_wins"] / (data["count"]/3) * 100) if data["count"] > 0 else 0
             if (data["count"]/3) >= min_bets: final_dict[model] = data
         return final_dict
 
@@ -170,7 +183,7 @@ class BacktestService:
             m[rk] = round((m[pk] / m[nk] * 100.0), 1) if m[nk] > 0 else 0.0
             m["max_daily_profit"] = max(m["max_daily_profit"], m[pk])
             
-            if bt == 'SG': m['win_rate'] = round((m['nb_wins'] / m['count'] * 100), 1) if m['count'] > 0 else 0
+            if bt == 'SG': m['win_rate'] = round((m['nb_wins'] / (m['count'] / 3) * 100), 1) if m['count'] > 0 else 0
         return results
 
     def get_period_stats(self, date_start, date_end) -> Dict[str, Any]:
