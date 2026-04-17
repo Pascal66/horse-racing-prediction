@@ -114,11 +114,10 @@ def render_analysis_view(race_id: int):
                 profit, nb, wins = d.get(pk, 0), d.get(nk, 0), d.get(wk, 0)
                 
                 if nb > 0:
-                    courses = int(nb / (3 if btype in ['SG', 'SP', 'CG'] else 1))
                     color = "#2e7d32" if profit > 0 else "#d32f2f"
                     st.markdown(f"""
                         <div style='font-size:0.75em; margin-bottom:5px; line-height:1.2;'>
-                            {btype} : <span style='color:{color}; font-weight:bold;'>{profit:+.1f}€</span> ({wins}/{courses})<br>
+                            {btype} : <span style='color:{color}; font-weight:bold;'>{profit:+.1f}€</span> ({wins}/{nb})<br>
                             <code style='font-size:0.8em; color:#666;'>via {best_m}</code>
                         </div>
                     """, unsafe_allow_html=True)
