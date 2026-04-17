@@ -5,6 +5,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from src.cli.etl import etl_daily, etl_liveodds
+from src.cli.daily_performance_etl import run_daily_performance_etl
 
 logger = logging.getLogger("Scheduler")
 
@@ -55,6 +56,15 @@ def cronjobs():
         IntervalTrigger(minutes=15),
         id="live_odds",
         name="Live Odds Update",
+        replace_existing=True
+    )
+
+    # 3. Daily Performance figer à 23h45
+    scheduler.add_job(
+        run_daily_performance_etl,
+        CronTrigger(hour=23, minute=45),
+        id="daily_performance",
+        name="Daily Performance Snapshot",
         replace_existing=True
     )
 
