@@ -50,8 +50,14 @@ class BacktestService:
 
         for (model, discipline), m_disc_df in pred_df.groupby(['model_version_norm', 'discipline']):
             model_entry = results.setdefault(model, {"disciplines": {}})
-            # stats = {bet_type: [total_return, total_staked, nb_races_won]}
-            stats = { 'SG': [0.0, 0, 0], 'SP': [0.0, 0, 0], 'CG': [0.0, 0, 0], 'CP': [0.0, 0, 0], 'TRIO': [0.0, 0, 0] }
+            # stats = {bet_type: {"return": 0.0, "staked": 0, "wins": 0, "sum_odds": 0.0}}
+            stats = {
+                'SG': {"return": 0.0, "staked": 0, "wins": 0, "sum_odds": 0.0},
+                'SP': {"return": 0.0, "staked": 0, "wins": 0, "sum_odds": 0.0},
+                'CG': {"return": 0.0, "staked": 0, "wins": 0, "sum_odds": 0.0},
+                'CP': {"return": 0.0, "staked": 0, "wins": 0, "sum_odds": 0.0},
+                'TRIO': {"return": 0.0, "staked": 0, "wins": 0, "sum_odds": 0.0}
+            }
             
             for race_id, group in m_disc_df.groupby('race_id'):
                 div_map = race_divs.get(race_id, {})
@@ -59,54 +65,62 @@ class BacktestService:
                 p_nums = list(top3['program_number'].astype(int))
                 
                 # 1. Simple (3 mises par course)
-                stats['SG'][1] += 3; stats['SP'][1] += 3
+                stats['SG']["staked"] += 3; stats['SP']["staked"] += 3
                 race_won_sg, race_won_sp = False, False
                 
                 for p in p_nums:
                     h_row = group[group['program_number'] == p].iloc[0]
                     eff_odds = float(h_row['effective_odds'])
+                    stats['SG']["sum_odds"] += eff_odds
+                    stats['SP']["sum_odds"] += eff_odds
                     
                     g_sg, g_sp = 0.0, 0.0
                     for c, v in div_map.get('SG', []):
                         if {p} == c or (p != 0 and c == {0}): g_sg = v; break
                     if g_sg == 0 and h_row['finish_rank'] == 1: g_sg = eff_odds
                     if g_sg > 0: race_won_sg = True
-                    stats['SG'][0] += g_sg
+                    stats['SG']["return"] += g_sg
 
                     for c, v in div_map.get('SP', []):
                         if {p} == c or (p != 0 and c == {0}): g_sp = v; break
                     if g_sp == 0 and 1 <= h_row['finish_rank'] <= 3: g_sp = 1.1
                     if g_sp > 0: race_won_sp = True
-                    stats['SP'][0] += g_sp
+                    stats['SP']["return"] += g_sp
 
-                if race_won_sg: stats['SG'][2] += 1
-                if race_won_sp: stats['SP'][2] += 1
+                if race_won_sg: stats['SG']["wins"] += 1
+                if race_won_sp: stats['SP']["wins"] += 1
 
                 # 2. Couple (3 combinaisons)
                 if len(p_nums) >= 2:
-                    stats['CG'][1] += 3; stats['CP'][1] += 3
+                    stats['CG']["staked"] += 3; stats['CP']["staked"] += 3
                     combos = [{p_nums[0], p_nums[1]}]
                     if len(p_nums) == 3: combos.extend([{p_nums[0], p_nums[2]}, {p_nums[1], p_nums[2]}])
                     
                     race_won_cg, race_won_cp = False, False
                     for combo in combos:
                         for c, v in div_map.get('CG', []):
-                            if c and c.issubset(combo): stats['CG'][0] += v; race_won_cg = True; break
+                            if c and c.issubset(combo): stats['CG']["return"] += v; race_won_cg = True; break
                         for c, v in div_map.get('CP', []):
-                            if c and c.issubset(combo): stats['CP'][0] += v; race_won_cp = True; break
-                    if race_won_cg: stats['CG'][2] += 1
-                    if race_won_cp: stats['CP'][2] += 1
+                            if c and c.issubset(combo): stats['CP']["return"] += v; race_won_cp = True; break
+                    if race_won_cg: stats['CG']["wins"] += 1
+                    if race_won_cp: stats['CP']["wins"] += 1
 
                 # 3. Trio (1 mise)
                 if len(p_nums) == 3:
-                    stats['TRIO'][1] += 1
+                    stats['TRIO']["staked"] += 1
                     p3_set = set(p_nums)
                     for c, v in div_map.get('TRIO', []):
-                        if c and c.issubset(p3_set): stats['TRIO'][0] += v; stats['TRIO'][2] += 1; break
+                        if c and c.issubset(p3_set): stats['TRIO']["return"] += v; stats['TRIO']["wins"] += 1; break
 
             model_entry["disciplines"][discipline] = {
-                bt: {"return": s[0], "nb_bets": int(s[1]), "nb_wins": int(s[2])} 
-                for bt, s in stats.items() if s[1] > 0
+                bt: {
+                    "return": s["return"],
+                    "nb_bets": int(s["staked"]),
+                    "nb_wins": int(s["wins"]),
+                    "roi": self._safe_float((s["return"] - s["staked"]) / s["staked"] * 100) if s["staked"] > 0 else 0.0,
+                    "avg_odds": self._safe_float(s["sum_odds"] / s["staked"]) if s["staked"] > 0 else 0.0
+                }
+                for bt, s in stats.items() if s["staked"] > 0
             }
 
         # Agrégation globale par modèle
@@ -152,11 +166,12 @@ class BacktestService:
             m[nk] = m.get(nk, 0) + nb
             m[wk] = m.get(wk, 0) + wins
             # On stocke le profit net
-            m[pk] = m.get(pk, 0.0) + (nb * roi / 100.0)
-            m[rk] = (m[pk] / m[nk] * 100.0) if m[nk] > 0 else 0.0
+            profit = (nb * roi / 100.0)
+            m[pk] = round(m.get(pk, 0.0) + profit, 2)
+            m[rk] = round((m[pk] / m[nk] * 100.0), 1) if m[nk] > 0 else 0.0
             m["max_daily_profit"] = max(m["max_daily_profit"], m[pk])
             
-            if bt == 'SG': m['win_rate'] = (m['nb_wins'] / (m['count']/3) * 100) if m['count'] > 0 else 0
+            if bt == 'SG': m['win_rate'] = round((m['nb_wins'] / (m['count']/3) * 100), 1) if m['count'] > 0 else 0
         return results
 
     def get_period_stats(self, date_start, date_end) -> Dict[str, Any]:

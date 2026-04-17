@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 from backend.src.api.main import app, get_repository, ml_models
 
@@ -14,11 +14,20 @@ class MockRaceRepository:
                 "race_id": 1, 
                 "race_number": 1, 
                 "meeting_number": 1,
-                "name": "Prix de Test",
+                "program_date": "2025-12-28",
                 "discipline": "HARNESS",
+                "track_type": "GRANDE PISTE",
                 "distance_m": 2700,
                 "meeting_code": "VINCENNES",
-                "declared_runners_count": 14
+                "meeting_libelle": "Vincennes",
+                "meeting_type": "TROT",
+                "weather_windspeed": 10,
+                "declared_runners_count": 14,
+                "start_timestamp": 1735392000,
+                "timezone_offset": 3600,
+                "prize_money": 10000.0,
+                "speciality": "ATTELE",
+                "racetrack_libelle": "Vincennes"
             }
         ]
 
@@ -27,9 +36,14 @@ class MockRaceRepository:
             {
                 "program_number": 1, 
                 "horse_name": "Fast Horse", 
-                "driver_name": "J. Doe",
+                "age": 5,
+                "sex": "M",
+                "jockey_name": "J. Doe",
                 "trainer_name": "T. Smith",
-                "odds": 5.4
+                "reference_odds": 5.4,
+                "live_odds": 5.0,
+                "live_odds_30mn": 5.2,
+                "program_date": "2025-12-28"
             }
         ]
 
@@ -37,26 +51,35 @@ class MockRaceRepository:
         return [
             # Case 1: Winner (Good Odds, High Edge)
             {
-                "race_id": 1, "meeting_number": 1, "race_number": 1, "program_number": 1,
-                "horse_name": "Sniper Choice", "reference_odds": 10.0
+                "participant_id": 1, "race_id": 1, "meeting_number": 1, "race_number": 1, "program_number": 1,
+                "horse_name": "Sniper Choice", "reference_odds": 10.0, "program_date": "2025-12-28", "discipline": "ATTELE",
+                "live_odds": None, "live_odds_30mn": None
             },
             # Case 2: Favorite (Odds too low)
             {
-                "race_id": 1, "meeting_number": 1, "race_number": 1, "program_number": 2,
-                "horse_name": "Low Odds Fav", "reference_odds": 2.0
+                "participant_id": 2, "race_id": 1, "meeting_number": 1, "race_number": 1, "program_number": 2,
+                "horse_name": "Low Odds Fav", "reference_odds": 2.0, "program_date": "2025-12-28", "discipline": "ATTELE",
+                "live_odds": None, "live_odds_30mn": None
             },
             # Case 3: Longshot (Odds too high)
             {
-                "race_id": 1, "meeting_number": 1, "race_number": 1, "program_number": 3,
-                "horse_name": "Longshot", "reference_odds": 50.0
+                "participant_id": 3, "race_id": 1, "meeting_number": 1, "race_number": 1, "program_number": 3,
+                "horse_name": "Longshot", "reference_odds": 50.0, "program_date": "2025-12-28", "discipline": "ATTELE",
+                "live_odds": None, "live_odds_30mn": None
             },
         ]
 
     def get_race_data_for_ml(self, race_id: int):
         return [
-            {"program_number": 1, "horse_name": "Horse A", "reference_odds": 5.0},
-            {"program_number": 2, "horse_name": "Horse B", "reference_odds": 10.0}
+            {"participant_id": 11, "program_number": 1, "horse_name": "Horse A", "reference_odds": 5.0, "discipline": "ATTELE", "program_date": "2025-12-28"},
+            {"participant_id": 12, "program_number": 2, "horse_name": "Horse B", "reference_odds": 10.0, "discipline": "ATTELE", "program_date": "2025-12-28"}
         ]
+
+    def upsert_predictions(self, preds):
+        return True
+
+    def get_best_model_for_context(self, discipline, month):
+        return "mock_tabnet"
 
 class MockPredictor:
     """Simulates the ML Model."""
@@ -64,21 +87,22 @@ class MockPredictor:
     # Accept any arguments so it can replace the real RacePredictor(path)
     def __init__(self, *args, **kwargs):
         self.pipeline = True 
+        self.models = {"mock_tabnet": MagicMock()}
 
-    def predict_race(self, participants):
+    def predict_race(self, participants, force_algo=None):
         count = len(participants)
-        if count == 0: return []
+        if count == 0: return {"win": [], "place": []}, "mock_v1"
         
         # 3 participants = Sniper Test
         if count == 3:
             # 1. Sniper Choice: Prob 0.20 -> Edge = 0.20 - (1/10) = 0.10 (KEEP)
-            return [0.20, 0.60, 0.05]
+            return {"win": [0.20, 0.05, 0.05], "place": [0.5, 0.1, 0.1]}, "mock_v1"
             
         # 2 participants = Single Race Prediction
         if count == 2:
-            return [0.8, 0.2]
+            return {"win": [0.8, 0.2], "place": [0.9, 0.3]}, "mock_v1"
             
-        return [0.0] * count
+        return {"win": [0.0] * count, "place": [0.0] * count}, "mock_v1"
 
 # --- 2. FIXTURES ---
 
@@ -87,10 +111,10 @@ def client():
     # 1. Override the DB Repository
     app.dependency_overrides[get_repository] = MockRaceRepository
     
-    # 2. PATCH the RacePredictor class in main.py
-    # When main.py calls RacePredictor(...), it will get our MockPredictor(...) instead.
-    # This prevents the real model (and its heavy pickle file) from ever loading.
-    with patch("src.api.main.RacePredictor", side_effect=MockPredictor):
+    # 2. PATCH DatabaseManager and RacePredictor class in main.py
+    # This prevents connection attempts and heavy model loading during tests.
+    with patch("backend.src.api.main.DatabaseManager"), \
+         patch("backend.src.api.main.RacePredictor", side_effect=MockPredictor):
         with TestClient(app) as c:
             yield c
             
@@ -101,21 +125,22 @@ def client():
 # --- 3. TESTS ---
 
 def test_health_check(client):
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.json()["ml_engine"] == "loaded"
+    with patch("backend.src.api.main.get_scheduler", return_value=None):
+        response = client.get("/")
+        assert response.status_code == 200
+        assert response.json()["ml_engine"] == "loaded"
 
 def test_get_races(client):
     response = client.get("/races/28122025")
     assert response.status_code == 200
     data = response.json()
-    assert data[0]["name"] == "Prix de Test"
+    assert data[0]["meeting_libelle"] == "Vincennes"
 
 def test_get_participants(client):
     response = client.get("/races/1/participants")
     assert response.status_code == 200
     data = response.json()
-    assert data[0]["driver_name"] == "J. Doe"
+    assert data[0]["jockey_name"] == "J. Doe"
 
 def test_sniper_bets_logic(client):
     response = client.get("/bets/sniper/28122025")
