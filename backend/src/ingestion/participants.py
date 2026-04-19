@@ -418,33 +418,37 @@ class ParticipantsIngestor(BaseIngestor):
                 conn = None
         return 0, IngestStatus.FAILED
 
-    def _get_races(self):
+    def _get_races(self, race_id=None):
         """Retrieves the list of races to ingest for the date_code."""
         conn = self.db_manager.get_connection()
         try:
             with conn.cursor() as cursor:                    #AND r.discipline IN ('ATTELE', 'MONTE')
-
-                cursor.execute(
-                    """
+                query = """
                     SELECT r.race_id, rm.meeting_number, r.race_number
                     FROM race r
                     JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
                     JOIN daily_program dp ON rm.program_id = dp.program_id
                     WHERE dp.program_date = %s
-                    ORDER BY rm.meeting_number, r.race_number;
-                    """,
-                    (dt.datetime.strptime(self.date_code, "%d%m%Y").date(),)
-                )
+                """
+                params = [dt.datetime.strptime(self.date_code, "%d%m%Y").date()]
+
+                if race_id:
+                    query += " AND r.race_id = %s"
+                    params.append(race_id)
+
+                query += " ORDER BY rm.meeting_number, r.race_number;"
+
+                cursor.execute(query, tuple(params))
                 return cursor.fetchall()
         finally:
             self.db_manager.release_connection(conn)
 
-    def ingest(self):
+    def ingest(self, race_id=None):
         """Main entry point for parallel participants ingestion."""
         self._preload_caches()
         
         self.logger.info(f"Starting PARALLEL PARTICIPANTS ingestion for {self.date_code}")
-        races = self._get_races()
+        races = self._get_races(race_id=race_id)
         self.logger.info(f"Processing {len(races)} races.")
 
         total_inserted, total_skipped, total_failed = 0, 0, 0

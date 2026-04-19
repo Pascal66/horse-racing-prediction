@@ -183,7 +183,7 @@ class PerformancesIngestor(BaseIngestor):
         finally:
             self.db_manager.release_connection(conn)
 
-    def _get_races(self):
+    def _get_races(self, race_id=None):
         """Retrieves list of races to fetch performances for."""
         conn = self.db_manager.get_connection()
         try:
@@ -194,20 +194,26 @@ class PerformancesIngestor(BaseIngestor):
                     JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
                     JOIN daily_program dp ON rm.program_id = dp.program_id
                     WHERE dp.program_date = %s
-                    ORDER BY rm.meeting_number, r.race_number;
                 """
-                cursor.execute(query, (dt.datetime.strptime(self.date_code, "%d%m%Y").date(),))
+                params = [dt.datetime.strptime(self.date_code, "%d%m%Y").date()]
+
+                if race_id:
+                    query += " AND r.race_id = %s"
+                    params.append(race_id)
+
+                query += " ORDER BY rm.meeting_number, r.race_number;"
+                cursor.execute(query, tuple(params))
                 return cursor.fetchall()
         finally:
             self.db_manager.release_connection(conn)
 
-    def ingest(self):
+    def ingest(self, race_id=None):
         """Main entry point for parallel performance ingestion."""
         self.db_manager.initialize_pool()
         self._preload_horse_cache()
         
         self.logger.info("Starting PARALLEL PERFORMANCE Ingestion for: %s", self.date_code)
-        races = self._get_races()
+        races = self._get_races(race_id=race_id)
         self.logger.info("Found %d races to process.", len(races))
 
         total_records, skipped, failed = 0, 0, 0

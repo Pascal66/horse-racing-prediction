@@ -2,7 +2,7 @@ import argparse
 import sys
 import logging
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Any
 
 # Import BaseIngestor for Type Hinting
 from src.ingestion.base import BaseIngestor
@@ -55,7 +55,7 @@ def generate_date_range(start_str: str, end_str: str) -> List[str]:
     
     return date_list
 
-def process_date(date_code: str, ingestion_type: str) -> None:
+def process_date(date_code: str, ingestion_type: str, race_id: int = None) -> Any:
     """
     Executes the ingestion pipeline for a specific single date.
 
@@ -63,6 +63,7 @@ def process_date(date_code: str, ingestion_type: str) -> None:
         date_code (str): The date to process (DDMMYYYY).
         ingestion_type (str): The category of data to ingest 
                               ('program', 'participants', 'performances', 'reports', 'all').
+        race_id (int, optional): Specific race ID to ingest.
     """
     logger.info(f"=== Starting Ingestion for Date: {date_code} ===")
     
@@ -83,13 +84,27 @@ def process_date(date_code: str, ingestion_type: str) -> None:
     if ingestion_type in ["reports", "all"]:
         ingestors.append(ReportsIngestor(date_code))
 
+    results = {}
     for ingestor in ingestors:
+        ingestor_name = ingestor.__class__.__name__
         try:
-            ingestor.ingest()
+            # Pass race_id to all ingestors that support it
+            if race_id and not isinstance(ingestor, ProgramIngestor):
+                res = ingestor.ingest(race_id=race_id)
+            else:
+                res = ingestor.ingest()
+            results[ingestor_name] = res
         except Exception as e:
             # Capturing the class name for clearer error logging
-            ingestor_name = ingestor.__class__.__name__
             logger.exception(f"Ingestion failed for {ingestor_name} on {date_code}: {e}")
+            results[ingestor_name] = None
+
+    # Priority return: if ProgramIngestor was run, return its list of races
+    if "ProgramIngestor" in results and results["ProgramIngestor"]:
+        return results["ProgramIngestor"]
+
+    # Otherwise return the last result in the dictionary
+    return list(results.values())[-1] if results else None
 
 def main() -> None:
     """
@@ -136,32 +151,43 @@ def main() -> None:
         
     logger.info("All jobs completed.")
 
-def etl_daily(start_date, end_date) -> None:
+def etl_daily(start_date, end_date) -> List[dict]:
     dates_to_process = generate_date_range(start_date, end_date)
     total_days = len(dates_to_process)
     logger.info(f"Job started. Processing {total_days} day(s). Mode: all")
 
+    all_races = []
     # Enumerate starting at 1 for user-friendly progress logging
     for i, date_code in enumerate(dates_to_process, 1):
         logger.info(f"Progress: [{i}/{total_days}] Processing {date_code}")
-        process_date(date_code, "all")
+        # Note: If multiple dates are processed, all_races will contain
+        # the races of the LAST date if "all" is used and ProgramIngestor is last.
+        # But in daily_job_wrapper, start_date/end_date usually cover only today/tomorrow.
+        res = process_date(date_code, "all")
+        if isinstance(res, list):
+            all_races.extend(res)
 
     logger.info("All jobs completed.")
+    return all_races
 
-def etl_liveodds(start_hour=7, end_hour=21) -> None:
+def etl_liveodds(race_id: int = None, start_hour=7, end_hour=21) -> None:
     NOW = datetime.now()
-    FROM = NOW.replace(hour=start_hour, minute=0)
-    TO = NOW.replace(hour=end_hour, minute=30)
     TODAY = datetime.today()
-    if NOW < FROM or NOW > TO:
-        return
-    dates_to_process = [TODAY.strftime("%d%m%Y")]
-    total_days = len(dates_to_process)
-    logger.info(f"Job started. Processing {total_days} day(s). Mode: participants")
 
-    # Enumerate starting at 1 for user-friendly progress logging
-    for i, date_code in enumerate(dates_to_process, 1):
-        process_date(date_code, "all")
+    # If a specific race_id is provided, we ignore the hours restriction
+    if race_id is None:
+        FROM = NOW.replace(hour=start_hour, minute=0)
+        TO = NOW.replace(hour=end_hour, minute=30)
+        if NOW < FROM or NOW > TO:
+            return
+
+    date_code = TODAY.strftime("%d%m%Y")
+
+    # Use "participants" ingestion type for regular updates
+    # if it's the 15m interval task (race_id is None),
+    # it will update all races of today.
+    # If race_id is provided, it updates only that race.
+    process_date(date_code, "participants", race_id=race_id)
 
 if __name__ == "__main__":
     main()
