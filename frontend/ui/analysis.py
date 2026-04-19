@@ -4,6 +4,7 @@ from api.api_client import fetch_predictions, fetch_participants, fetch_backtest
 
 pd.set_option('display.max_columns', None)
 
+
 def get_horse_color(p_num: int) -> str:
     colors = [
         "#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231", "#911eb4", "#46f0f0", "#f032e6",
@@ -11,6 +12,7 @@ def get_horse_color(p_num: int) -> str:
         "#808000", "#ffd8b1", "#000075", "#808080", "#ffffff", "#000000"
     ]
     return colors[p_num % len(colors)]
+
 
 def find_best_roi_match(model_version: str, trainer_stats: dict) -> float:
     if not model_version or not trainer_stats: return -99.0
@@ -20,6 +22,7 @@ def find_best_roi_match(model_version: str, trainer_stats: dict) -> float:
         k_parts = set(k.lower().split('_'))
         if m_parts.issubset(k_parts) or k_parts.issubset(m_parts): return v.get("roi", -99.0)
     return -99.0
+
 
 def render_analysis_view(race_id: int):
     with st.spinner("Chargement de l'analyse..."):
@@ -36,15 +39,17 @@ def render_analysis_view(race_id: int):
         return
 
     # Mappings
-    participant_data['program_number'] = pd.to_numeric(participant_data['program_number'], errors='coerce').fillna(0).astype(int)
+    participant_data['program_number'] = pd.to_numeric(participant_data['program_number'], errors='coerce').fillna(
+        0).astype(int)
     horse_map = participant_data.set_index('program_number')['horse_name'].to_dict()
-    
+
     def format_actual_val(val, incident):
         if pd.notnull(val) and val > 0: return str(int(val))
         if pd.notnull(incident) and str(incident).strip(): return str(incident)
         return ""
 
-    result_map = {row['program_number']: format_actual_val(row.get('finish_rank'), row.get('incident_code')) for _, row in participant_data.iterrows()}
+    result_map = {row['program_number']: format_actual_val(row.get('finish_rank'), row.get('incident_code')) for _, row
+                  in participant_data.iterrows()}
 
     trainer_stats = backtest.get("trainers", {})
     model_order = []
@@ -75,7 +80,7 @@ def render_analysis_view(race_id: int):
                         <b style="font-size:1.1em;">{m['algo'].upper()}</b><br>
                         <span style="color:{roi_color}; font-weight:bold;">ROI: {roi_val:.1f}%</span>
                     </div>""", unsafe_allow_html=True)
-                    
+
                     top_df = m['df'].sort_values('win_probability', ascending=False).head(3)
                     for rank, (_, row) in enumerate(top_df.iterrows(), 1):
                         p_num = row['program_number']
@@ -92,34 +97,33 @@ def render_analysis_view(race_id: int):
 
     with col_side:
         st.subheader("⏱️ Live Tracking")
-        
+
         def render_period_stats(title, period_data):
             st.markdown(f"**{title}**")
             t_data = period_data.get("trainers", period_data) if period_data else {}
             if not t_data:
                 st.caption("Aucune donnée")
                 return
-            
+
             for btype in ['SG', 'SP', 'CG', 'TRIO']:
-                pk = f"profit_{btype.lower()}" if btype!='SG' else "profit"
-                nk = f"nb_bets_{btype.lower()}" if btype!='SG' else "count"
-                wk = f"nb_wins_{btype.lower()}" if btype!='SG' else "nb_wins"
-                
+                pk = f"profit_{btype.lower()}" if btype != 'SG' else "profit"
+                nk = f"nb_bets_{btype.lower()}" if btype != 'SG' else "count"
+                wk = f"nb_wins_{btype.lower()}" if btype != 'SG' else "nb_wins"
+
                 valid_models = [k for k in t_data.keys() if t_data[k].get(nk, 0) > 0]
                 if not valid_models: continue
-                
+
                 # On cherche l'expert par type de pari
                 best_m = max(valid_models, key=lambda k: t_data[k].get(pk, -9999))
                 d = t_data[best_m]
                 profit, nb, wins = d.get(pk, 0), d.get(nk, 0), d.get(wk, 0)
-                
+
                 if nb > 0:
-                    courses = int(nb / (3 if btype in ['SG', 'SP', 'CG'] else 1))
                     color = "#2e7d32" if profit > 0 else "#d32f2f"
                     st.markdown(f"""
-                        <div style='font-size:0.75em; margin-bottom:5px; line-height:1.2;'>
-                            {btype} : <span style='color:{color}; font-weight:bold;'>{profit:+.1f}€</span> ({wins}/{courses})<br>
-                            <code style='font-size:0.8em; color:#666;'>via {best_m}</code>
+                        <div style='font-size:1.05em; margin-bottom:5px; line-height:1.2;'>
+                            {btype} : <span style='color:{color}; font-weight:bold;'>{profit:+.1f}€</span> ({wins}/{nb}) 
+                            <code style='font-size:1.15em; color:#666;font-style: italic;'>{best_m}</code>
                         </div>
                     """, unsafe_allow_html=True)
 
@@ -144,12 +148,16 @@ def render_analysis_view(race_id: int):
     if model_order:
         best = model_order[0]
         st.markdown(f"### 🏇 Détails : {best['algo'].upper()} ({best['version']})")
-        full_data = pd.merge(participant_data, best['df'][['program_number', 'win_probability', 'predicted_rank']], on='program_number', how='left').sort_values('win_probability', ascending=False)
-        full_data['actual_result'] = full_data.apply(lambda r: format_actual_val(r.get('finish_rank'), r.get('incident_code')), axis=1)
-        st.dataframe(full_data[['predicted_rank', 'actual_result', 'program_number', 'horse_name', 'jockey_name', 'reference_odds', 'live_odds_30mn', 'live_odds', 'win_probability']], use_container_width=True, hide_index=True,
-            column_config={
-                "win_probability": st.column_config.ProgressColumn("Prob.", format="%.1f%%", min_value=0, max_value=1),
-                "live_odds": st.column_config.NumberColumn("Live", format="%.1f"),
-                "live_odds_30mn": st.column_config.NumberColumn("30 mn", format="%.1f"),
-                "predicted_rank": st.column_config.NumberColumn("IA", format="%d")
-            })
+        full_data = pd.merge(participant_data, best['df'][['program_number', 'win_probability', 'predicted_rank']],
+                             on='program_number', how='left').sort_values('win_probability', ascending=False)
+        full_data['actual_result'] = full_data.apply(
+            lambda r: format_actual_val(r.get('finish_rank'), r.get('incident_code')), axis=1)
+        st.dataframe(full_data[['predicted_rank', 'actual_result', 'program_number', 'horse_name', 'jockey_name',
+                                'reference_odds', 'live_odds_30mn', 'live_odds', 'win_probability']],
+                     width='stretch', hide_index=True,
+                     column_config={
+                         "win_probability": st.column_config.ProgressColumn("Prob.", format="percent", min_value=0, max_value=1),
+                         "live_odds": st.column_config.NumberColumn("Live", format="%.1f"),
+                         "live_odds_30mn": st.column_config.NumberColumn("30 mn", format="%.1f"),
+                         "predicted_rank": st.column_config.NumberColumn("IA", format="%d")
+                     })

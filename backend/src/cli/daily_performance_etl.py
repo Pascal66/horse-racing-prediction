@@ -68,4 +68,4 @@ def run_daily_performance_etl(target_date: Optional[datetime.date] = None):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    run_daily_performance_etl()
+    run_daily_performance_etl() #datetime.date.today())
