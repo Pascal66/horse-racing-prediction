@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from src.core.config import PERF_URL_TEMPLATE, HEADERS, MAX_WORKERS
 from src.ingestion.base import BaseIngestor, IngestStatus
 
+
 class PerformancesIngestor(BaseIngestor):
     """
     Ingests historical performance data (past races) for horses found in the current program.
@@ -56,7 +57,7 @@ class PerformancesIngestor(BaseIngestor):
             return None
         if horse_name in self.horse_cache:
             return self.horse_cache[horse_name]
-        
+
         horse_id = None
         tmp_conn = self.db_manager.get_connection()
         try:
@@ -64,7 +65,7 @@ class PerformancesIngestor(BaseIngestor):
                 with tmp_conn.cursor() as tmp_cur:
                     tmp_cur.execute(
                         "INSERT INTO horse (horse_name) VALUES (%s) "
-                        "ON CONFLICT (horse_name) DO NOTHING RETURNING horse_id", 
+                        "ON CONFLICT (horse_name) DO NOTHING RETURNING horse_id",
                         (horse_name,)
                     )
                     row = tmp_cur.fetchone()
@@ -79,7 +80,7 @@ class PerformancesIngestor(BaseIngestor):
             self.logger.error(f"Error creating horse {horse_name}: {e}")
         finally:
             self.db_manager.release_connection(tmp_conn)
-            
+
         if horse_id:
             with self.cache_lock:
                 self.horse_cache[horse_name] = horse_id
@@ -94,19 +95,19 @@ class PerformancesIngestor(BaseIngestor):
         if not horse_id:
             return None
         discipline = history_item.get("discipline", "").upper()
-        #if discipline not in ["ATTELE", "MONTE"]:
+        # if discipline not in ["ATTELE", "MONTE"]:
         #    return None
-        
+
         race_date = None
         if history_item.get("date"):
             # timestamp is in ms
             race_date = dt.datetime.fromtimestamp(history_item["date"] / 1000, tz=dt.timezone.utc).date()
-        
+
         # Identify the subject horse within the participants list of the historical race
         subject = next((p for p in history_item.get("participants", []) if p.get("itsHim")), None)
-        
+
         finish_place, finish_status, jockey_weight, draw, red_km, dist_travel = None, None, None, None, None, None
-        
+
         if subject:
             place_obj = subject.get("place")
             if isinstance(place_obj, dict):
@@ -128,7 +129,7 @@ class PerformancesIngestor(BaseIngestor):
         time.sleep(random.uniform(0.1, 0.3))
         session = self._get_http_session()
         data, status_code = self._fetch_perf_json(session, meeting_num, race_num)
-        
+
         if status_code in [204, 404]:
             return 0, IngestStatus.SKIPPED
         if status_code >= 500:
@@ -139,7 +140,7 @@ class PerformancesIngestor(BaseIngestor):
             participants = data.get("participants", [])
         elif isinstance(data, list):
             participants = data
-        
+
         if not participants:
             return 0, IngestStatus.SKIPPED
 
@@ -155,7 +156,7 @@ class PerformancesIngestor(BaseIngestor):
                         horse_id = self._get_horse_id_thread_safe(horse_name)
                         if not horse_id:
                             continue
-                        
+
                         for h in p.get("coursesCourues", []):
                             row_data = self._prepare_history_data(horse_id, h)
                             if row_data:
@@ -183,7 +184,7 @@ class PerformancesIngestor(BaseIngestor):
         finally:
             self.db_manager.release_connection(conn)
 
-    def _get_races(self):
+    def _get_races(self, race_id=None):
         """Retrieves list of races to fetch performances for."""
         conn = self.db_manager.get_connection()
         try:
@@ -194,20 +195,26 @@ class PerformancesIngestor(BaseIngestor):
                     JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
                     JOIN daily_program dp ON rm.program_id = dp.program_id
                     WHERE dp.program_date = %s
-                    ORDER BY rm.meeting_number, r.race_number;
                 """
-                cursor.execute(query, (dt.datetime.strptime(self.date_code, "%d%m%Y").date(),))
+                params = [dt.datetime.strptime(self.date_code, "%d%m%Y").date()]
+
+                if race_id:
+                    query += " AND r.race_id = %s"
+                    params.append(race_id)
+
+                query += " ORDER BY rm.meeting_number, r.race_number;"
+                cursor.execute(query, tuple(params))
                 return cursor.fetchall()
         finally:
             self.db_manager.release_connection(conn)
 
-    def ingest(self):
+    def ingest(self, race_id=None):
         """Main entry point for parallel performance ingestion."""
         self.db_manager.initialize_pool()
         self._preload_horse_cache()
-        
+
         self.logger.info("Starting PARALLEL PERFORMANCE Ingestion for: %s", self.date_code)
-        races = self._get_races()
+        races = self._get_races(race_id=race_id)
         self.logger.info("Found %d races to process.", len(races))
 
         total_records, skipped, failed = 0, 0, 0
@@ -228,7 +235,7 @@ class PerformancesIngestor(BaseIngestor):
                         skipped += 1
                     elif status == IngestStatus.FAILED:
                         failed += 1
-                    
+
                     if i % 10 == 0:
                         self.logger.info("Progress: %d/%d. Skipped: %d.", i, len(races), skipped)
                 except Exception as e:

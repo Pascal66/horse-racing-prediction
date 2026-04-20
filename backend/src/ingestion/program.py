@@ -4,6 +4,7 @@ import requests
 from src.core.config import PROGRAMME_URL_TEMPLATE, HEADERS, STATUS_MAP, TRACK_MAP
 from src.ingestion.base import BaseIngestor
 
+
 class ProgramIngestor(BaseIngestor):
     """
     Ingests the daily race program, including meetings (reunions) and races (courses).
@@ -58,7 +59,8 @@ class ProgramIngestor(BaseIngestor):
         num_officiel = meeting_data.get("numOfficiel")
         meeting_type = self._safe_truncate("meeting_type", meeting_data.get("nature"), 50)
         meeting_code = self._safe_truncate("meeting_code", (meeting_data.get("hippodrome") or {}).get("code"), 30)
-        meeting_libelle = self._safe_truncate("meeting_libelle", (meeting_data.get("hippodrome") or {}).get("libelleCourt"), 30)
+        meeting_libelle = self._safe_truncate("meeting_libelle",
+                                              (meeting_data.get("hippodrome") or {}).get("libelleCourt"), 30)
         audience = self._safe_truncate("audience", meeting_data.get("audience"), 30)
         temp = (meeting_data.get("meteo") or {}).get("temperature")
         wind = (meeting_data.get("meteo") or {}).get("directionVent")
@@ -93,8 +95,8 @@ class ProgramIngestor(BaseIngestor):
         )
         return cursor.fetchone()[0]
 
-    def _insert_race(self, cursor, meeting_id: int, race_data: dict):
-        """Inserts a single race record."""
+    def _insert_race(self, cursor, meeting_id: int, race_data: dict) -> int:
+        """Inserts a single race record and returns its ID."""
         race_number = race_data.get("numOrdre")
 
         racetrack_libelle = self._safe_truncate("racetrack_libelle", (race_data.get("libelleCourt") or {}), 30)
@@ -108,7 +110,7 @@ class ProgramIngestor(BaseIngestor):
         race_status_category = self._safe_truncate("race_status_category", race_data.get("categorieStatut"), 50)
         race_category = race_data.get("categorieParticularite")
         distance_m = race_data.get("distance")
-        
+
         penetrometre = race_data.get("penetrometre") or {}
         raw_val = penetrometre.get("valeurMesure")
         terrain_label = penetrometre.get("intitule")
@@ -149,7 +151,8 @@ class ProgramIngestor(BaseIngestor):
                 penetrometer = EXCLUDED.penetrometer,
                 declared_runners_count = EXCLUDED.declared_runners_count,
                 racetrack_libelle = EXCLUDED.racetrack_libelle,
-                updated_at = NOW();
+                updated_at = NOW()
+            RETURNING race_id;
             """,
             (
                 meeting_id, race_number, discipline, race_category,
@@ -159,6 +162,14 @@ class ProgramIngestor(BaseIngestor):
                 start_timestamp, timezone_offset, prize_money, specialty, racetrack_libelle
             ),
         )
+        row = cursor.fetchone()
+        if row:
+            return row[0]
+        cursor.execute(
+            "SELECT race_id FROM race WHERE meeting_id = %s AND race_number = %s",
+            (meeting_id, race_number)
+        )
+        return cursor.fetchone()[0]
 
     def ingest(self):
         """Main entry point for program ingestion."""
@@ -167,7 +178,7 @@ class ProgramIngestor(BaseIngestor):
             data = self.fetch_programme_json()
         except Exception:
             self.logger.error("Skipping date %s due to API failure.", self.date_code)
-            return
+            return []
 
         programme = data.get("programme") or {}
         try:
@@ -179,7 +190,7 @@ class ProgramIngestor(BaseIngestor):
                     "Skipping date %s due to missing 'date' timestamp in programme payload.",
                     self.date_code,
                 )
-                return
+                return []
             try:
                 program_date = dt.datetime.fromtimestamp(ts / 1000, tz=dt.timezone.utc).date()
             except (TypeError, ValueError, OSError, OverflowError):
@@ -188,8 +199,9 @@ class ProgramIngestor(BaseIngestor):
                     self.date_code,
                     ts,
                 )
-                return
+                return []
 
+        ingested_races = []
         conn = self.db_manager.get_connection()
         try:
             with conn:
@@ -198,17 +210,20 @@ class ProgramIngestor(BaseIngestor):
                     program_id = self._insert_daily_program(cursor, program_date)
                     meetings = programme.get("reunions", [])
                     self.logger.info("Found %d meetings.", len(meetings))
-                    
-                    count_races = 0
+
                     for meeting in meetings:
                         code_pays = meeting.get("pays").get("code")
                         meeting_id = self._insert_race_meeting(cursor, program_id, meeting)
                         races = meeting.get("courses", [])
                         for race in races:
                             discipline = race.get("discipline", "").upper()
-                            if code_pays in ["FRA"]: #discipline in ["ATTELE", "MONTE"]:
-                                self._insert_race(cursor, meeting_id, race)
-                                count_races += 1
-                    self.logger.info("Ingested %d races for date %s", count_races, program_date)
+                            if code_pays in ["FRA"]:  # discipline in ["ATTELE", "MONTE"]:
+                                race_id = self._insert_race(cursor, meeting_id, race)
+                                ingested_races.append({
+                                    'id': race_id,
+                                    'start_time': race.get("heureDepart")
+                                })
+                    self.logger.info("Ingested %d races for date %s", len(ingested_races), program_date)
         finally:
             self.db_manager.release_connection(conn)
+        return ingested_races

@@ -10,6 +10,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from src.core.config import PARTICIPANTS_URL_TEMPLATE, HEADERS, INCIDENT_MAP, SHOE_MAP, MAX_WORKERS
 from src.ingestion.base import BaseIngestor, IngestStatus
 
+
 class ParticipantsIngestor(BaseIngestor):
     """
     Ingests race participants (horses, drivers, trainers) and related metadata
@@ -38,20 +39,20 @@ class ParticipantsIngestor(BaseIngestor):
                 cursor.execute("SELECT horse_name, horse_id FROM horse")
                 for name, horse_id in cursor.fetchall():
                     self.horse_cache[name] = horse_id
-                
+
                 self.logger.info("Loading Actors into RAM...")
                 cursor.execute("SELECT actor_name, actor_id FROM racing_actor")
                 for name, actor_id in cursor.fetchall():
                     self.actor_cache[name] = actor_id
-                    
+
                 cursor.execute("SELECT code, shoeing_id FROM lookup_shoeing")
                 for code, shoeing_id in cursor.fetchall():
                     self.shoeing_cache[code] = shoeing_id
-                    
+
                 cursor.execute("SELECT code, incident_id FROM lookup_incident")
                 for code, incident_id in cursor.fetchall():
                     self.incident_cache[code] = incident_id
-            
+
             self.logger.info(f"CACHE READY: {len(self.horse_cache)} Horses, {len(self.actor_cache)} Actors loaded.")
         except Exception as e:
             self.logger.error(f"Cache Pre-warm failed: {e}")
@@ -66,11 +67,11 @@ class ParticipantsIngestor(BaseIngestor):
             if response.status_code in [404, 204]:
                 return [], response.status_code
             response.raise_for_status()
-            
+
             data = response.json()
             if isinstance(data, dict):
                 return data.get("participants", []), 200
-            
+
             # Handling edge case where API returns a list directly
             return (data, 200) if isinstance(data, list) else ([], 200)
         except Exception as e:
@@ -84,7 +85,7 @@ class ParticipantsIngestor(BaseIngestor):
         name = participant_data.get("nom")
         if not name:
             return None
-        
+
         # if name in self.horse_cache:
         #     return self.horse_cache[name]
 
@@ -100,7 +101,7 @@ class ParticipantsIngestor(BaseIngestor):
             birth_year = (dt.datetime.now(tz=dt.timezone.utc).year - int(age)) if age else None
         except (ValueError, TypeError):
             birth_year = None
-        
+
         raw_sex = participant_data.get("sexe")
         clean_sex = raw_sex[0].upper() if raw_sex else None
 
@@ -115,12 +116,11 @@ class ParticipantsIngestor(BaseIngestor):
         try:
             with tmp_conn:
                 with tmp_conn.cursor() as tmp_cur:
-
                     tmp_cur.execute(
-                    #     "INSERT INTO horse (horse_name, sex, birth_year) VALUES (%s, %s, %s) "
-                    #     "ON CONFLICT (horse_name) DO NOTHING RETURNING horse_id;",
-                    #     (name, clean_sex, birth_year)
-                    # )
+                        #     "INSERT INTO horse (horse_name, sex, birth_year) VALUES (%s, %s, %s) "
+                        #     "ON CONFLICT (horse_name) DO NOTHING RETURNING horse_id;",
+                        #     (name, clean_sex, birth_year)
+                        # )
 
                         """
                         INSERT INTO horse (
@@ -138,7 +138,7 @@ class ParticipantsIngestor(BaseIngestor):
                             maternal_grandfather_name = COALESCE(EXCLUDED.maternal_grandfather_name, horse.maternal_grandfather_name)
                         RETURNING horse_id;
                         """,
-                    (name, clean_sex, birth_year, breed, color, father, mother, grand_father)
+                        (name, clean_sex, birth_year, breed, color, father, mother, grand_father)
                     )
                     row = tmp_cur.fetchone()
                     if row:
@@ -150,7 +150,7 @@ class ParticipantsIngestor(BaseIngestor):
                     #     horse_id = res[0] if res else None
         finally:
             self.db_manager.release_connection(tmp_conn)
-        
+
         if horse_id:
             with self.cache_lock:
                 self.horse_cache[name] = horse_id
@@ -163,10 +163,10 @@ class ParticipantsIngestor(BaseIngestor):
         clean_name = self._safe_truncate("actor_name", name, 100)
         if not clean_name:
             return None
-        
+
         if clean_name in self.actor_cache:
             return self.actor_cache[clean_name]
-        
+
         actor_id = None
         tmp_conn = self.db_manager.get_connection()
         try:
@@ -186,7 +186,7 @@ class ParticipantsIngestor(BaseIngestor):
                         actor_id = res[0] if res else None
         finally:
             self.db_manager.release_connection(tmp_conn)
-            
+
         if actor_id:
             with self.cache_lock:
                 self.actor_cache[clean_name] = actor_id
@@ -198,7 +198,7 @@ class ParticipantsIngestor(BaseIngestor):
             return None
         if code in self.shoeing_cache:
             return self.shoeing_cache[code]
-        
+
         shoeing_id = None
         tmp_conn = self.db_manager.get_connection()
         try:
@@ -217,7 +217,7 @@ class ParticipantsIngestor(BaseIngestor):
                         shoeing_id = res[0] if res else None
         finally:
             self.db_manager.release_connection(tmp_conn)
-            
+
         if shoeing_id:
             with self.cache_lock:
                 self.shoeing_cache[code] = shoeing_id
@@ -229,7 +229,7 @@ class ParticipantsIngestor(BaseIngestor):
             return None
         if code in self.incident_cache:
             return self.incident_cache[code]
-        
+
         incident_id = None
         tmp_conn = self.db_manager.get_connection()
         try:
@@ -248,7 +248,7 @@ class ParticipantsIngestor(BaseIngestor):
                         incident_id = res[0] if res else None
         finally:
             self.db_manager.release_connection(tmp_conn)
-        
+
         if incident_id:
             with self.cache_lock:
                 self.incident_cache[code] = incident_id
@@ -257,17 +257,17 @@ class ParticipantsIngestor(BaseIngestor):
     def _insert_participant(self, cursor, race_id, participant_data, race_start_timestamp: Optional[int] = None):
         """Parses participant JSON data and inserts into race_participant table."""
         p_num = participant_data.get("numPmu")
-        
+
         raw_incident = participant_data.get("incident")
         clean_incident = INCIDENT_MAP.get(raw_incident, raw_incident[:20] if raw_incident else None)
-        
+
         raw_shoe = participant_data.get("deferre")
         clean_shoe = SHOE_MAP.get(raw_shoe, raw_shoe[:10] if raw_shoe else None)
 
         horse_id = self._get_or_create_horse(participant_data)
         if not horse_id:
             return
-            
+
         trainer_id = self._get_or_create_actor(participant_data.get("entraineur"))
         driver_id = self._get_or_create_actor(participant_data.get("driver"))
         incident_id = self._get_or_create_incident(clean_incident)
@@ -276,13 +276,13 @@ class ParticipantsIngestor(BaseIngestor):
 
         raw_sex = participant_data.get("sexe")
         clean_sex = raw_sex[0].upper() if raw_sex else None
-        
+
         raw_red_km = participant_data.get("reductionKilometrique")
         try:
             clean_red_km = float(raw_red_km) if raw_red_km is not None else None
         except:
             clean_red_km = None
-        
+
         # career_winnings = self._to_euros((participant_data.get("gainsParticipant") or {}).get("gainsCarriere"))
         gains = participant_data.get("gainsParticipant") or {}
         career_winnings = self._to_euros(gains.get("gainsCarriere"))
@@ -297,9 +297,10 @@ class ParticipantsIngestor(BaseIngestor):
         # Logic to capture live_odds_30mn snapshot
         live_odds_30mn_snapshot = None
         if race_start_timestamp and live_odds:
-            race_start_dt = dt.datetime.fromtimestamp(race_start_timestamp / 1000, tz=dt.timezone.utc) # PMU timestamp is in ms
+            race_start_dt = dt.datetime.fromtimestamp(race_start_timestamp / 1000,
+                                                      tz=dt.timezone.utc)  # PMU timestamp is in ms
             current_dt = dt.datetime.now(tz=dt.timezone.utc)
-            
+
             time_to_start = race_start_dt - current_dt
             if dt.timedelta(minutes=20) <= time_to_start <= dt.timedelta(minutes=40):
                 live_odds_30mn_snapshot = live_odds
@@ -353,9 +354,10 @@ class ParticipantsIngestor(BaseIngestor):
             (
                 race_id, horse_id, p_num, participant_data.get("age"), clean_sex,
                 trainer_id, driver_id, shoeing_id, incident_id,
-                participant_data.get("nombreCourses"), career_winnings, # ... (autres colonnes)
-                ref_odds, live_odds, live_odds_30mn_snapshot, # Utilise le snapshot calculé
-                participant_data.get("musique"), participant_data.get("avisEntraineur"), participant_data.get("ordreArrivee"),
+                participant_data.get("nombreCourses"), career_winnings,  # ... (autres colonnes)
+                ref_odds, live_odds, live_odds_30mn_snapshot,  # Utilise le snapshot calculé
+                participant_data.get("musique"), participant_data.get("avisEntraineur"),
+                participant_data.get("ordreArrivee"),
                 participant_data.get("tempsObtenu"), clean_red_km,
                 participant_data.get("oeilleres"), participant_data.get("indicateurInedit"),
                 participant_data.get("nombreVictoires"), participant_data.get("nombrePlaces"),
@@ -384,7 +386,7 @@ class ParticipantsIngestor(BaseIngestor):
         time.sleep(random.uniform(0.1, 0.3))
         session = self._get_http_session()
         participants, status_code = self._fetch_participants_json(session, meeting_num, race_num)
-        
+
         if status_code in [204, 404]:
             return 0, IngestStatus.SKIPPED
         if participants is None:
@@ -418,33 +420,37 @@ class ParticipantsIngestor(BaseIngestor):
                 conn = None
         return 0, IngestStatus.FAILED
 
-    def _get_races(self):
+    def _get_races(self, race_id=None):
         """Retrieves the list of races to ingest for the date_code."""
         conn = self.db_manager.get_connection()
         try:
-            with conn.cursor() as cursor:                    #AND r.discipline IN ('ATTELE', 'MONTE')
-
-                cursor.execute(
-                    """
+            with conn.cursor() as cursor:  # AND r.discipline IN ('ATTELE', 'MONTE')
+                query = """
                     SELECT r.race_id, rm.meeting_number, r.race_number
                     FROM race r
                     JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
                     JOIN daily_program dp ON rm.program_id = dp.program_id
                     WHERE dp.program_date = %s
-                    ORDER BY rm.meeting_number, r.race_number;
-                    """,
-                    (dt.datetime.strptime(self.date_code, "%d%m%Y").date(),)
-                )
+                """
+                params = [dt.datetime.strptime(self.date_code, "%d%m%Y").date()]
+
+                if race_id:
+                    query += " AND r.race_id = %s"
+                    params.append(race_id)
+
+                query += " ORDER BY rm.meeting_number, r.race_number;"
+
+                cursor.execute(query, tuple(params))
                 return cursor.fetchall()
         finally:
             self.db_manager.release_connection(conn)
 
-    def ingest(self):
+    def ingest(self, race_id=None):
         """Main entry point for parallel participants ingestion."""
         self._preload_caches()
-        
+
         self.logger.info(f"Starting PARALLEL PARTICIPANTS ingestion for {self.date_code}")
-        races = self._get_races()
+        races = self._get_races(race_id=race_id)
         self.logger.info(f"Processing {len(races)} races.")
 
         total_inserted, total_skipped, total_failed = 0, 0, 0
@@ -467,5 +473,6 @@ class ParticipantsIngestor(BaseIngestor):
                 except Exception as e:
                     self.logger.error(f"Exception: {e}")
                     total_failed += 1
-        
-        self.logger.info(f"Ingestion Completed. Records: {total_inserted} | Skipped: {total_skipped} | Failed: {total_failed}")
+
+        self.logger.info(
+            f"Ingestion Completed. Records: {total_inserted} | Skipped: {total_skipped} | Failed: {total_failed}")

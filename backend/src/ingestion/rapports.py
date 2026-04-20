@@ -23,19 +23,19 @@ class ReportsIngestor(BaseIngestor):
             if response.status_code in [404, 204]:
                 return [], response.status_code
             response.raise_for_status()
-            
+
             data = response.json()
             if isinstance(data, list):
                 return data, 200
-            
+
             # PMU change souvent les clés entre live et définitif
             rapports = (
-                data.get("rapportsDefinitifs") or 
-                data.get("rapports") or 
-                data.get("rapportsProbables") or []
+                    data.get("rapportsDefinitifs") or
+                    data.get("rapports") or
+                    data.get("rapportsProbables") or []
             )
             return rapports, 200
-            
+
         except Exception as e:
             self.logger.warning(f"Failed fetching reports R{meeting}C{race}: {e}")
             return [], 500
@@ -44,7 +44,7 @@ class ReportsIngestor(BaseIngestor):
         """Inserts a bet record (e.g. 'Simple Gagnant') and returns its ID."""
         raw_type = bet_data.get("typePari")
         clean_type = BET_TYPE_MAP.get(raw_type)
-        
+
         if clean_type is None:
             if raw_type:
                 if len(raw_type) > 20:
@@ -59,7 +59,7 @@ class ReportsIngestor(BaseIngestor):
                     clean_type = raw_type[:20]
             else:
                 clean_type = None
-        
+
         stake_euros = self._to_euros(bet_data.get("miseBase"))
         total_stakes = self._to_euros(bet_data.get("totalEnjeux"))
 
@@ -75,10 +75,10 @@ class ReportsIngestor(BaseIngestor):
              RETURNING bet_id;
             """,
             (
-                race_id, 
-                clean_type, 
+                race_id,
+                clean_type,
                 bet_data.get("famillePari"),
-                stake_euros, 
+                stake_euros,
                 bet_data.get("rembourse"),
                 total_stakes
             )
@@ -107,10 +107,10 @@ class ReportsIngestor(BaseIngestor):
                 winners_count = EXCLUDED.winners_count;
             """,
             (
-                bet_id, 
-                report_data.get("combinaison"), 
-                div_euros, 
-                div_1e_euros, 
+                bet_id,
+                report_data.get("combinaison"),
+                div_euros,
+                div_1e_euros,
                 report_data.get("nombreGagnants")
             )
         )
@@ -120,7 +120,7 @@ class ReportsIngestor(BaseIngestor):
         time.sleep(random.uniform(0.1, 0.3))
         session = self._get_http_session()
         bets, status_code = self._fetch_rapports_json(session, meeting_num, race_num)
-        
+
         if status_code in [204, 404]:
             return 0, IngestStatus.SKIPPED_NO_CONTENT
         if not bets and status_code == 200:
@@ -149,36 +149,41 @@ class ReportsIngestor(BaseIngestor):
         finally:
             self.db_manager.release_connection(conn)
 
-    def _get_races(self):
+    def _get_races(self, race_id=None):
         """Retrieves list of races to fetch betting reports for."""
         conn = self.db_manager.get_connection()
-        try:                    #AND r.discipline IN ('ATTELE', 'MONTE')
+        try:  # AND r.discipline IN ('ATTELE', 'MONTE')
 
             with conn.cursor() as cursor:
-                cursor.execute(
-                    """
+                query = """
                     SELECT r.race_id, rm.meeting_number, r.race_number
                     FROM race r
                     JOIN race_meeting rm ON r.meeting_id = rm.meeting_id
                     JOIN daily_program dp ON rm.program_id = dp.program_id
                     WHERE dp.program_date = %s
-                    ORDER BY dp.program_date, rm.meeting_number, r.race_number;
-                    """,
-                    (dt.datetime.strptime(self.date_code, "%d%m%Y").date(),)
-                )
+                """
+                params = [dt.datetime.strptime(self.date_code, "%d%m%Y").date()]
+
+                if race_id:
+                    query += " AND r.race_id = %s"
+                    params.append(race_id)
+
+                query += " ORDER BY dp.program_date, rm.meeting_number, r.race_number;"
+
+                cursor.execute(query, tuple(params))
                 return cursor.fetchall()
         finally:
             self.db_manager.release_connection(conn)
 
-    def ingest(self):
+    def ingest(self, race_id=None):
         """Main entry point for parallel betting reports ingestion."""
         self.db_manager.initialize_pool()
         self.logger.info(f"Starting PARALLEL RAPPORTS ingestion for {self.date_code}")
-        races = self._get_races()
+        races = self._get_races(race_id=race_id)
         self.logger.info(f"Processing {len(races)} races.")
 
         total_bets, skipped, failed = 0, 0, 0
-        
+
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             future_to_race = {
                 executor.submit(self._process_single_race, r_id, m, r): (m, r)
