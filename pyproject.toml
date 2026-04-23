@@ -83,3 +83,7 @@ name = "pytorch-npu"
 url = "https://download.pytorch.org/whl/npu"
 explicit = true
 
+[dependency-groups]
+dev = [
+    "pytest-asyncio>=1.3.0",
+]

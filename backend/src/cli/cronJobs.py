@@ -9,6 +9,9 @@ from apscheduler.triggers.date import DateTrigger
 from src.cli.etl import etl_daily, etl_liveodds
 from src.cli.daily_performance_etl import run_daily_performance_etl
 from src.cli.telegram_bot import send_telegram_message
+from src.api.repositories import RaceRepository
+from src.api.backtest_service import BacktestService
+from src.ml.predictor import RacePredictor
 
 logger = logging.getLogger("Scheduler")
 
@@ -19,12 +22,108 @@ _scheduler = None
 def get_scheduler():
     return _scheduler
 
-def run_send_telegram(race_id):
-    """Wrapper synchrone pour exécuter la tâche asynchrone Telegram."""
+async def generate_and_send_advice(race_id):
+    """Génère un conseil de jeu basé sur le meilleur modèle et l'envoie via Telegram."""
     try:
-        asyncio.run(send_telegram_message(race_id))
+        repo = RaceRepository()
+        # 1. Récupérer les données de la course
+        participants = repo.get_race_data_for_ml(race_id)
+        if not participants:
+            logger.warning(f"Aucun participant trouvé pour la course {race_id}")
+            return
+
+        discipline = participants[0]['discipline']
+        month = datetime.fromtimestamp(participants[0]['start_timestamp'] / 1000, tz=timezone.utc).month
+
+        # 2. Identifier le meilleur modèle (algo)
+        selected_algo = repo.get_best_model_for_context(discipline, month)
+        if not selected_algo:
+             # Fallback sur le meilleur modèle global du cache si possible
+             service = BacktestService(repo)
+             cache = service.run_backtest() # Charge le cache
+             trainers = cache.get("trainers", {})
+             best_roi = -999
+             for model_name, stats in trainers.items():
+                 if discipline.lower() in model_name.lower():
+                     roi = stats.get("roi", -100)
+                     if roi > best_roi:
+                         best_roi = roi
+                         selected_algo = model_name
+
+        # 3. Prédire
+        from pathlib import Path
+        import os
+        current_file = Path(__file__).resolve()
+        possible_data_path = current_file.parents[3] / "data"
+        if not possible_data_path.exists(): possible_data_path = Path("data")
+        model_path = Path(os.getenv("MODEL_PATH", possible_data_path))
+
+        predictor = RacePredictor(str(model_path))
+        preds, model_version = predictor.predict_race(participants, force_algo=selected_algo)
+
+        if not preds["win"]:
+            logger.warning(f"Prédictions vides pour la course {race_id}")
+            return
+
+        # 4. Sélectionner le meilleur cheval
+        import pandas as pd
+        import numpy as np
+        df = pd.DataFrame(participants)
+        # Ensure 'pmu_number' is available, it might be 'program_number' in some contexts
+        if 'pmu_number' not in df.columns and 'program_number' in df.columns:
+            df['pmu_number'] = df['program_number']
+
+        df['win_probability'] = preds["win"]
+
+        # Calcul de l'edge (besoin des cotes live ou ref)
+        df['effective_odds'] = df['live_odds'].combine_first(df.get('live_odds_30mn', pd.Series([None] * len(df))))
+        df['effective_odds'] = df['effective_odds'].apply(lambda x: x if x and x > 1.1 else None)
+        df['effective_odds'] = df['effective_odds'].fillna(df['reference_odds']).fillna(1.0).clip(lower=1.05)
+
+        df['edge'] = df['win_probability'] - (1 / df['effective_odds'])
+
+        best_horse = df.sort_values('win_probability', ascending=False).iloc[0]
+
+        # 5. Formater le message
+        race_info = repo.get_races_by_date(datetime.fromtimestamp(participants[0]['start_timestamp']/1000).strftime("%d%m%Y"))
+        race_row = next((r for r in race_info if r['race_id'] == race_id), None)
+
+        meeting_label = race_row['meeting_libelle'] if race_row else "Inconnu"
+        r_num = race_row['race_number'] if race_row else "?"
+        m_num = race_row['meeting_number'] if race_row else "?"
+
+        message = (
+            f"<b>🏇 CONSEIL DE JEU - R{m_num}C{r_num}</b>\n"
+            f"📍 {meeting_label} - {discipline}\n\n"
+            f"🏆 <b>{best_horse['horse_name']}</b> (#{best_horse['pmu_number']})\n"
+            f"📊 Probabilité: {best_horse['win_probability']:.1%}\n"
+            f"💰 Cote estimée: {best_horse['effective_odds']:.2f}\n"
+            f"📈 Edge: {best_horse['edge']:.2f}\n\n"
+            f"🤖 Modèle: <code>{model_version}</code>"
+        )
+
+        # 6. Sauvegarder en BDD
+        advice_data = {
+            "race_id": race_id,
+            "participant_id": int(best_horse['participant_id']),
+            "model_version": model_version,
+            "strategy": "BestModel",
+            "message": message
+        }
+        repo.upsert_game_advice(advice_data)
+
+        # 7. Envoyer Telegram
+        await send_telegram_message(message)
+
     except Exception as e:
-        logger.error(f"Erreur lors de l'envoi du message Telegram pour {race_id}: {e}")
+        logger.error(f"Erreur lors de la génération du conseil pour {race_id}: {e}", exc_info=True)
+
+def run_send_telegram(race_id):
+    """Wrapper synchrone pour exécuter la tâche de conseil Telegram."""
+    try:
+        asyncio.run(generate_and_send_advice(race_id))
+    except Exception as e:
+        logger.error(f"Erreur lors de l'exécution du job Telegram pour {race_id}: {e}")
 
 def schedule_race_better(race_data_list):
     """
