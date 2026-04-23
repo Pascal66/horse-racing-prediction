@@ -1,4 +1,4 @@
-# src/ml/ltr_trainer.py
+# src/ml/trainer_ltr.py
 import logging
 import sys
 from pathlib import Path
@@ -144,7 +144,7 @@ class LTRTrainer:
         raw_df = self.loader.get_training_data()
         if raw_df.empty: return
 
-        targets = ["global"]
+        targets = [] #["global"]
         targets.extend([
             str(d).lower() for d in raw_df['discipline'].unique() if pd.notna(d)
         ])
@@ -414,7 +414,7 @@ class LTRTrainer:
                 for _, row in df.iterrows():
                     cur.execute("""INSERT INTO ml_model_metrics (model_name, algorithm, segment_type, segment_value, test_month, num_races, logloss, auc, roi, win_rate, avg_odds)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (model_name, algorithm, segment_type, segment_value, test_month) 
-                        DO UPDATE SET roi=EXCLUDED.roi, updated_at=NOW()""", (model_name, algo_name, row['segment_type'], row['segment_value'], int(row['month']), int(row['count']), row['logloss'], row['auc'], row['roi'], row['win_rate'], row['avg_odds']))
+                        DO UPDATE SET num_races=EXCLUDED.num_races, roi=EXCLUDED.roi, auc=EXCLUDED.auc, win_rate=EXCLUDED.win_rate, updated_at=NOW()""", (model_name, algo_name, row['segment_type'], row['segment_value'], int(row['month']), int(row['count']), row['logloss'], row['auc'], row['roi'], row['win_rate'], row['avg_odds']))
                 conn.commit()
         finally: self.db.release_connection(conn)
 

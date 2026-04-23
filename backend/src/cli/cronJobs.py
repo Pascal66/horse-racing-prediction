@@ -1,4 +1,5 @@
 import logging
+import asyncio
 from datetime import datetime, timedelta, timezone
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -7,6 +8,7 @@ from apscheduler.triggers.date import DateTrigger
 
 from src.cli.etl import etl_daily, etl_liveodds
 from src.cli.daily_performance_etl import run_daily_performance_etl
+from src.cli.telegram_bot import send_telegram_message
 
 logger = logging.getLogger("Scheduler")
 
@@ -17,6 +19,54 @@ _scheduler = None
 def get_scheduler():
     return _scheduler
 
+def run_send_telegram(race_id):
+    """Wrapper synchrone pour exécuter la tâche asynchrone Telegram."""
+    try:
+        asyncio.run(send_telegram_message(race_id))
+    except Exception as e:
+        logger.error(f"Erreur lors de l'envoi du message Telegram pour {race_id}: {e}")
+
+def schedule_race_better(race_data_list):
+    """
+    Planifie dynamiquement les relevés de cotes pour une liste de courses.
+    race_data_list: Liste de dict contenant {'id': str, 'start_time': int (ms timestamp)}
+    """
+    global _scheduler
+    if _scheduler is None:
+        return
+
+    # Offsets demandés : -6h, -1h, -30m, -5m, 0m, +1m
+    offsets = [
+        # timedelta(hours=-6),
+        # timedelta(hours=-1),
+        # timedelta(minutes=-30),
+        timedelta(minutes=-15), # Début de la cristallisation des enjeux
+        timedelta(minutes=-5),  # Sentiment final / "Smart Money"
+        # timedelta(minutes=2)  # Vérification post-départ (clôture des masses)
+    ]
+
+    for race in race_data_list:
+        race_id = race['id']
+        start_ts = race['start_time']
+        if not start_ts:
+            continue
+
+        # Convert PMU ms timestamp to UTC datetime
+        start_time = datetime.fromtimestamp(start_ts / 1000, tz=timezone.utc)
+
+        for offset in offsets:
+            run_time = start_time + offset
+            # On ne planifie que si l'heure est dans le futur
+            if run_time > datetime.now(timezone.utc):
+                job_id = f"better_{race_id}_{int(offset.total_seconds())}"
+                _scheduler.add_job(
+                    run_send_telegram,
+                    trigger=DateTrigger(run_date=run_time),
+                    args=[race_id],
+                    id=job_id,
+                    name=f"Better {race_id} @ {offset}",
+                    replace_existing=True
+                )
 
 def schedule_race_updates(race_data_list):
     """
@@ -32,9 +82,9 @@ def schedule_race_updates(race_data_list):
         timedelta(hours=-6),
         timedelta(hours=-1),
         timedelta(minutes=-30),
-        timedelta(minutes=-5),
-        timedelta(minutes=0),
-        timedelta(minutes=5)
+        timedelta(minutes=-15),
+        timedelta(minutes=5),
+        timedelta(minutes=10)
     ]
 
     for race in race_data_list:
@@ -94,6 +144,7 @@ def cronjobs():
         if races:
             logger.info(f"Scheduling dynamic updates for {len(races)} races.")
             schedule_race_updates(races)
+            schedule_race_better(races)
 
     # 1. Daily Ingestion at 06:30 AM
     scheduler.add_job(

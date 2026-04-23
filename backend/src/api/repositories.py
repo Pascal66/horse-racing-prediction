@@ -211,9 +211,14 @@ class RaceRepository:
 
         query = """
             WITH horse_stats AS (
-                SELECT horse_id, COUNT(*) as hist_races, AVG(finish_place) as hist_avg_rank,
-                       AVG(reduction_km) as hist_avg_speed, SUM(prize_money) as hist_earnings
-                FROM horse_race_history
+                SELECT 
+                    horse_id, 
+                    COUNT(*) as hist_races, 
+                    AVG(reduction_km) as hist_avg_speed, 
+                    SUM(prize_money) as hist_earnings,
+                    AVG(CASE WHEN hrh.prize_money >= 15000 THEN reduction_km END) as hist_avg_speed_national,
+                    COUNT(CASE WHEN hrh.prize_money >= 15000 THEN 1 END) as n_races_national
+                FROM horse_race_history hrh
                 WHERE horse_id IN (
                     SELECT rp.horse_id FROM race_participant rp
                     JOIN race r ON rp.race_id = r.race_id
@@ -232,6 +237,8 @@ class RaceRepository:
                 rp.reference_odds, rp.live_odds, rp.live_odds_30mn,
                 COALESCE(hs.hist_avg_speed, %s) as hist_avg_speed, COALESCE(hs.hist_earnings, 0) as hist_earnings,
                 COALESCE(hs.hist_races, 0) as hist_races, ls.code AS shoeing_status,
+                COALESCE(hs.hist_avg_speed_national / NULLIF(hs.hist_avg_speed, 0), 1.0) as national_speed_ratio,
+                COALESCE(hs.n_races_national::float / NULLIF(hs.hist_races, 0), 0.0) as national_experience_rate,
                 h.sex, d.actor_name AS jockey_name, t.actor_name AS trainer_name, r.racetrack_libelle
             FROM race_participant rp
             JOIN race r ON rp.race_id = r.race_id

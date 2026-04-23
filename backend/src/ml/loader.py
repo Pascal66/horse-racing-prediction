@@ -1,5 +1,7 @@
 import os
 import logging
+
+import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine, Engine
 from src.core.config import DB_URL
@@ -64,12 +66,52 @@ class DataLoader:
 
                 # 2. Historique enrichi avec temporalité
                 self.logger.info("Calculating historical statistics...")
+                # query_history = """
+                # SELECT horse_id, race_date, discipline, distance_m, finish_place, finish_status, reduction_km, prize_money,
+                #        ROW_NUMBER() OVER (PARTITION BY horse_id ORDER BY race_date DESC) AS race_recency_rank
+                # FROM horse_race_history
+                # """
                 query_history = """
-                SELECT horse_id, race_date, discipline, distance_m, finish_place, finish_status, reduction_km, prize_money,
-                       ROW_NUMBER() OVER (PARTITION BY horse_id ORDER BY race_date DESC) AS race_recency_rank
-                FROM horse_race_history
+                WITH ranked_history AS (
+                    SELECT
+                        hrh.horse_id,
+                        hrh.race_date,
+                        hrh.discipline,
+                        hrh.distance_m,
+                        hrh.finish_place,
+                        hrh.finish_status,
+                        hrh.reduction_km,
+                        hrh.prize_money,
+                        -- Utilisation de l'audience officielle (NATIONAL, REGIONAL, LOCAL)
+                        -- Priorité à rm.audience, fallback sur prize_money pour l'historique externe
+                        COALESCE(rm.audience, 
+                            CASE 
+                                WHEN hrh.prize_money >= 15000 THEN 'NATIONAL'
+                                WHEN hrh.prize_money >= 4000  THEN 'REGIONAL'
+                                ELSE 'LOCAL'
+                            END
+                        ) AS estimated_level,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY hrh.horse_id ORDER BY hrh.race_date DESC
+                        ) AS race_recency_rank
+                    FROM horse_race_history hrh
+                    -- Jointure via Date + Discipline car race_id est absent de l'historique
+                    LEFT JOIN (
+                        SELECT DISTINCT dp2.program_date, r2.discipline, rm2.audience
+                        FROM race r2
+                        JOIN race_meeting rm2 ON r2.meeting_id = rm2.meeting_id
+                        JOIN daily_program dp2 ON rm2.program_id = dp2.program_id
+                    ) rm ON hrh.race_date = rm.program_date AND hrh.discipline = rm.discipline
+                )
+                SELECT * FROM ranked_history
                 """
                 history_df = pd.read_sql(query_history, connection)
+                # debug seuils
+                # 0.33    15500.0
+                # 0.66    23000.0
+                # 0.90    46000.0
+                # print(history_df['prize_money'].describe())
+                # print(history_df['prize_money'].quantile([0.33, 0.66, 0.90]))
 
                 # 3. Duo Jockey/Cheval
                 query_jockey_horse = """
@@ -109,9 +151,10 @@ class DataLoader:
                 # Cleanup
                 final_df = final_df.drop(columns=['driver_jockey_id'])
                 #final_df.sort_values('program_date', inplace=True)
-                final_df.sort_values(['horse_id', 'program_date'], inplace=True)
-                for col in ['hist_avg_speed', 'career_winnings', 'duo_win_rate']:
-                    final_df[col] = final_df.groupby('horse_id')[col].shift(1).expanding().mean().values
+                # final_df.sort_values(['horse_id', 'program_date'], inplace=True)
+                # for col in ['hist_avg_speed', 'career_winnings', 'duo_win_rate']:
+                #     final_df[col] = final_df.groupby('horse_id')[col].shift(1).expanding().mean().values
+                final_df = final_df.sort_values('program_date').reset_index(drop=True)
                 return final_df
 
         except Exception as error:
@@ -127,7 +170,8 @@ class DataLoader:
         career = history_df.groupby('horse_id').agg(
             hist_avg_speed=('reduction_km', 'mean'),
             hist_earnings=('prize_money', 'sum'),
-            hist_pct_clean_runs=('is_clean_run', 'mean')
+            hist_pct_clean_runs=('is_clean_run', 'mean'),
+            hist_races=('horse_id', 'count')
         ).reset_index()
 
         recent_3 = history_df[history_df['race_recency_rank'] <= 3].groupby('horse_id').agg(
@@ -149,5 +193,27 @@ class DataLoader:
         horse_stats = career.merge(recent_3, on='horse_id', how='left') \
                             .merge(last_race, on='horse_id', how='left') \
                             .merge(distance_stats, on='horse_id', how='left')
-        
+
+        # Stats séparées par niveau estimé
+        national_hist = history_df[history_df['estimated_level'] == 'NATIONAL']
+        national_stats = national_hist.groupby('horse_id').agg(
+            hist_avg_speed_national=('reduction_km', 'mean'),
+            n_races_national=('finish_place', 'count'),
+            hist_win_rate_national=('finish_place', lambda x: (x == 1).mean()),
+        ).reset_index()
+
+        horse_stats = horse_stats.merge(national_stats, on='horse_id', how='left')
+
+        # Feature de progression : ratio vitesse national vs globale
+        horse_stats['national_speed_ratio'] = (
+                horse_stats['hist_avg_speed_national'] /
+                horse_stats['hist_avg_speed'].replace(0, np.nan)
+        ).fillna(1.0)
+
+        # Expérience au niveau national (0 = débutant, 1 = très expérimenté)
+        horse_stats['national_experience_rate'] = (
+                horse_stats['n_races_national'].fillna(0) /
+                horse_stats['hist_races'].replace(0, 1)
+        ).clip(0, 1)
+
         return horse_stats, discipline_aff[['horse_id', 'discipline', 'pct_races_on_discipline', 'pct_clean_on_discipline']]

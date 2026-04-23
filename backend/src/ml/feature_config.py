@@ -35,6 +35,7 @@ NUMERICAL_FEATURES = [
     # Duo jockey×cheval
     'duo_total_races', 'duo_win_rate', 'duo_avg_rank',
     'duo_best_rank', 'duo_confidence', 'duo_is_experienced',
+    'national_speed_ratio', 'national_experience_rate',
 ]
 
 CONTEXTUAL_FEATURES = [
@@ -119,4 +120,6 @@ FEATURE_DEFAULTS = {
     # Optionnel
     'proba_tabnet':             0.5,
     "proba_ltr":                0.5,
+    'national_speed_ratio':     1.0,
+    'national_experience_rate': 0.0,
 }

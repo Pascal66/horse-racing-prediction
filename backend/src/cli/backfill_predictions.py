@@ -61,7 +61,7 @@ def backfill(date_start: str, date_end: str, model_dir: str):
     #     current_dt += timedelta(days=1)
 
 
-    algos = ["ltr", "hyperstack", "tabnet"]
+    algos = ["ltr", "hyperstack", "tabnet", "gpt"]
     current_dt = start_dt
     while current_dt <= end_dt:
         date_code = current_dt.strftime("%d%m%Y")

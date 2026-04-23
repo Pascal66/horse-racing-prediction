@@ -1,0 +1,72 @@
+C:\Users\hmaro\AppData\Roaming\Python\Scripts\uv.exe run F:/git/horse-racing-prediction/.venv/Scripts/python.exe F:\git\horse-racing-prediction\backend\src\ml\trainer_gpt.py
+2026-04-22 12:54:14,344 - ML.GPTTrainer - INFO - --- STARTING GPT (TRANSFORMER) WALK-FORWARD TOURNAMENT ---
+2026-04-22 12:54:14,344 - ML.Loader - INFO - Loading SQL data...
+2026-04-22 12:54:19,419 - ML.Loader - INFO - Calculating historical statistics...
+2026-04-22 12:54:33,896 - ML.GPTTrainer - INFO - --- GPT Target: HAIE ---
+2026-04-22 12:54:34,301 - ML.GPTTrainer - INFO - [haie] Fold 1 — test 2022
+2026-04-22 12:56:25,382 - ML.GPTTrainer - INFO -   2022 → AUC=0.7245 ROI=+29.6%
+2026-04-22 12:56:25,382 - ML.GPTTrainer - INFO - [haie] Fold 2 — test 2023
+2026-04-22 12:59:22,615 - ML.GPTTrainer - INFO -   2023 → AUC=0.7206 ROI=+2.0%
+2026-04-22 12:59:22,616 - ML.GPTTrainer - INFO - [haie] Fold 3 — test 2024
+2026-04-22 13:03:54,239 - ML.GPTTrainer - INFO -   2024 → AUC=0.7373 ROI=+2.5%
+2026-04-22 13:03:54,240 - ML.GPTTrainer - INFO - [haie] Fold 4 — test 2025
+2026-04-22 13:10:06,694 - ML.GPTTrainer - INFO -   2025 → AUC=0.7217 ROI=-3.8%
+2026-04-22 13:10:06,694 - ML.GPTTrainer - INFO - [haie] Training final GPT model...
+2026-04-22 13:15:45,588 - ML.GPTTrainer - INFO - [haie] GPT saved → ROI=-2.5%
+2026-04-22 13:15:45,607 - ML.GPTTrainer - INFO - --- GPT Target: STEEPLECHASE ---
+2026-04-22 13:15:45,844 - ML.GPTTrainer - INFO - [steeplechase] Fold 1 — test 2022
+2026-04-22 13:16:54,700 - ML.GPTTrainer - INFO -   2022 → AUC=0.7309 ROI=+16.5%
+2026-04-22 13:16:54,700 - ML.GPTTrainer - INFO - [steeplechase] Fold 2 — test 2023
+2026-04-22 13:18:36,827 - ML.GPTTrainer - INFO -   2023 → AUC=0.6987 ROI=+12.9%
+2026-04-22 13:18:36,828 - ML.GPTTrainer - INFO - [steeplechase] Fold 3 — test 2024
+2026-04-22 13:21:12,050 - ML.GPTTrainer - INFO -   2024 → AUC=0.7388 ROI=+30.6%
+2026-04-22 13:21:12,050 - ML.GPTTrainer - INFO - [steeplechase] Fold 4 — test 2025
+2026-04-22 13:24:03,922 - ML.GPTTrainer - INFO -   2025 → AUC=0.7363 ROI=+3.7%
+2026-04-22 13:24:03,922 - ML.GPTTrainer - INFO - [steeplechase] Training final GPT model...
+2026-04-22 13:26:55,448 - ML.GPTTrainer - INFO - [steeplechase] GPT saved → ROI=+22.5%
+2026-04-22 13:26:55,456 - ML.GPTTrainer - INFO - --- GPT Target: ATTELE ---
+2026-04-22 13:26:57,872 - ML.GPTTrainer - INFO - [attele] Fold 1 — test 2022
+2026-04-22 13:38:34,747 - ML.GPTTrainer - INFO -   2022 → AUC=0.8407 ROI=+59.6%
+2026-04-22 13:38:34,748 - ML.GPTTrainer - INFO - [attele] Fold 2 — test 2023
+2026-04-22 13:58:39,383 - ML.GPTTrainer - INFO -   2023 → AUC=0.8366 ROI=+45.1%
+2026-04-22 13:58:39,385 - ML.GPTTrainer - INFO - [attele] Fold 3 — test 2024
+2026-04-22 14:25:57,063 - ML.GPTTrainer - INFO -   2024 → AUC=0.8393 ROI=+41.7%
+2026-04-22 14:25:57,064 - ML.GPTTrainer - INFO - [attele] Fold 4 — test 2025
+2026-04-22 14:58:04,057 - ML.GPTTrainer - INFO -   2025 → AUC=0.8311 ROI=+32.2%
+2026-04-22 14:58:04,057 - ML.GPTTrainer - INFO - [attele] Training final GPT model...
+2026-04-22 15:32:09,885 - ML.GPTTrainer - INFO - [attele] GPT saved → ROI=+39.1%
+2026-04-22 15:32:10,117 - ML.GPTTrainer - INFO - --- GPT Target: MONTE ---
+2026-04-22 15:32:10,735 - ML.GPTTrainer - INFO - [monte] Fold 1 — test 2022
+2026-04-22 15:35:08,592 - ML.GPTTrainer - INFO -   2022 → AUC=0.8170 ROI=+46.7%
+2026-04-22 15:35:08,593 - ML.GPTTrainer - INFO - [monte] Fold 2 — test 2023
+2026-04-22 15:39:23,413 - ML.GPTTrainer - INFO -   2023 → AUC=0.8197 ROI=+63.5%
+2026-04-22 15:39:23,414 - ML.GPTTrainer - INFO - [monte] Fold 3 — test 2024
+2026-04-22 15:45:21,017 - ML.GPTTrainer - INFO -   2024 → AUC=0.8277 ROI=+48.5%
+2026-04-22 15:45:21,017 - ML.GPTTrainer - INFO - [monte] Fold 4 — test 2025
+2026-04-22 15:52:03,170 - ML.GPTTrainer - INFO -   2025 → AUC=0.8234 ROI=+44.8%
+2026-04-22 15:52:03,170 - ML.GPTTrainer - INFO - [monte] Training final GPT model...
+2026-04-22 15:59:49,576 - ML.GPTTrainer - INFO - [monte] GPT saved → ROI=+53.3%
+2026-04-22 15:59:49,608 - ML.GPTTrainer - INFO - --- GPT Target: PLAT ---
+2026-04-22 15:59:52,005 - ML.GPTTrainer - INFO - [plat] Fold 1 — test 2022
+2026-04-22 16:12:18,354 - ML.GPTTrainer - INFO -   2022 → AUC=0.7744 ROI=+9.0%
+2026-04-22 16:12:18,356 - ML.GPTTrainer - INFO - [plat] Fold 2 — test 2023
+2026-04-22 16:30:35,418 - ML.GPTTrainer - INFO -   2023 → AUC=0.7650 ROI=+2.7%
+2026-04-22 16:30:35,420 - ML.GPTTrainer - INFO - [plat] Fold 3 — test 2024
+2026-04-22 16:54:24,322 - ML.GPTTrainer - INFO -   2024 → AUC=0.7543 ROI=-2.7%
+2026-04-22 16:54:24,323 - ML.GPTTrainer - INFO - [plat] Fold 4 — test 2025
+2026-04-22 17:29:07,988 - ML.GPTTrainer - INFO -   2025 → AUC=0.7479 ROI=-6.5%
+2026-04-22 17:29:07,988 - ML.GPTTrainer - INFO - [plat] Training final GPT model...
+2026-04-22 18:05:28,719 - ML.GPTTrainer - INFO - [plat] GPT saved → ROI=-8.2%
+2026-04-22 18:05:28,891 - ML.GPTTrainer - INFO - --- GPT Target: CROSS ---
+2026-04-22 18:05:29,029 - ML.GPTTrainer - INFO - [cross] Fold 1 — test 2022
+2026-04-22 18:05:38,769 - ML.GPTTrainer - INFO -   2022 → AUC=0.6017 ROI=+3.0%
+2026-04-22 18:05:38,769 - ML.GPTTrainer - INFO - [cross] Fold 2 — test 2023
+2026-04-22 18:05:53,583 - ML.GPTTrainer - INFO -   2023 → AUC=0.6534 ROI=-1.7%
+2026-04-22 18:05:53,584 - ML.GPTTrainer - INFO - [cross] Fold 3 — test 2024
+2026-04-22 18:06:14,515 - ML.GPTTrainer - INFO -   2024 → AUC=0.7478 ROI=+9.8%
+2026-04-22 18:06:14,515 - ML.GPTTrainer - INFO - [cross] Fold 4 — test 2025
+2026-04-22 18:06:41,462 - ML.GPTTrainer - INFO -   2025 → AUC=0.7407 ROI=+22.0%
+2026-04-22 18:06:41,463 - ML.GPTTrainer - INFO - [cross] Training final GPT model...
+2026-04-22 18:07:08,111 - ML.GPTTrainer - INFO - [cross] GPT saved → ROI=+44.5%
+
+Process finished with exit code 0

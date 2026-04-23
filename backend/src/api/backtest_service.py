@@ -1,18 +1,17 @@
 # backend/src/api/backtest_service.py
 import logging
 import json
-import os
+
 import datetime
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
+
 from src.api.repositories import RaceRepository
-from src.api.kelly_multi_races import analyze_multiple_races
 
 logger = logging.getLogger(__name__)
 CACHE_FILE = Path("data/backtest_cache.json")
-
 
 class BacktestService:
     def __init__(self, repository: RaceRepository):
@@ -36,7 +35,7 @@ class BacktestService:
     def _normalize_model_name(self, name: str) -> str:
         if not name or name == 'unknown': return 'unknown'
         n = name.lower()
-        algo = 'tabnet' if 'tabnet' in n else 'ltr' if 'ltr' in n else 'hyperstack'
+        algo = 'gpt' if 'gpt' in n else 'tabnet' if 'tabnet' in n else 'ltr' if 'ltr' in n else 'hyperstack'
         disc = 'attele' if 'attele' in n else 'monte' if 'monte' in n else 'plat' if 'plat' in n else \
             'haie' if 'haie' in n else 'steeplechase' if 'steeplechase' in n else 'cross' if 'cross' in n else 'global'
         return f"{disc}_{algo}"
@@ -209,8 +208,7 @@ class BacktestService:
         l30 = pd.to_numeric(df.get('live_odds_30mn', 0), errors='coerce').replace(0, np.nan)
         df['effective_odds'] = l30.fillna(ref).clip(lower=1.01)
         df['win_probability'] = pd.to_numeric(df.get('proba_winner', 0), errors='coerce').fillna(0.0)
-        df['place_probability'] = pd.to_numeric(df.get('proba_top3_place', 0), errors='coerce').fillna(
-            df['win_probability'] * 2.0)
+        df['place_probability'] = pd.to_numeric(df.get('proba_top3_place', 0), errors='coerce').fillna(df['win_probability'] * 2.0)
         df['finish_rank'] = pd.to_numeric(df.get('finish_rank', 0), errors='coerce').fillna(0).astype(int)
         df['model_version'] = df.get('model_version', 'unknown').fillna('unknown')
         return df

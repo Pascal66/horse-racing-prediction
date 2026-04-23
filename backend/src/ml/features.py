@@ -147,6 +147,21 @@ class PmuFeatureEngineer(BaseEstimator, TransformerMixin):
             df['duo_confidence'] = np.log1p(df['duo_total_races'].fillna(0)) * df['duo_win_rate'].fillna(0)
             df['duo_is_experienced'] = (df['duo_total_races'].fillna(0) >= 5).astype(int)
 
+        # Progression de niveau : le cheval monte-t-il en compétition ?
+        if 'n_races_national' in df.columns and 'hist_races' in df.columns:
+            # Proportion de courses nationales dans la carrière
+            df['national_experience_rate'] = (
+                    df['n_races_national'].fillna(0) /
+                    df['hist_races'].replace(0, 1)
+            )
+
+            # Flag : cheval en montée de niveau (peu d'expérience nationale
+            # mais bonnes perfs en régional)
+            df['is_rising_horse'] = (
+                    (df['national_experience_rate'] < 0.3) &  # peu de nationales
+                    (df['hist_pct_clean_runs'] > 0.8)  # fiable en général
+            ).astype(int)
+
         # Imputation finale Neutre (Source feature_config)
         from src.ml.feature_config import FEATURE_DEFAULTS, CATEGORICAL_FEATURES
         for col in CATEGORICAL_FEATURES:

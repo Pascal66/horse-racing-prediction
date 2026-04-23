@@ -5,7 +5,7 @@ On ne gagne que ce que l'autre à joué s'il a perdu. (minus les marges)
 Il faut proscrire les modèles kaggle et autres modèles avec des bookmakers.
 
 *** Actuellement:
-3 modèles trainers hyperstack et tabnet, et ltr.
+3 modèles trainers hyperstack et tabnet, et ltr et un nouveau gpt
 
 *** objectifs OBLIGATOIRES minimaux pour les modèles et agents:
 'logloss' < 0.25,

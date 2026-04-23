@@ -1,0 +1,599 @@
+C:\Users\hmaro\AppData\Roaming\Python\Scripts\uv.exe run F:/git/horse-racing-prediction/.venv/Scripts/python.exe F:\git\horse-racing-prediction\backend\src\ml\trainer_tabnet_gpu.py
+Extension for Scikit-learn* enabled (https://github.com/uxlfoundation/scikit-learn-intelex)
+2026-04-22 10:39:02,161 - ML.TabnetTrainer - INFO - --- STARTING TABNET WALK-FORWARD TOURNAMENT ---
+2026-04-22 10:39:02,193 - ML.Loader - INFO - Loading SQL data...
+2026-04-22 10:39:08,544 - ML.Loader - INFO - Calculating historical statistics...
+2026-04-22 10:39:25,819 - ML.TabnetTrainer - INFO - Data Loaded: (620221, 53) rows
+2026-04-22 10:39:25,867 - ML.TabnetTrainer - INFO - --- Training Target: HAIE ---
+2026-04-22 10:39:26,289 - ML.TabnetTrainer - INFO - [haie] WF Fold 1 (Test year 2022)
+
+Early stopping occurred at epoch 36 with best_epoch = 26 and best_val_0_auc = 0.74649
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+2026-04-22 10:39:48,452 - ML.TabnetTrainer - INFO -   Fold 2022 Result -> ROI: +19.1% | AUC: 0.6730
+2026-04-22 10:39:48,452 - ML.TabnetTrainer - INFO - [haie] WF Fold 2 (Test year 2023)
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 16 with best_epoch = 6 and best_val_0_auc = 0.74709
+2026-04-22 10:40:02,914 - ML.TabnetTrainer - INFO -   Fold 2023 Result -> ROI: -2.2% | AUC: 0.6856
+2026-04-22 10:40:02,915 - ML.TabnetTrainer - INFO - [haie] WF Fold 3 (Test year 2024)
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 23 with best_epoch = 13 and best_val_0_auc = 0.752
+2026-04-22 10:40:28,331 - ML.TabnetTrainer - INFO -   Fold 2024 Result -> ROI: -7.8% | AUC: 0.7077
+2026-04-22 10:40:28,332 - ML.TabnetTrainer - INFO - [haie] WF Fold 4 (Test year 2025)
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 42 with best_epoch = 32 and best_val_0_auc = 0.74584
+2026-04-22 10:41:22,389 - ML.TabnetTrainer - INFO -   Fold 2025 Result -> ROI: -10.2% | AUC: 0.6533
+2026-04-22 10:41:22,389 - ML.TabnetTrainer - INFO - [haie] Backtest OK (Avg ROI: -0.3%). Training PRODUCTION model...
+2026-04-22 10:41:22,730 - ML.TabnetTrainer - INFO -     Training Fold 1/3...
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 39 with best_epoch = 29 and best_val_0_auc = 0.71875
+2026-04-22 10:42:15,703 - ML.TabnetTrainer - INFO -     Training Fold 2/3...
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 25 with best_epoch = 15 and best_val_0_auc = 0.73858
+2026-04-22 10:42:50,607 - ML.TabnetTrainer - INFO -     Training Fold 3/3...
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 19 with best_epoch = 9 and best_val_0_auc = 0.73252
+
+--- TABNET FEATURE IMPORTANCES (67 features) ---
+                         feature  importance
+           num__market_sentiment    0.202411
+    num__reference_odds_rel_race    0.080198
+          num__odds_rank_in_race    0.066201
+              num__hist_earnings    0.052164
+   num__reference_odds_rank_race    0.050624
+             num__reference_odds    0.050138
+               cat__trainer_name    0.041496
+      num__winnings_rank_in_race    0.032337
+   num__national_experience_rate    0.021834
+           num__odds_drift_ratio    0.020866
+          num__winnings_year_now    0.019685
+     num__declared_runners_count    0.017391
+        num__duo_avg_rank_z_race    0.013427
+                cat__jockey_name    0.012655
+              cat__terrain_label    0.012385
+                        cat__sex    0.012223
+               cat__meeting_type    0.011548
+    num__career_places_3rd_count    0.010503
+               num__penetrometer    0.010310
+        num__career_places_count    0.010016
+                 num__distance_m    0.009882
+       num__national_speed_ratio    0.009545
+      num__duo_confidence_z_race    0.009543
+      num__hist_avg_speed_z_race    0.008914
+               num__duo_avg_rank    0.008832
+               num__duo_win_rate    0.008804
+               num__proba_tabnet    0.008732
+           num__winnings_victory    0.008555
+num__days_since_last_race_z_race    0.008396
+            num__handicap_weight    0.008141
+          num__relative_winnings    0.007713
+        num__duo_win_rate_z_race    0.007481
+        num__is_unusual_distance    0.007325
+           num__avg_speed_last_3    0.007246
+                 cat__discipline    0.006481
+         num__winnings_year_prev    0.006102
+             num__handicap_value    0.005944
+    num__career_places_2nd_count    0.005892
+                 num__race_month    0.005767
+             num__duo_confidence    0.005665
+          num__horse_age_at_race    0.005515
+             num__odds_drift_log    0.005328
+             cat__shoeing_status    0.005128
+    num__avg_speed_last_3_z_race    0.004983
+            num__career_win_rate    0.004877
+             num__winnings_place    0.004764
+               num__mount_weight    0.004762
+          num__career_wins_count    0.004714
+         num__duo_is_experienced    0.004668
+           num__speed_form_ratio    0.004487
+    num__pct_clean_on_discipline    0.004120
+             num__distance_delta    0.003978
+                num__is_debutant    0.003956
+    num__pct_races_on_discipline    0.003720
+          num__career_place_rate    0.003477
+        num__hist_pct_clean_runs    0.003430
+       num__days_since_last_race    0.003362
+  num__career_winnings_rank_race    0.003341
+               cat__meeting_code    0.003016
+              num__is_specialist    0.002701
+            num__duo_total_races    0.002618
+         num__career_races_count    0.002214
+             num__hist_avg_speed    0.002120
+              num__duo_best_rank    0.001929
+            num__career_winnings    0.001525
+                   num__odds_log    0.001181
+                 cat__track_type    0.000712
+--------------------------------------------------
+
+2026-04-22 10:43:19,102 - ML.TabnetTrainer - INFO - --- Training Target: STEEPLECHASE ---
+2026-04-22 10:43:19,356 - ML.TabnetTrainer - INFO - [steeplechase] WF Fold 1 (Test year 2022)
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 29 with best_epoch = 19 and best_val_0_auc = 0.72546
+2026-04-22 10:43:27,153 - ML.TabnetTrainer - INFO -   Fold 2022 Result -> ROI: +10.0% | AUC: 0.7078
+2026-04-22 10:43:27,153 - ML.TabnetTrainer - INFO - [steeplechase] WF Fold 2 (Test year 2023)
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 43 with best_epoch = 33 and best_val_0_auc = 0.74551
+2026-04-22 10:43:43,027 - ML.TabnetTrainer - INFO -   Fold 2023 Result -> ROI: +8.3% | AUC: 0.6939
+2026-04-22 10:43:43,028 - ML.TabnetTrainer - INFO - [steeplechase] WF Fold 3 (Test year 2024)
+
+Early stopping occurred at epoch 37 with best_epoch = 27 and best_val_0_auc = 0.75245
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+2026-04-22 10:44:01,809 - ML.TabnetTrainer - INFO -   Fold 2024 Result -> ROI: +18.4% | AUC: 0.7226
+2026-04-22 10:44:01,810 - ML.TabnetTrainer - INFO - [steeplechase] WF Fold 4 (Test year 2025)
+
+Early stopping occurred at epoch 31 with best_epoch = 21 and best_val_0_auc = 0.7467
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+2026-04-22 10:44:21,321 - ML.TabnetTrainer - INFO -   Fold 2025 Result -> ROI: -0.6% | AUC: 0.6154
+2026-04-22 10:44:21,321 - ML.TabnetTrainer - INFO - [steeplechase] Backtest OK (Avg ROI: +9.0%). Training PRODUCTION model...
+2026-04-22 10:44:21,512 - ML.TabnetTrainer - INFO -     Training Fold 1/3...
+
+Early stopping occurred at epoch 25 with best_epoch = 15 and best_val_0_auc = 0.75299
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+2026-04-22 10:44:38,529 - ML.TabnetTrainer - INFO -     Training Fold 2/3...
+
+Early stopping occurred at epoch 21 with best_epoch = 11 and best_val_0_auc = 0.736
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+2026-04-22 10:44:53,180 - ML.TabnetTrainer - INFO -     Training Fold 3/3...
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 35 with best_epoch = 25 and best_val_0_auc = 0.73655
+
+--- TABNET FEATURE IMPORTANCES (67 features) ---
+                         feature  importance
+           num__market_sentiment    0.257683
+    num__reference_odds_rel_race    0.057544
+              num__hist_earnings    0.043662
+          num__odds_rank_in_race    0.036855
+   num__national_experience_rate    0.033608
+             num__distance_delta    0.027617
+    num__career_places_3rd_count    0.026972
+               cat__meeting_code    0.026925
+   num__reference_odds_rank_race    0.021753
+              cat__terrain_label    0.019014
+          num__career_wins_count    0.017745
+               cat__meeting_type    0.017613
+      num__winnings_rank_in_race    0.016949
+            num__career_winnings    0.016357
+     num__declared_runners_count    0.015984
+         num__career_races_count    0.015791
+          num__relative_winnings    0.015613
+       num__days_since_last_race    0.015490
+        num__is_unusual_distance    0.014995
+num__days_since_last_race_z_race    0.014948
+               num__duo_avg_rank    0.014631
+        num__career_places_count    0.013848
+      num__duo_confidence_z_race    0.013518
+             num__reference_odds    0.011528
+    num__pct_clean_on_discipline    0.010924
+        num__duo_avg_rank_z_race    0.010277
+       num__national_speed_ratio    0.010072
+             num__hist_avg_speed    0.009589
+         num__winnings_year_prev    0.009442
+                cat__jockey_name    0.009251
+          num__winnings_year_now    0.008798
+            num__handicap_weight    0.008323
+               num__penetrometer    0.008135
+            num__career_win_rate    0.007907
+                 num__race_month    0.007054
+             cat__shoeing_status    0.007039
+          num__horse_age_at_race    0.007020
+           num__winnings_victory    0.006833
+             num__odds_drift_log    0.006710
+           num__speed_form_ratio    0.006624
+        num__duo_win_rate_z_race    0.005871
+                 cat__discipline    0.005537
+                num__is_debutant    0.005525
+  num__career_winnings_rank_race    0.005495
+             num__duo_confidence    0.005456
+                        cat__sex    0.005298
+          num__career_place_rate    0.005290
+               num__duo_win_rate    0.005118
+               cat__trainer_name    0.004638
+    num__pct_races_on_discipline    0.004411
+               num__proba_tabnet    0.004401
+         num__duo_is_experienced    0.004326
+      num__hist_avg_speed_z_race    0.004194
+           num__odds_drift_ratio    0.003913
+              num__duo_best_rank    0.003883
+    num__career_places_2nd_count    0.003825
+        num__hist_pct_clean_runs    0.003031
+             num__handicap_value    0.002839
+             num__winnings_place    0.002522
+           num__avg_speed_last_3    0.002444
+    num__avg_speed_last_3_z_race    0.002282
+                 num__distance_m    0.002243
+            num__duo_total_races    0.001696
+              num__is_specialist    0.001519
+                   num__odds_log    0.001375
+                 cat__track_type    0.001334
+               num__mount_weight    0.000892
+--------------------------------------------------
+
+2026-04-22 10:45:17,836 - ML.TabnetTrainer - INFO - --- Training Target: ATTELE ---
+2026-04-22 10:45:20,318 - ML.TabnetTrainer - INFO - [attele] WF Fold 1 (Test year 2022)
+
+Early stopping occurred at epoch 28 with best_epoch = 18 and best_val_0_auc = 0.84982
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+2026-04-22 10:47:05,558 - ML.TabnetTrainer - INFO -   Fold 2022 Result -> ROI: +39.1% | AUC: 0.8317
+2026-04-22 10:47:05,559 - ML.TabnetTrainer - INFO - [attele] WF Fold 2 (Test year 2023)
+
+Early stopping occurred at epoch 46 with best_epoch = 36 and best_val_0_auc = 0.84492
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+2026-04-22 10:51:20,193 - ML.TabnetTrainer - INFO -   Fold 2023 Result -> ROI: +40.0% | AUC: 0.8315
+2026-04-22 10:51:20,194 - ML.TabnetTrainer - INFO - [attele] WF Fold 3 (Test year 2024)
+
+Early stopping occurred at epoch 28 with best_epoch = 18 and best_val_0_auc = 0.84321
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+2026-04-22 10:55:08,262 - ML.TabnetTrainer - INFO -   Fold 2024 Result -> ROI: +35.0% | AUC: 0.8346
+2026-04-22 10:55:08,266 - ML.TabnetTrainer - INFO - [attele] WF Fold 4 (Test year 2025)
+
+Early stopping occurred at epoch 31 with best_epoch = 21 and best_val_0_auc = 0.83693
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+2026-04-22 11:00:32,630 - ML.TabnetTrainer - INFO -   Fold 2025 Result -> ROI: +27.9% | AUC: 0.8242
+2026-04-22 11:00:32,630 - ML.TabnetTrainer - INFO - [attele] Backtest OK (Avg ROI: +35.5%). Training PRODUCTION model...
+2026-04-22 11:00:35,668 - ML.TabnetTrainer - INFO -     Training Fold 1/3...
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 46 with best_epoch = 36 and best_val_0_auc = 0.83993
+2026-04-22 11:08:57,350 - ML.TabnetTrainer - INFO -     Training Fold 2/3...
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 45 with best_epoch = 35 and best_val_0_auc = 0.83933
+2026-04-22 11:16:39,898 - ML.TabnetTrainer - INFO -     Training Fold 3/3...
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 35 with best_epoch = 25 and best_val_0_auc = 0.84263
+
+--- TABNET FEATURE IMPORTANCES (67 features) ---
+                         feature   importance
+           num__market_sentiment 5.015285e-01
+      num__hist_avg_speed_z_race 8.018335e-02
+             num__reference_odds 4.609064e-02
+num__days_since_last_race_z_race 4.588254e-02
+    num__pct_clean_on_discipline 3.265000e-02
+        num__hist_pct_clean_runs 2.800185e-02
+          num__odds_rank_in_race 2.313475e-02
+    num__reference_odds_rel_race 2.238901e-02
+         num__winnings_year_prev 2.084774e-02
+           num__speed_form_ratio 1.629229e-02
+           num__avg_speed_last_3 1.429751e-02
+      num__duo_confidence_z_race 1.383981e-02
+             cat__shoeing_status 1.379552e-02
+            num__handicap_weight 1.360139e-02
+             num__hist_avg_speed 1.275292e-02
+               num__proba_tabnet 1.191522e-02
+               num__duo_avg_rank 1.123767e-02
+             num__odds_drift_log 1.006843e-02
+              num__hist_earnings 9.949815e-03
+               num__mount_weight 7.970400e-03
+        num__career_places_count 7.517504e-03
+             num__winnings_place 7.242154e-03
+              num__duo_best_rank 6.931538e-03
+            num__career_winnings 6.843193e-03
+               cat__meeting_code 6.623540e-03
+    num__pct_races_on_discipline 5.477774e-03
+   num__reference_odds_rank_race 5.439346e-03
+  num__career_winnings_rank_race 4.320889e-03
+         num__career_races_count 2.646342e-03
+              num__is_specialist 2.160410e-03
+                cat__jockey_name 1.760155e-03
+          num__relative_winnings 1.732435e-03
+            num__duo_total_races 1.332388e-03
+    num__career_places_3rd_count 9.272751e-04
+       num__national_speed_ratio 7.437188e-04
+              cat__terrain_label 7.119036e-04
+        num__duo_win_rate_z_race 4.193980e-04
+          num__horse_age_at_race 3.969868e-04
+                 num__race_month 2.475875e-04
+                 cat__track_type 3.403378e-05
+                        cat__sex 1.527337e-05
+       num__days_since_last_race 1.092857e-05
+      num__winnings_rank_in_race 1.053981e-05
+     num__declared_runners_count 4.188299e-06
+    num__career_places_2nd_count 3.302708e-06
+                 num__distance_m 3.242474e-06
+                   num__odds_log 2.437527e-06
+        num__is_unusual_distance 2.423138e-06
+   num__national_experience_rate 1.785579e-06
+                num__is_debutant 1.134786e-06
+            num__career_win_rate 1.121369e-06
+               cat__meeting_type 1.060557e-06
+    num__avg_speed_last_3_z_race 1.055611e-06
+               num__duo_win_rate 8.792956e-07
+               cat__trainer_name 6.921591e-07
+             num__duo_confidence 5.408666e-07
+        num__duo_avg_rank_z_race 4.715290e-07
+               num__penetrometer 2.993948e-07
+           num__winnings_victory 1.609784e-07
+             num__distance_delta 1.088794e-07
+         num__duo_is_experienced 8.906426e-08
+                 cat__discipline 8.007581e-08
+          num__winnings_year_now 6.729426e-08
+          num__career_place_rate 6.636840e-08
+             num__handicap_value 4.297977e-08
+          num__career_wins_count 3.560991e-08
+           num__odds_drift_ratio 3.531057e-08
+--------------------------------------------------
+
+2026-04-22 11:23:33,376 - ML.TabnetTrainer - INFO - --- Training Target: MONTE ---
+2026-04-22 11:23:33,869 - ML.TabnetTrainer - INFO - [monte] WF Fold 1 (Test year 2022)
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 38 with best_epoch = 28 and best_val_0_auc = 0.81254
+2026-04-22 11:23:56,606 - ML.TabnetTrainer - INFO -   Fold 2022 Result -> ROI: +42.7% | AUC: 0.8134
+2026-04-22 11:23:56,607 - ML.TabnetTrainer - INFO - [monte] WF Fold 2 (Test year 2023)
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 18 with best_epoch = 8 and best_val_0_auc = 0.82315
+2026-04-22 11:24:15,077 - ML.TabnetTrainer - INFO -   Fold 2023 Result -> ROI: +37.0% | AUC: 0.8156
+2026-04-22 11:24:15,078 - ML.TabnetTrainer - INFO - [monte] WF Fold 3 (Test year 2024)
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 32 with best_epoch = 22 and best_val_0_auc = 0.83474
+2026-04-22 11:24:57,466 - ML.TabnetTrainer - INFO -   Fold 2024 Result -> ROI: +50.2% | AUC: 0.8195
+2026-04-22 11:24:57,467 - ML.TabnetTrainer - INFO - [monte] WF Fold 4 (Test year 2025)
+
+Early stopping occurred at epoch 39 with best_epoch = 29 and best_val_0_auc = 0.82476
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+2026-04-22 11:26:02,422 - ML.TabnetTrainer - INFO -   Fold 2025 Result -> ROI: +36.5% | AUC: 0.8172
+2026-04-22 11:26:02,422 - ML.TabnetTrainer - INFO - [monte] Backtest OK (Avg ROI: +41.6%). Training PRODUCTION model...
+2026-04-22 11:26:02,901 - ML.TabnetTrainer - INFO -     Training Fold 1/3...
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 41 with best_epoch = 31 and best_val_0_auc = 0.82427
+2026-04-22 11:27:15,613 - ML.TabnetTrainer - INFO -     Training Fold 2/3...
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 31 with best_epoch = 21 and best_val_0_auc = 0.82623
+2026-04-22 11:28:10,623 - ML.TabnetTrainer - INFO -     Training Fold 3/3...
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 35 with best_epoch = 25 and best_val_0_auc = 0.82628
+
+--- TABNET FEATURE IMPORTANCES (67 features) ---
+                         feature  importance
+           num__market_sentiment    0.287298
+      num__hist_avg_speed_z_race    0.075887
+             num__reference_odds    0.068284
+    num__reference_odds_rel_race    0.042368
+num__days_since_last_race_z_race    0.036248
+   num__reference_odds_rank_race    0.030480
+               cat__meeting_code    0.027428
+              num__hist_earnings    0.025412
+    num__career_places_3rd_count    0.023441
+        num__duo_win_rate_z_race    0.022378
+    num__pct_clean_on_discipline    0.019452
+             num__hist_avg_speed    0.018939
+               num__duo_avg_rank    0.016557
+              num__duo_best_rank    0.015316
+    num__pct_races_on_discipline    0.013946
+        num__hist_pct_clean_runs    0.013913
+               cat__meeting_type    0.013906
+             cat__shoeing_status    0.013322
+                cat__jockey_name    0.012735
+          num__odds_rank_in_race    0.012330
+        num__career_places_count    0.011827
+          num__horse_age_at_race    0.011326
+                 num__distance_m    0.010123
+    num__career_places_2nd_count    0.010035
+              num__is_specialist    0.009858
+           num__speed_form_ratio    0.009688
+         num__career_races_count    0.009619
+               num__duo_win_rate    0.009299
+    num__avg_speed_last_3_z_race    0.008177
+               cat__trainer_name    0.007948
+       num__national_speed_ratio    0.007272
+                   num__odds_log    0.006933
+         num__duo_is_experienced    0.006799
+            num__career_win_rate    0.006669
+             num__distance_delta    0.006072
+            num__duo_total_races    0.005437
+  num__career_winnings_rank_race    0.005304
+               num__penetrometer    0.005215
+      num__duo_confidence_z_race    0.004780
+          num__winnings_year_now    0.004667
+               num__mount_weight    0.004477
+   num__national_experience_rate    0.004320
+          num__career_place_rate    0.003959
+         num__winnings_year_prev    0.003460
+            num__career_winnings    0.003382
+     num__declared_runners_count    0.003208
+                        cat__sex    0.002938
+             num__handicap_value    0.002466
+             num__winnings_place    0.002416
+        num__duo_avg_rank_z_race    0.002295
+             num__odds_drift_log    0.002053
+                 num__race_month    0.001922
+            num__handicap_weight    0.001860
+           num__avg_speed_last_3    0.001713
+           num__winnings_victory    0.001680
+       num__days_since_last_race    0.001518
+                num__is_debutant    0.001439
+           num__odds_drift_ratio    0.001313
+                 cat__track_type    0.001148
+               num__proba_tabnet    0.000960
+              cat__terrain_label    0.000853
+          num__relative_winnings    0.000817
+             num__duo_confidence    0.000807
+      num__winnings_rank_in_race    0.000762
+                 cat__discipline    0.000649
+        num__is_unusual_distance    0.000637
+          num__career_wins_count    0.000261
+--------------------------------------------------
+
+2026-04-22 11:29:14,564 - ML.TabnetTrainer - INFO - --- Training Target: PLAT ---
+2026-04-22 11:29:16,972 - ML.TabnetTrainer - INFO - [plat] WF Fold 1 (Test year 2022)
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 29 with best_epoch = 19 and best_val_0_auc = 0.75984
+2026-04-22 11:31:10,837 - ML.TabnetTrainer - INFO -   Fold 2022 Result -> ROI: -2.1% | AUC: 0.7140
+2026-04-22 11:31:10,838 - ML.TabnetTrainer - INFO - [plat] WF Fold 2 (Test year 2023)
+
+Early stopping occurred at epoch 45 with best_epoch = 35 and best_val_0_auc = 0.76282
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+2026-04-22 11:35:35,612 - ML.TabnetTrainer - INFO -   Fold 2023 Result -> ROI: -13.6% | AUC: 0.7366
+2026-04-22 11:35:35,613 - ML.TabnetTrainer - INFO - [plat] WF Fold 3 (Test year 2024)
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 48 with best_epoch = 38 and best_val_0_auc = 0.75941
+2026-04-22 11:42:01,247 - ML.TabnetTrainer - INFO -   Fold 2024 Result -> ROI: -11.1% | AUC: 0.7422
+2026-04-22 11:42:01,248 - ML.TabnetTrainer - INFO - [plat] WF Fold 4 (Test year 2025)
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 26 with best_epoch = 16 and best_val_0_auc = 0.76321
+2026-04-22 11:46:47,792 - ML.TabnetTrainer - INFO -   Fold 2025 Result -> ROI: -10.8% | AUC: 0.7401
+2026-04-22 11:46:47,792 - ML.TabnetTrainer - INFO - [plat] Backtest OK (Avg ROI: -9.4%). Training PRODUCTION model...
+2026-04-22 11:46:51,868 - ML.TabnetTrainer - INFO -     Training Fold 1/3...
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 41 with best_epoch = 31 and best_val_0_auc = 0.75915
+2026-04-22 11:54:59,939 - ML.TabnetTrainer - INFO -     Training Fold 2/3...
+
+Early stopping occurred at epoch 29 with best_epoch = 19 and best_val_0_auc = 0.76129
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+2026-04-22 12:00:23,982 - ML.TabnetTrainer - INFO -     Training Fold 3/3...
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 40 with best_epoch = 30 and best_val_0_auc = 0.75711
+
+--- TABNET FEATURE IMPORTANCES (67 features) ---
+                         feature   importance
+           num__market_sentiment 3.519358e-01
+              num__hist_earnings 1.293870e-01
+             num__reference_odds 8.459085e-02
+num__days_since_last_race_z_race 7.705993e-02
+               cat__trainer_name 6.018183e-02
+        num__career_places_count 4.925562e-02
+             num__distance_delta 4.367192e-02
+         num__career_races_count 2.454107e-02
+         num__winnings_year_prev 1.875410e-02
+          num__horse_age_at_race 1.828789e-02
+          num__career_wins_count 1.467381e-02
+       num__days_since_last_race 1.430302e-02
+               cat__meeting_code 1.335153e-02
+    num__career_places_2nd_count 1.206422e-02
+           num__winnings_victory 1.117005e-02
+    num__reference_odds_rel_race 1.050866e-02
+    num__pct_clean_on_discipline 6.882331e-03
+           num__avg_speed_last_3 6.669569e-03
+        num__hist_pct_clean_runs 6.311691e-03
+                 num__distance_m 6.113590e-03
+             num__winnings_place 5.258600e-03
+   num__national_experience_rate 4.812335e-03
+              num__is_specialist 3.855192e-03
+        num__duo_win_rate_z_race 3.681250e-03
+          num__odds_rank_in_race 2.786974e-03
+             num__odds_drift_log 2.545437e-03
+               num__duo_win_rate 2.409900e-03
+                        cat__sex 2.086509e-03
+          num__career_place_rate 1.772032e-03
+   num__reference_odds_rank_race 1.694739e-03
+    num__career_places_3rd_count 1.472712e-03
+                 cat__track_type 1.359122e-03
+      num__duo_confidence_z_race 8.694940e-04
+             cat__shoeing_status 6.889585e-04
+            num__career_winnings 6.291529e-04
+           num__speed_form_ratio 6.263026e-04
+          num__relative_winnings 4.768271e-04
+                   num__odds_log 4.219665e-04
+              num__duo_best_rank 4.089167e-04
+     num__declared_runners_count 3.600939e-04
+               num__mount_weight 2.298177e-04
+        num__is_unusual_distance 2.153965e-04
+            num__duo_total_races 1.830271e-04
+      num__hist_avg_speed_z_race 1.385317e-04
+         num__duo_is_experienced 1.379271e-04
+                cat__jockey_name 1.262568e-04
+               num__penetrometer 1.185231e-04
+           num__odds_drift_ratio 1.015130e-04
+               num__duo_avg_rank 9.746268e-05
+              cat__terrain_label 8.888914e-05
+            num__handicap_weight 8.863931e-05
+      num__winnings_rank_in_race 8.365155e-05
+    num__pct_races_on_discipline 7.606773e-05
+       num__national_speed_ratio 6.764901e-05
+                 num__race_month 6.483371e-05
+  num__career_winnings_rank_race 5.639348e-05
+                num__is_debutant 5.210940e-05
+            num__career_win_rate 3.218672e-05
+                 cat__discipline 2.936896e-05
+             num__duo_confidence 2.723666e-05
+               cat__meeting_type 1.685983e-05
+        num__duo_avg_rank_z_race 1.647554e-05
+               num__proba_tabnet 6.909971e-06
+             num__hist_avg_speed 5.458133e-06
+    num__avg_speed_last_3_z_race 4.247477e-06
+             num__handicap_value 3.127871e-06
+          num__winnings_year_now 4.272831e-07
+--------------------------------------------------
+
+2026-04-22 12:07:56,920 - ML.TabnetTrainer - INFO - --- Training Target: CROSS ---
+2026-04-22 12:07:57,116 - ML.TabnetTrainer - INFO - [cross] WF Fold 1 (Test year 2022)
+
+Early stopping occurred at epoch 10 with best_epoch = 0 and best_val_0_auc = 0.53413
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+2026-04-22 12:07:57,407 - ML.TabnetTrainer - INFO -   Fold 2022 Result -> ROI: -66.3% | AUC: 0.3974
+2026-04-22 12:07:57,407 - ML.TabnetTrainer - INFO - [cross] WF Fold 2 (Test year 2023)
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 10 with best_epoch = 0 and best_val_0_auc = 0.62179
+2026-04-22 12:07:57,682 - ML.TabnetTrainer - INFO -   Fold 2023 Result -> ROI: -34.0% | AUC: 0.4461
+2026-04-22 12:07:57,683 - ML.TabnetTrainer - INFO - [cross] WF Fold 3 (Test year 2024)
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+
+Early stopping occurred at epoch 39 with best_epoch = 29 and best_val_0_auc = 0.70729
+2026-04-22 12:08:00,610 - ML.TabnetTrainer - INFO -   Fold 2024 Result -> ROI: -17.2% | AUC: 0.5872
+2026-04-22 12:08:00,610 - ML.TabnetTrainer - INFO - [cross] WF Fold 4 (Test year 2025)
+
+Early stopping occurred at epoch 13 with best_epoch = 3 and best_val_0_auc = 0.6871
+F:\git\horse-racing-prediction\.venv\Lib\site-packages\pytorch_tabnet\callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+2026-04-22 12:08:01,819 - ML.TabnetTrainer - INFO -   Fold 2025 Result -> ROI: -60.8% | AUC: 0.5219
+2026-04-22 12:08:01,819 - ML.TabnetTrainer - WARNING - [cross] Backtest FAILED (Avg ROI: -44.6%). Model not saved.
+
+Process finished with exit code 0

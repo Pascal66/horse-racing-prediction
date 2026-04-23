@@ -31,7 +31,8 @@ def render_analysis_view(race_id: int):
         preds = {
             "tabnet": fetch_predictions(race_id, algo="tabnet"),
             "ltr": fetch_predictions(race_id, algo="ltr"),
-            "hyperstack": fetch_predictions(race_id, algo="hyperstack")
+            "hyperstack": fetch_predictions(race_id, algo="hyperstack"),
+            "gpt": fetch_predictions(race_id, algo="gpt")
         }
 
     if participant_data.empty:
@@ -53,7 +54,7 @@ def render_analysis_view(race_id: int):
 
     trainer_stats = backtest.get("trainers", {})
     model_order = []
-    for algo_key in ["tabnet", "ltr", "hyperstack"]:
+    for algo_key in ["tabnet", "ltr", "hyperstack", "gpt"]:
         df_p = preds[algo_key]
         if not df_p.empty and 'model_version' in df_p.columns:
             m_ver = df_p['model_version'].iloc[0]

@@ -41,6 +41,9 @@ def render_admin_dashboard():
                 elif m_low.endswith("_ltr"):
                     base_discipline = m_low.replace("_ltr", "")
                     algo_filter = "ltr_only"
+                elif m_low.endswith("_gpt"):
+                    base_discipline = m_low.replace("_gpt", "")
+                    algo_filter = "gpt_only"
                 else:
                     base_discipline = m_low
                     algo_filter = "hyperstack_context"

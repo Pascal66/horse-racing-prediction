@@ -84,7 +84,7 @@ class TabNetTrainer:
 
         if raw_df.empty: return
 
-        targets = ["global"]
+        targets = [] #["global"]
         if 'discipline' in raw_df.columns:
             disciplines = [d for d in raw_df['discipline'].unique() if pd.notna(d)]
             targets.extend([str(d).lower() for d in disciplines])
@@ -292,7 +292,7 @@ class TabNetTrainer:
                         INSERT INTO ml_model_metrics (model_name, algorithm, segment_type, segment_value, test_month, num_races, logloss, auc, roi, win_rate, avg_odds)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         ON CONFLICT (model_name, algorithm, segment_type, segment_value, test_month) 
-                        DO UPDATE SET num_races=EXCLUDED.num_races, roi=EXCLUDED.roi, updated_at=NOW()
+                        DO UPDATE SET num_races=EXCLUDED.num_races, auc=EXCLUDED.auc, win_rate=EXCLUDED.win_rate, roi=EXCLUDED.roi, updated_at=NOW()
                     """, (model_name, algo_name, row['segment_type'], row['segment_value'], int(row['month']), int(row['count']), row['logloss'], row['auc'], row['roi'], row['win_rate'], row['avg_odds']))
                 conn.commit()
         except Exception: pass

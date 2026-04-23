@@ -140,7 +140,7 @@ class HyperStackTrainer:
         raw_df = self.loader.get_training_data()
         if raw_df.empty: return
 
-        targets = ["global"]
+        targets = [] #["global"]
         if 'discipline' in raw_df.columns:
             targets.extend([str(d).lower() for d in raw_df['discipline'].unique() if pd.notna(d)])
 
@@ -165,47 +165,44 @@ class HyperStackTrainer:
         # Phase 1: Backtesting rapide
         fold_rois = []
         all_fold_metrics = []
+        fold_aucs = [] # Collecter les AUCs pour le résumé du walk-forward
         for f_idx, (tr_df, ts_df) in enumerate(folds):
             fold_year = ts_df['program_date'].dt.year.iloc[0]
             self.logger.info(f"[{target_name}] WF Fold {f_idx+1}/{len(folds)}")
             m = self._train_and_eval(tr_df, ts_df, engineer, context_encoder, tabnet_bridge, target_name, use_optuna=False)
-            if m: fold_rois.append(m['roi'])
-
-        # Phase 2: Production sur Full Data
-        avg_roi = np.mean(fold_rois) if fold_rois else -100
-        if avg_roi > -10:
-            self.logger.info(f"[{target_name}] Backtest OK ({avg_roi:+.1f}%). Optimizing Production Model...")
-            prod_df = pd.concat([final_train_df, final_test_df])
-            metrics = self._train_and_eval(prod_df, final_test_df, engineer, context_encoder, tabnet_bridge, target_name, use_optuna=True, save=True)
-            if metrics:
-                metrics['test_year'] = fold_year
-                all_fold_metrics.append(metrics)
+            if m:
+                fold_rois.append(m['roi'])
+                fold_aucs.append(m['auc'])
                 self.logger.info(
-                    f"  Fold {fold_year} → AUC={metrics['auc']:.4f} "
-                    f"ROI={metrics['roi']:+.1f}% count={metrics['count']}"
+                    f"  Fold {fold_year} → AUC={m['auc']:.4f} "
+                    f"ROI={m['roi']:+.1f}% count={m['count']}"
                 )
+
         # Résumé walk-forward
-        if all_fold_metrics:
-            avg_roi = np.mean([m['roi'] for m in all_fold_metrics])
-            avg_auc = np.mean([m['auc'] for m in all_fold_metrics])
-            std_roi = np.std([m['roi'] for m in all_fold_metrics])
-            self.logger.info(
-                f"[{target_name}] Walk-forward: AUC={avg_auc:.4f} "
-                f"ROI={avg_roi:+.1f}% ±{std_roi:.1f}% "
-                f"({len(all_fold_metrics)} folds)"
-            )
+        avg_roi = np.mean(fold_rois) if fold_rois else -100
+        avg_auc = np.mean(fold_aucs) if fold_aucs else 0
+        std_roi = np.std(fold_rois) if fold_rois else 0
+        self.logger.info(
+            f"[{target_name}] Walk-forward: AUC={avg_auc:.4f} "
+            f"ROI={avg_roi:+.1f}% ±{std_roi:.1f}% "
+            f"({len(all_fold_metrics)} folds)"
+        )
 
         # --- Modèle final sur toutes données sauf dernière année ---
-        self.logger.info(f"[{target_name}] Entraînement modèle final...")
-        final_metrics = self._train_and_eval(
-            final_train_df, final_test_df, engineer, context_encoder,
-            tabnet_bridge, target_name, save=True
-        )
-        if final_metrics:
-            self.logger.info(
-                f"[{target_name}] Final → AUC={final_metrics['auc']:.4f} "
-                f"ROI={final_metrics['roi']:+.1f}% count={final_metrics['count']}"
+        # Entraîner le modèle final avec Optuna si le backtest est acceptable
+        if avg_roi > -10: # Seuil pour décider si le modèle final doit être entraîné
+            self.logger.info(f"[{target_name}] Entraînement modèle final avec Optuna...")
+            final_metrics = self._train_and_eval(
+                final_train_df, final_test_df, engineer, context_encoder,
+                tabnet_bridge, target_name, use_optuna=True, save=True
             )
+            if final_metrics:
+                self.logger.info(
+                    f"[{target_name}] Final → AUC={final_metrics['auc']:.4f} "
+                    f"ROI={final_metrics['roi']:+.1f}% count={final_metrics['count']}"
+                )
+        else:
+            self.logger.warning(f"[{target_name}] ROI du walk-forward ({avg_roi:+.1f}%) trop faible. Entraînement du modèle final ignoré.")
 
     def _train_and_eval(self, train_df, test_df, engineer, context_encoder, tabnet_bridge, target_name, use_optuna=False, save=False):
         features = [f for f in NUMERICAL_FEATURES + CATEGORICAL_FEATURES + CONTEXTUAL_FEATURES + EXTRA_FEATURES if f in train_df.columns]
@@ -301,7 +298,8 @@ class HyperStackTrainer:
                 for _, row in df.iterrows():
                     cur.execute("""INSERT INTO ml_model_metrics (model_name, algorithm, segment_type, segment_value, test_month, num_races, logloss, auc, roi, win_rate, avg_odds)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (model_name, algorithm, segment_type, segment_value, test_month) 
-                        DO UPDATE SET roi=EXCLUDED.roi, updated_at=NOW()""", (model_name, algo_name, row['segment_type'], row['segment_value'], int(row['month']), int(row['count']), row['logloss'], row['auc'], row['roi'], row['win_rate'], row['avg_odds']))
+                        DO UPDATE SET num_races=EXCLUDED.num_races, roi=EXCLUDED.roi, auc=EXCLUDED.auc, win_rate=EXCLUDED.win_rate, updated_at=NOW()
+                    """, (model_name, algo_name, row['segment_type'], row['segment_value'], int(row['month']), int(row['count']), row['logloss'], row['auc'], row['roi'], row['win_rate'], row['avg_odds']))
                 conn.commit()
         finally: self.db.release_connection(conn)
 

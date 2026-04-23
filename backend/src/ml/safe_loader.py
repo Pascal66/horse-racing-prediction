@@ -14,7 +14,9 @@ _CLASS_MAP = {
     'PmuFeatureEngineer': ('src.ml.features', 'PmuFeatureEngineer'),
     'HyperStackModel': ('src.ml.models', 'HyperStackModel'),  # ← models.py
     'TabNetBridge':          ('src.ml.tabnet_bridge', 'TabNetBridge'),  # nouveau
-    'LTRRankerWrapper': ('src.ml.ltr_trainer', 'LTRRankerWrapper'),
+    'LTRRankerWrapper': ('src.ml.trainer_ltr', 'LTRRankerWrapper'),
+    'GPTModelWrapper': ('src.ml.trainer_gpt', 'GPTModelWrapper'),
+    'PMUTransformer': ('src.ml.trainer_gpt', 'PMUTransformer'),  # nouveau
 }
 
 def _patch_main():
