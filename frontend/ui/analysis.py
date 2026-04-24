@@ -106,7 +106,7 @@ def render_analysis_view(race_id: int):
                 st.caption("Aucune donnée")
                 return
 
-            for btype in ['SG', 'SP', 'CG', 'TRIO']:
+            for btype in ['SG', 'SP', 'CG', 'CP', 'TRIO']:
                 pk = f"profit_{btype.lower()}" if btype != 'SG' else "profit"
                 nk = f"nb_bets_{btype.lower()}" if btype != 'SG' else "count"
                 wk = f"nb_wins_{btype.lower()}" if btype != 'SG' else "nb_wins"

@@ -9,6 +9,9 @@ from apscheduler.triggers.date import DateTrigger
 from src.cli.etl import etl_daily, etl_liveodds
 from src.cli.daily_performance_etl import run_daily_performance_etl
 from src.cli.telegram_bot import send_telegram_message
+from src.api.repositories import RaceRepository
+from src.api.backtest_service import BacktestService
+from src.ml.predictor import RacePredictor
 
 logger = logging.getLogger("Scheduler")
 
@@ -19,12 +22,125 @@ _scheduler = None
 def get_scheduler():
     return _scheduler
 
-def run_send_telegram(race_id):
-    """Wrapper synchrone pour exécuter la tâche asynchrone Telegram."""
+
+async def generate_and_send_advice(race_id):
+    """Génère un conseil de jeu basé sur le meilleur modèle et l'envoie via Telegram."""
     try:
-        asyncio.run(send_telegram_message(race_id))
+        repo = RaceRepository()
+        # 1. Récupérer les données de la course
+        participants = repo.get_race_data_for_ml(race_id)
+        if not participants:
+            logger.warning(f"Aucun participant trouvé pour la course {race_id}")
+            return
+
+        # 1. Initialisation et récupération des stats ROI (Backtest)
+        first = participants[0]
+        discipline = first['discipline']
+        start_ts = first.get('start_timestamp') or first.get('start_time')
+        if not start_ts:
+            logger.error(f"Impossible de générer le conseil pour {race_id} : timestamp absent.")
+            return
+
+        from pathlib import Path
+        import os
+        import pandas as pd
+        model_path = os.getenv("MODEL_PATH", Path(__file__).resolve().parents[3] / "data")
+        predictor = RacePredictor(str(model_path))
+        
+        service = BacktestService(repo)
+        backtest = service.run_backtest()
+        trainer_stats = backtest.get("trainers", {})
+
+        # 2. Générer les prédictions pour tous les algos (Logique "Pronostics Comparés")
+        model_results = []
+        for algo in ["tabnet", "ltr", "hyperstack", "gpt"]:
+            preds, m_ver = predictor.predict_race(participants, force_algo=algo)
+            if not preds or not preds.get("win"): continue
+
+            # Matching du ROI (réplication de find_best_roi_match du frontend)
+            roi = -99.0
+            if m_ver in trainer_stats:
+                roi = trainer_stats[m_ver].get("roi", -99.0)
+            else:
+                m_parts = set(m_ver.lower().split('_'))
+                for k, v in trainer_stats.items():
+                    k_parts = set(k.lower().split('_'))
+                    if m_parts.issubset(k_parts) or k_parts.issubset(m_parts):
+                        roi = v.get("roi", -99.0)
+                        break
+            
+            df = pd.DataFrame(participants)
+            df['pmu_number'] = df.get('pmu_number', df.get('program_number'))
+            df['win_probability'] = preds["win"]
+            # Calcul de la cote effective (live ou ref)
+            df['eff_odds'] = df['live_odds'].combine_first(df.get('live_odds_30mn', pd.Series([None]*len(df))))
+            df['eff_odds'] = df['eff_odds'].fillna(df['reference_odds']).fillna(1.0).clip(lower=1.05)
+            
+            # Récupération du Top 3 pour ce modèle
+            top_3_df = df.sort_values('win_probability', ascending=False).head(3)
+            model_results.append({
+                "algo": algo, 
+                "roi": roi, 
+                "top_3": top_3_df.to_dict('records'), 
+                "version": m_ver
+            })
+
+        if not model_results: return
+        
+        # 3. Trier par ROI pour identifier l'expert du moment
+        model_results.sort(key=lambda x: x["roi"], reverse=True)
+
+        # 4. Formater le message (Top 3 experts)
+        race_date_str = datetime.fromtimestamp(start_ts / 1000).strftime("%d%m%Y")
+        race_hour_str = datetime.fromtimestamp(start_ts / 1000).strftime("%H:%M")
+        race_info = repo.get_races_by_date(race_date_str)
+        race_row = next((r for r in race_info if r['race_id'] == race_id), None)
+        m_num = race_row['meeting_number'] if race_row else "?"
+        r_num = race_row['race_number'] if race_row else "?"
+        meeting_label = race_row['meeting_libelle'] if race_row else "Inconnu"
+
+        message = f"<b>R{m_num}C{r_num}</b> {discipline} {race_hour_str}\n\n"
+        
+        for idx, res in enumerate(model_results[:3], 1):
+            emoji = ["1️⃣", "2️⃣", "3️⃣"][idx-1]
+            color = "🟢" if res['roi'] > 0 else ("⚪" if res['roi'] == -99.0 else "🔴")
+            # Ligne de titre concise : Emoji + Nom Algo + Pastille ROI
+            message += f"{emoji} <b>{res['algo'].upper()}</b> {color}\n"
+            
+            # Ligne de pronostics : Numéro (Prob%) séparés par des points médians
+            # preds_str = []
+            odds_str = []
+            for h in res['top_3']:
+                num = h.get('pmu_number') or h.get('program_number')
+                # preds_str.append(f"#{num} ({h['win_probability']:.1%})")
+                odds_str.append(f"#{num}<b> ({h['eff_odds']:.2f})</b>")
+            
+            message += " · ".join(odds_str) + "\n"
+
+        # 5. Sauvegarder le meilleur conseil en BDD
+        top = model_results[0]
+        repo.upsert_game_advice({
+            "race_id": race_id,
+            "participant_id": int(top['top_3'][0]['participant_id']),
+            "model_version": top['version'],
+            "strategy": "ConsensusROI",
+            "message": message
+        })
+
+        # 6. Envoyer via Telegram
+        await send_telegram_message(message)
+
     except Exception as e:
-        logger.error(f"Erreur lors de l'envoi du message Telegram pour {race_id}: {e}")
+        logger.error(f"Erreur lors de la génération du conseil pour {race_id}: {e}", exc_info=True)
+
+
+def run_send_telegram(race_id):
+    """Wrapper synchrone pour exécuter la tâche de conseil Telegram."""
+    try:
+        asyncio.run(generate_and_send_advice(race_id))
+    except Exception as e:
+        logger.error(f"Erreur lors de l'exécution du job Telegram pour {race_id}: {e}")
+
 
 def schedule_race_better(race_data_list):
     """
@@ -40,8 +156,8 @@ def schedule_race_better(race_data_list):
         # timedelta(hours=-6),
         # timedelta(hours=-1),
         # timedelta(minutes=-30),
-        timedelta(minutes=-15), # Début de la cristallisation des enjeux
-        timedelta(minutes=-5),  # Sentiment final / "Smart Money"
+        timedelta(minutes=-16),  # Début de la cristallisation des enjeux
+        timedelta(minutes=-6),  # Sentiment final / "Smart Money"
         # timedelta(minutes=2)  # Vérification post-départ (clôture des masses)
     ]
 
@@ -67,6 +183,7 @@ def schedule_race_better(race_data_list):
                     name=f"Better {race_id} @ {offset}",
                     replace_existing=True
                 )
+
 
 def schedule_race_updates(race_data_list):
     """

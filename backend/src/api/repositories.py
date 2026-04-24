@@ -172,7 +172,7 @@ class RaceRepository:
             )
             SELECT 
                 rp.participant_id, rp.race_id, rp.pmu_number AS program_number, h.horse_name,
-                dp.program_date, r.distance_m, r.declared_runners_count,
+                dp.program_date, r.distance_m, r.declared_runners_count, r.start_timestamp,
                 rm.meeting_code, rm.meeting_libelle, rm.meeting_type, rm.weather_windspeed,
                 r.discipline, r.track_type, rm.weather_wind, rm.weather_temperature, r.terrain_label,
                 rp.age, rp.career_winnings, rp.career_races_count, h.birth_year,
@@ -334,6 +334,37 @@ class RaceRepository:
         except Exception as exc:
             logger.error(f"Error fetching daily performance for {performance_date}: {exc}")
             return []
+        finally:
+            self.db_manager.release_connection(conn)
+
+    def upsert_game_advice(self, advice_data: Dict[str, Any]) -> bool:
+        """
+        Saves or updates a game advice in the database.
+        """
+        query = """
+            INSERT INTO game_advice (race_id, participant_id, model_version, strategy, message)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (race_id, participant_id, strategy) DO UPDATE SET
+                model_version = EXCLUDED.model_version,
+                message = EXCLUDED.message,
+                created_at = CURRENT_TIMESTAMP;
+        """
+        params = (
+            advice_data['race_id'],
+            advice_data['participant_id'],
+            advice_data.get('model_version'),
+            advice_data.get('strategy', 'BestModel'),
+            advice_data.get('message')
+        )
+        conn = self.db_manager.get_connection()
+        try:
+            with conn:
+                with conn.cursor() as cur:
+                    cur.execute(query, params)
+            return True
+        except Exception as exc:
+            logger.error(f"Error upserting game advice: {exc}")
+            return False
         finally:
             self.db_manager.release_connection(conn)
 

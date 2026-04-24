@@ -40,6 +40,7 @@ from src.ml.feature_config import (
     CATEGORICAL_FEATURES, NUMERICAL_FEATURES,
     CONTEXTUAL_FEATURES, EXTRA_FEATURES
 )
+import hashlib
 
 logging.basicConfig(
     level=logging.INFO,
@@ -173,6 +174,7 @@ class HyperStackTrainer:
             if m:
                 fold_rois.append(m['roi'])
                 fold_aucs.append(m['auc'])
+                all_fold_metrics.append(m)  # ← ajouter cette ligne
                 self.logger.info(
                     f"  Fold {fold_year} → AUC={m['auc']:.4f} "
                     f"ROI={m['roi']:+.1f}% count={m['count']}"
@@ -219,7 +221,11 @@ class HyperStackTrainer:
         X_train_df = pd.DataFrame(X_train_enc, columns=feature_names)
 
         if use_optuna:
-            study = optuna.create_study(direction="minimize", storage=DB_URL, study_name=f"hs_{target_name}_prod", load_if_exists=True)
+            feature_hash = hashlib.md5(
+                str(sorted(features)).encode()
+            ).hexdigest()[:6]
+            study_name = f"hs_{target_name}_{feature_hash}"
+            study = optuna.create_study(direction="minimize", storage=DB_URL, study_name=study_name, load_if_exists=True)
             odds = train_df['live_odds'].fillna(train_df['reference_odds']).fillna(1.0).clip(lower=1.05).reset_index(drop=True)
             r_ids = train_df['race_id'].reset_index(drop=True)
             study.optimize(lambda t: objective(t, X_train_df, y_train, r_ids, odds), n_trials=self.n_trials, n_jobs=1)

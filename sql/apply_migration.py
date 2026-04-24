@@ -37,7 +37,21 @@ def apply_migrations():
         "ALTER TABLE race_participant ADD COLUMN IF NOT EXISTS handicap_weight REAL;",
         "ALTER TABLE race_participant ADD COLUMN IF NOT EXISTS mount_weight REAL;",
         "ALTER TABLE race_participant ADD COLUMN IF NOT EXISTS allure VARCHAR(30);",
-        "ALTER TABLE race_participant ADD COLUMN IF NOT EXISTS owner_id INT REFERENCES racing_actor (actor_id);"
+        "ALTER TABLE race_participant ADD COLUMN IF NOT EXISTS owner_id INT REFERENCES racing_actor (actor_id);",
+
+        # Game Advice table
+        """
+        CREATE TABLE IF NOT EXISTS game_advice (
+            advice_id SERIAL PRIMARY KEY,
+            race_id INT NOT NULL REFERENCES race(race_id),
+            participant_id INT NOT NULL REFERENCES race_participant(participant_id),
+            model_version VARCHAR(50),
+            strategy VARCHAR(50),
+            message TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT uq_race_participant_advice UNIQUE (race_id, participant_id, strategy)
+        );
+        """
     ]
 
     try:

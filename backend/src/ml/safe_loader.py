@@ -1,6 +1,7 @@
 import pickle
 import importlib
 import sys
+import logging
 
 import joblib
 
@@ -15,8 +16,8 @@ _CLASS_MAP = {
     'HyperStackModel': ('src.ml.models', 'HyperStackModel'),  # ← models.py
     'TabNetBridge':          ('src.ml.tabnet_bridge', 'TabNetBridge'),  # nouveau
     'LTRRankerWrapper': ('src.ml.trainer_ltr', 'LTRRankerWrapper'),
-    'GPTModelWrapper': ('src.ml.trainer_gpt', 'GPTModelWrapper'),
-    'PMUTransformer': ('src.ml.trainer_gpt', 'PMUTransformer'),  # nouveau
+    'GPTModelWrapper': ('src.ml.gpt_models', 'GPTModelWrapper'),
+    'PMUTransformer': ('src.ml.gpt_models', 'PMUTransformer'),
 }
 
 def _patch_main():
@@ -29,8 +30,8 @@ def _patch_main():
             try:
                 mod = importlib.import_module(module_path)
                 setattr(main, class_name, getattr(mod, attr))
-            except Exception:
-                pass
+            except Exception as e:
+                logging.error(f"SafeLoader: Failed to patch {class_name} from {module_path}: {e}")
 
 def safe_load(path):
     """Charge un pipeline ML joblib en résolvant les classes __main__."""

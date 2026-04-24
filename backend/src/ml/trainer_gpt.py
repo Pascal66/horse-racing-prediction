@@ -10,7 +10,7 @@ import joblib
 import pandas as pd
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+# import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader as TorchDataLoader
 
 from sklearnex import patch_sklearn
@@ -31,7 +31,7 @@ from src.ml.feature_config import (
     CATEGORICAL_FEATURES, NUMERICAL_FEATURES,
     CONTEXTUAL_FEATURES
 )
-
+from src.ml.gpt_models import PMUTransformer, GPTModelWrapper
 # Configuration du device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 try:
@@ -66,191 +66,191 @@ OK - Absence de normalisation de batch entre les courses. Les courses ont des ta
 """
 
 # Architecture PMU Transformer
-class PMUTransformer(nn.Module):
-    def __init__(self, n_features, n_embd, n_head, n_layer, block_size, dropout=0.1):
-        super().__init__()
-        self.n_embd = n_embd
-        self.block_size = block_size
-
-        # Entrée : Projection des features
-        # self.feature_proj = nn.Linear(n_features, n_embd)
-        self.feature_proj = nn.Sequential(
-            nn.Linear(n_features, n_embd),
-            nn.LayerNorm(n_embd),  # normalisation dès l'entrée
-            nn.ReLU(),
-            nn.Dropout(dropout)
-        )
-        # Supprimer pos_emb — pas de sens sémantique sur l'ordre des chevaux
-        # self.pos_emb = nn.Embedding(block_size, n_embd)
-
-        # Corps : Blocs Transformer
-        self.blocks = nn.ModuleList([
-            nn.TransformerEncoderLayer(
-                d_model=n_embd, nhead=n_head,
-                dim_feedforward=4*n_embd,
-                dropout=dropout,
-                activation='gelu',  # GELU > ReLU pour les Transformers
-                batch_first=True, norm_first=True
-            ) for _ in range(n_layer)
-        ])
-
-        # Tête : Calcul de la force (logit) de chaque cheval
-        # self.head = nn.Linear(n_embd, 1)
-        self.head = nn.Sequential(
-            nn.LayerNorm(n_embd),
-            nn.Linear(n_embd, 1)
-        )
-    def forward(self, x):
-        # x shape: (num_horses, n_features)
-        # num_horses = x.size(0)
-
-        # 1. Projection et Position
-        x = self.feature_proj(x) # (num_horses, n_embd)
-        # On sature à block_size si besoin, mais normalement num_horses < block_size
-        # pos_indices = torch.arange(min(num_horses, self.block_size), device=x.device)
-        # if num_horses > self.block_size:
-             # Fallback pour les courses géantes (rare)
-             # x = x[:self.block_size]
-        # x = x + self.pos_emb(pos_indices)
-
-        # 2. Transformer Blocks
-        x = x.unsqueeze(0)# (1, num_horses, n_embd)
-        for block in self.blocks:
-            x = block(x)
-
-        # 3. Logits
-        logits = self.head(x.squeeze(0)) # (num_horses, 1)
-        return logits.flatten()
+# class PMUTransformer(nn.Module):
+#     def __init__(self, n_features, n_embd, n_head, n_layer, block_size, dropout=0.1):
+#         super().__init__()
+#         self.n_embd = n_embd
+#         self.block_size = block_size
+#
+#         # Entrée : Projection des features
+#         # self.feature_proj = nn.Linear(n_features, n_embd)
+#         self.feature_proj = nn.Sequential(
+#             nn.Linear(n_features, n_embd),
+#             nn.LayerNorm(n_embd),  # normalisation dès l'entrée
+#             nn.ReLU(),
+#             nn.Dropout(dropout)
+#         )
+#         # Supprimer pos_emb — pas de sens sémantique sur l'ordre des chevaux
+#         # self.pos_emb = nn.Embedding(block_size, n_embd)
+#
+#         # Corps : Blocs Transformer
+#         self.blocks = nn.ModuleList([
+#             nn.TransformerEncoderLayer(
+#                 d_model=n_embd, nhead=n_head,
+#                 dim_feedforward=4*n_embd,
+#                 dropout=dropout,
+#                 activation='gelu',  # GELU > ReLU pour les Transformers
+#                 batch_first=True, norm_first=True
+#             ) for _ in range(n_layer)
+#         ])
+#
+#         # Tête : Calcul de la force (logit) de chaque cheval
+#         # self.head = nn.Linear(n_embd, 1)
+#         self.head = nn.Sequential(
+#             nn.LayerNorm(n_embd),
+#             nn.Linear(n_embd, 1)
+#         )
+#     def forward(self, x):
+#         # x shape: (num_horses, n_features)
+#         # num_horses = x.size(0)
+#
+#         # 1. Projection et Position
+#         x = self.feature_proj(x) # (num_horses, n_embd)
+#         # On sature à block_size si besoin, mais normalement num_horses < block_size
+#         # pos_indices = torch.arange(min(num_horses, self.block_size), device=x.device)
+#         # if num_horses > self.block_size:
+#              # Fallback pour les courses géantes (rare)
+#              # x = x[:self.block_size]
+#         # x = x + self.pos_emb(pos_indices)
+#
+#         # 2. Transformer Blocks
+#         x = x.unsqueeze(0)# (1, num_horses, n_embd)
+#         for block in self.blocks:
+#             x = block(x)
+#
+#         # 3. Logits
+#         logits = self.head(x.squeeze(0)) # (num_horses, 1)
+#         return logits.flatten()
 
 # Wrapper sklearn pour PMUTransformer
-class GPTModelWrapper(BaseEstimator, RegressorMixin):
-    def __init__(self, n_features=None, n_embd=64, n_head=4, n_layer=3,
-                 block_size=30, lr=1e-3, epochs=50, device=device, feature_names=None):
-        self.n_features = n_features
-        self.n_embd = n_embd
-        self.n_head = n_head
-        self.n_layer = n_layer
-        self.block_size = block_size
-        self.lr = lr
-        self.epochs = epochs
-        self.device = device
-        self.model = None
-        self.feature_names = list(feature_names) if feature_names is not None else None
-
-    @property
-    def feature_importances_(self):
-        # Pour un transformer, l'importance est moins directe, on peut retourner les poids de la projection
-        if self.model is not None:
-            return torch.abs(self.model.feature_proj.weight).sum(dim=0).detach().cpu().numpy()
-        return None
-
-    def fit(self, X, y, groups=None):
-        if groups is None:
-            raise ValueError("GPTModelWrapper requires groups (race_id) for training.")
-
-        # Mémorisation des noms de features si dispo
-        if self.feature_names is None and hasattr(X, 'columns'):
-            self.feature_names = list(X.columns)
-
-        # Conversion en numpy si nécessaire
-        X_val = X.values if hasattr(X, 'values') else X
-        y_val = y.values if hasattr(y, 'values') else y
-
-        self.n_features = X_val.shape[1]
-        self.model = PMUTransformer(
-            self.n_features, self.n_embd, self.n_head, self.n_layer, self.block_size
-        ).to(self.device)
-
-        optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr)
-        # Scheduler pour stabiliser l'entraînement
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer, T_max=self.epochs
-        )
-
-        # Préparation des données par groupe (course)
-        group_indices = []
-        start = 0
-        for g_size in groups:
-            group_indices.append(slice(start, start + g_size))
-            start += g_size
-
-        self.model.train()
-        for epoch in range(self.epochs):
-            total_loss = 0
-            random_indices = np.random.permutation(len(group_indices))
-
-            for idx in random_indices:
-                slc = group_indices[idx]
-                X_race = torch.tensor(X_val[slc], dtype=torch.float32).to(self.device)
-                y_race = torch.tensor(y_val[slc], dtype=torch.float32).to(self.device)
-
-                if len(X_race) == 0: continue
-
-                # Forward
-                logits = self.model(X_race)
-
-                # Loss : On utilise une approche softmax sur la course pour le gagnant
-                # On identifie l'index du gagnant (celui qui a le score LTR le plus élevé)
-                winner_idx = torch.argmax(y_race)
-                loss = F.cross_entropy(logits.unsqueeze(0), winner_idx.unsqueeze(0))
-
-                # optimizer.zero_grad()
-                # Gradient clipping — essentiel pour les Transformers
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
-                loss.backward()
-                optimizer.step()
-
-                total_loss += loss.item()
-
-        return self
-
-    def predict(self, X, groups=None):
-        if self.model is None:
-            raise ValueError("Model not fitted.")
-
-        self.model.eval()
-        X_val = X.values if hasattr(X, 'values') else X
-        X_tensor = torch.tensor(X_val, dtype=torch.float32).to(self.device)
-        
-        with torch.no_grad():
-            outputs = []
-            if groups is not None:
-                # Inférence groupée : Le Transformer "voit" la concurrence
-                start = 0
-                for g_size in groups:
-                    X_race = X_tensor[start:start + g_size]
-                    if len(X_race) > 0:
-                        logits = self.model(X_race)
-                        outputs.extend(logits.cpu().numpy())
-                    start += g_size
-            else:
-                # Fallback point-wise (Attention limitée à soi-même - Moins performant)
-                for i in range(X_tensor.size(0)):
-                    out = self.model(X_tensor[i].unsqueeze(0))
-                    outputs.append(out.item())
-            return np.array(outputs)
-
-    def predict_proba(self, X, groups=None):
-        scores = self.predict(X, groups=groups)
-        probas = np.zeros(len(scores))
-
-        if groups is not None:
-            start = 0
-            for g_size in groups:
-                slc = slice(start, start + g_size)
-                s = scores[slc]
-                if len(s) > 0:
-                    e = np.exp(s - s.max())
-                    probas[slc] = e / e.sum()
-                start += g_size
-        else:
-            e = np.exp(scores - scores.max())
-            probas = e / e.sum()
-
-        return np.vstack([1 - probas, probas]).T
-
-    def __sklearn_is_fitted__(self):
-        return self.model is not None
+# class GPTModelWrapper(BaseEstimator, RegressorMixin):
+#     def __init__(self, n_features=None, n_embd=64, n_head=4, n_layer=3,
+#                  block_size=30, lr=1e-3, epochs=50, device=device, feature_names=None):
+#         self.n_features = n_features
+#         self.n_embd = n_embd
+#         self.n_head = n_head
+#         self.n_layer = n_layer
+#         self.block_size = block_size
+#         self.lr = lr
+#         self.epochs = epochs
+#         self.device = device
+#         self.model = None
+#         self.feature_names = list(feature_names) if feature_names is not None else None
+#
+#     @property
+#     def feature_importances_(self):
+#         # Pour un transformer, l'importance est moins directe, on peut retourner les poids de la projection
+#         if self.model is not None:
+#             return torch.abs(self.model.feature_proj.weight).sum(dim=0).detach().cpu().numpy()
+#         return None
+#
+#     def fit(self, X, y, groups=None):
+#         if groups is None:
+#             raise ValueError("GPTModelWrapper requires groups (race_id) for training.")
+#
+#         # Mémorisation des noms de features si dispo
+#         if self.feature_names is None and hasattr(X, 'columns'):
+#             self.feature_names = list(X.columns)
+#
+#         # Conversion en numpy si nécessaire
+#         X_val = X.values if hasattr(X, 'values') else X
+#         y_val = y.values if hasattr(y, 'values') else y
+#
+#         self.n_features = X_val.shape[1]
+#         self.model = PMUTransformer(
+#             self.n_features, self.n_embd, self.n_head, self.n_layer, self.block_size
+#         ).to(self.device)
+#
+#         optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr)
+#         # Scheduler pour stabiliser l'entraînement
+#         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+#             optimizer, T_max=self.epochs
+#         )
+#
+#         # Préparation des données par groupe (course)
+#         group_indices = []
+#         start = 0
+#         for g_size in groups:
+#             group_indices.append(slice(start, start + g_size))
+#             start += g_size
+#
+#         self.model.train()
+#         for epoch in range(self.epochs):
+#             total_loss = 0
+#             random_indices = np.random.permutation(len(group_indices))
+#
+#             for idx in random_indices:
+#                 slc = group_indices[idx]
+#                 X_race = torch.tensor(X_val[slc], dtype=torch.float32).to(self.device)
+#                 y_race = torch.tensor(y_val[slc], dtype=torch.float32).to(self.device)
+#
+#                 if len(X_race) == 0: continue
+#
+#                 # Forward
+#                 logits = self.model(X_race)
+#
+#                 # Loss : On utilise une approche softmax sur la course pour le gagnant
+#                 # On identifie l'index du gagnant (celui qui a le score LTR le plus élevé)
+#                 winner_idx = torch.argmax(y_race)
+#                 loss = F.cross_entropy(logits.unsqueeze(0), winner_idx.unsqueeze(0))
+#
+#                 # optimizer.zero_grad()
+#                 # Gradient clipping — essentiel pour les Transformers
+#                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+#                 loss.backward()
+#                 optimizer.step()
+#
+#                 total_loss += loss.item()
+#
+#         return self
+#
+#     def predict(self, X, groups=None):
+#         if self.model is None:
+#             raise ValueError("Model not fitted.")
+#
+#         self.model.eval()
+#         X_val = X.values if hasattr(X, 'values') else X
+#         X_tensor = torch.tensor(X_val, dtype=torch.float32).to(self.device)
+#
+#         with torch.no_grad():
+#             outputs = []
+#             if groups is not None:
+#                 # Inférence groupée : Le Transformer "voit" la concurrence
+#                 start = 0
+#                 for g_size in groups:
+#                     X_race = X_tensor[start:start + g_size]
+#                     if len(X_race) > 0:
+#                         logits = self.model(X_race)
+#                         outputs.extend(logits.cpu().numpy())
+#                     start += g_size
+#             else:
+#                 # Fallback point-wise (Attention limitée à soi-même - Moins performant)
+#                 for i in range(X_tensor.size(0)):
+#                     out = self.model(X_tensor[i].unsqueeze(0))
+#                     outputs.append(out.item())
+#             return np.array(outputs)
+#
+#     def predict_proba(self, X, groups=None):
+#         scores = self.predict(X, groups=groups)
+#         probas = np.zeros(len(scores))
+#
+#         if groups is not None:
+#             start = 0
+#             for g_size in groups:
+#                 slc = slice(start, start + g_size)
+#                 s = scores[slc]
+#                 if len(s) > 0:
+#                     e = np.exp(s - s.max())
+#                     probas[slc] = e / e.sum()
+#                 start += g_size
+#         else:
+#             e = np.exp(scores - scores.max())
+#             probas = e / e.sum()
+#
+#         return np.vstack([1 - probas, probas]).T
+#
+#     def __sklearn_is_fitted__(self):
+#         return self.model is not None
 
 # GPT Trainer (Architecture calquée sur LTRTrainer)
 class GPTTrainer:
