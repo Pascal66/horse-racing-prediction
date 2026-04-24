@@ -12,7 +12,7 @@ from state.store import init_session
 # --- CONFIGURATION ---
 logging.basicConfig(level=logging.INFO)
 st.set_page_config(
-    page_title="HoRace",
+    page_title="HoRace V2",
     layout="wide",
     page_icon="🏇",
     initial_sidebar_state="expanded"

@@ -6,7 +6,7 @@ import state.store as store
 
 def render_sidebar():
     with st.sidebar:
-        st.title("🏇 Turf Analytics")
+        st.title("🏇 HoRace V2")
         st.markdown("---")
         
         # System Health (Short)
@@ -114,6 +114,6 @@ def render_sidebar():
             store.set_selected_meeting(selected_meeting)
 
             st.markdown("---")
-            st.caption("v3.2.1 • Fix Time Parsing")
+            st.caption("v3.2.2 • Another Model")
         else:
             st.warning("No races available for this date.")
