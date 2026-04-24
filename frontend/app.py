@@ -1,6 +1,5 @@
 import logging
 import streamlit as st
-# import streamlit.components.v1 as components
 
 from ui.sidebar import render_sidebar
 from ui.sniper import render_sniper_section
@@ -13,7 +12,7 @@ from state.store import init_session
 # --- CONFIGURATION ---
 logging.basicConfig(level=logging.INFO)
 st.set_page_config(
-    page_title="Turf Analytics Pro",
+    page_title="HoRace",
     layout="wide",
     page_icon="🏇",
     initial_sidebar_state="expanded"
@@ -34,8 +33,7 @@ st.markdown("""
 
 def main():
     # 0. Auto-refresh (every 15 minutes)
-    st.html( #iframe(
-    # components.html( # deprecated
+    st.html(
         """
         <script>
         const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
@@ -44,7 +42,6 @@ def main():
         }, REFRESH_INTERVAL);
         </script>
         """,
-        #height=1, #'content', #'stretch',
         unsafe_allow_javascript=True
     )
 
