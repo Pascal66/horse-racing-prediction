@@ -64,3 +64,9 @@ def fetch_backtest_results(force_update: bool = False) -> Dict[str, Any]:
     params = {"force": force_update}
     data = client._get("/backtest", params=params)
     return data if data is not None else {"error": "Réponse vide"}
+
+@st.cache_data(ttl=300)
+def fetch_portfolio_data(days: int = 365) -> List[Dict[str, Any]]:
+    params = {"days": days}
+    data = client._get("/portfolio", params=params)
+    return data if data and not isinstance(data, dict) else []

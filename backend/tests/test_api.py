@@ -86,6 +86,20 @@ class MockRaceRepository:
     def get_best_model_for_context(self, discipline, month):
         return "mock_tabnet"
 
+    def get_performance_history(self, days):
+        return [
+            {
+                "performance_date": "2025-01-01",
+                "model_version": "mock_v1",
+                "discipline": "ATTELE",
+                "bet_type": "SG",
+                "nb_bets": 10,
+                "nb_wins": 2,
+                "roi": 15.0,
+                "avg_odds": 5.0
+            }
+        ]
+
 
 class MockPredictor:
     """Simulates the ML Model."""
@@ -173,3 +187,10 @@ def test_predict_race(client):
 
     assert results[0]["predicted_rank"] == 1
     assert results[0]["win_probability"] == 0.8
+
+def test_get_portfolio(client):
+    response = client.get("/portfolio")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["roi"] == 15.0
