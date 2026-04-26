@@ -134,6 +134,23 @@ async def generate_and_send_advice(race_id):
         logger.error(f"Erreur lors de la génération du conseil pour {race_id}: {e}", exc_info=True)
 
 
+def etl_liveodds_and_update_cache(race_id: int = None):
+    """
+    Ingest data and update the backtest cache.
+    """
+    try:
+        # 1. Ingest results and dividends
+        etl_liveodds(race_id=race_id)
+
+        # 2. Update the cache file
+        repo = RaceRepository()
+        service = BacktestService(repo)
+        service.update_today_etl()
+        logger.info(f"Cache updated after ingestion for race {race_id if race_id else 'global'}")
+    except Exception as e:
+        logger.error(f"Failed to update cache after ingestion: {e}")
+
+
 def run_send_telegram(race_id):
     """Wrapper synchrone pour exécuter la tâche de conseil Telegram."""
     try:
@@ -194,14 +211,17 @@ def schedule_race_updates(race_data_list):
     if _scheduler is None:
         return
 
-    # Offsets demandés : -6h, -1h, -30m, -5m, 0m, +1m
+    # Offsets demandés : -6h, -1h, -30m, -15m, 5m, 10m, 20m, 40m, 60m
     offsets = [
         timedelta(hours=-6),
         timedelta(hours=-1),
         timedelta(minutes=-30),
         timedelta(minutes=-15),
         timedelta(minutes=5),
-        timedelta(minutes=10)
+        timedelta(minutes=10),
+        timedelta(minutes=20),
+        timedelta(minutes=40),
+        timedelta(minutes=60)
     ]
 
     for race in race_data_list:
@@ -218,12 +238,15 @@ def schedule_race_updates(race_data_list):
             # On ne planifie que si l'heure est dans le futur
             if run_time > datetime.now(timezone.utc):
                 job_id = f"odds_{race_id}_{int(offset.total_seconds())}"
+                # Use wrapper to update cache after ingestion
+                target_func = etl_liveodds_and_update_cache if offset.total_seconds() > 0 else etl_liveodds
+
                 _scheduler.add_job(
-                    etl_liveodds,
+                    target_func,
                     trigger=DateTrigger(run_date=run_time),
-                    args=[race_id],  # etl_liveodds accepte maintenant l'ID
+                    args=[race_id],
                     id=job_id,
-                    name=f"Live Odds {race_id} @ {offset}",
+                    name=f"Update {race_id} @ {offset}",
                     replace_existing=True
                 )
 
@@ -263,6 +286,15 @@ def cronjobs():
             schedule_race_updates(races)
             schedule_race_better(races)
 
+        # 3. Refresh the backtest cache (global 12-month stats)
+        try:
+            repo = RaceRepository()
+            service = BacktestService(repo)
+            service.run_backtest(force_update=True)
+            logger.info("Global backtest cache refreshed after daily ETL.")
+        except Exception as e:
+            logger.error(f"Failed to refresh global backtest cache: {e}")
+
     # 1. Daily Ingestion at 06:30 AM
     scheduler.add_job(
         daily_job_wrapper,
@@ -272,12 +304,12 @@ def cronjobs():
         replace_existing=True
     )
 
-    # 2. Live Odds update every 15 minutes
+    # 2. Live Odds & Cache update every 15 minutes
     scheduler.add_job(
-        etl_liveodds,
+        etl_liveodds_and_update_cache,
         IntervalTrigger(minutes=15),
         id="live_odds",
-        name="Live Odds Update",
+        name="Live Odds & Cache Update",
         replace_existing=True
     )
 

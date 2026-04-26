@@ -188,11 +188,9 @@ def etl_liveodds(race_id: int = None, start_hour=7, end_hour=21) -> None:
 
     date_code = TODAY.strftime("%d%m%Y")
 
-    # Use "participants" ingestion type for regular updates
-    # if it's the 15m interval task (race_id is None),
-    # it will update all races of today.
-    # If race_id is provided, it updates only that race.
+    # Ingest participants (results) and reports (dividends)
     process_date(date_code, "participants", race_id=race_id)
+    process_date(date_code, "reports", race_id=race_id)
 
 
 if __name__ == "__main__":

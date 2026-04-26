@@ -203,13 +203,13 @@ class BacktestService:
 
     def _prepare_df(self, df: pd.DataFrame) -> pd.DataFrame:
         if df.empty: return df
-        ref = pd.to_numeric(df.get('reference_odds', 0), errors='coerce').fillna(10.0)
-        l30 = pd.to_numeric(df.get('live_odds_30mn', 0), errors='coerce').replace(0, np.nan)
+        ref = pd.to_numeric(df['reference_odds'] if 'reference_odds' in df.columns else pd.Series([0]*len(df)), errors='coerce').fillna(10.0)
+        l30 = pd.to_numeric(df['live_odds_30mn'] if 'live_odds_30mn' in df.columns else pd.Series([np.nan]*len(df)), errors='coerce').replace(0, np.nan)
         df['effective_odds'] = l30.fillna(ref).clip(lower=1.01)
-        df['win_probability'] = pd.to_numeric(df.get('proba_winner', 0), errors='coerce').fillna(0.0)
-        df['place_probability'] = pd.to_numeric(df.get('proba_top3_place', 0), errors='coerce').fillna(df['win_probability'] * 2.0)
-        df['finish_rank'] = pd.to_numeric(df.get('finish_rank', 0), errors='coerce').fillna(0).astype(int)
-        df['model_version'] = df.get('model_version', 'unknown').fillna('unknown')
+        df['win_probability'] = pd.to_numeric(df['proba_winner'] if 'proba_winner' in df.columns else pd.Series([0]*len(df)), errors='coerce').fillna(0.0)
+        df['place_probability'] = pd.to_numeric(df['proba_top3_place'] if 'proba_top3_place' in df.columns else pd.Series([np.nan]*len(df)), errors='coerce').fillna(df['win_probability'] * 2.0)
+        df['finish_rank'] = pd.to_numeric(df['finish_rank'] if 'finish_rank' in df.columns else pd.Series([0]*len(df)), errors='coerce').fillna(0).astype(int)
+        df['model_version'] = (df['model_version'] if 'model_version' in df.columns else pd.Series(['unknown']*len(df))).fillna('unknown')
         return df
 
     def _index_divs(self, df: pd.DataFrame) -> dict:
@@ -241,8 +241,7 @@ class BacktestService:
         final_results = {
             "trainers": self.calculate_roi_for_df(df, race_divs, min_bets=10),
             "today": self.get_period_stats(today, today),
-            "yesterday": {"trainers": self.get_daily_stats_from_db(yesterday) or self.calculate_roi_for_df(
-                df[pd.to_datetime(df['program_date']).dt.date == yesterday], race_divs, min_bets=1)},
+            "yesterday": self.get_period_stats(yesterday, yesterday),
             "last_updated": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
         }
         with open(CACHE_FILE, "w") as f:
@@ -251,18 +250,28 @@ class BacktestService:
 
     def update_today_etl(self):
         """
-        Only update the today part of the json CACHE_FILE
+        Update 'today', 'yesterday' and 'last_updated' in the CACHE_FILE.
         """
-        raw_data = RaceRepository.get_backtest_data()
-        if not raw_data: return  {"error": "No data"}
-        df = self._prepare_df(pd.DataFrame(raw_data))
-        # race_divs = self._index_divs(df)
         today = datetime.date.today()
-        final_results = {"today": self.get_period_stats(today, today)}
-        with open(CACHE_FILE, 'r') as fr:
-            data = json.load(fr)
-            data.update(final_results)
-            with open(CACHE_FILE, "w") as fw:
-                json.dump(data, fw, default=str)
-            return final_results
+        yesterday = today - datetime.timedelta(days=1)
+
+        updates = {
+            "today": self.get_period_stats(today, today),
+            "yesterday": self.get_period_stats(yesterday, yesterday),
+            "last_updated": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
+        }
+
+        if CACHE_FILE.exists():
+            try:
+                with open(CACHE_FILE, 'r') as fr:
+                    data = json.load(fr)
+            except:
+                data = {}
+        else:
+            data = {}
+
+        data.update(updates)
+        with open(CACHE_FILE, "w") as fw:
+            json.dump(data, fw, default=str)
+        return updates
 
