@@ -1,103 +1,103 @@
 C:\Users\hmaro\AppData\Roaming\Python\Scripts\uv.exe run F:/git/horse-racing-prediction/.venv/Scripts/python.exe F:\git\horse-racing-prediction\backend\src\ml\trainer_hyperstack.py -X gil=0
-2026-04-23 08:16:45,443 - ML.HyperStackTrainer - INFO - --- STARTING HYPERSTACK WALK-FORWARD TOURNAMENT ---
-2026-04-23 08:16:45,471 - ML.Loader - INFO - Loading SQL data...
-2026-04-23 08:16:50,239 - ML.Loader - INFO - Calculating historical statistics...
-2026-04-23 08:17:04,689 - ML.HyperStackTrainer - INFO - --- AutoML for Target: HAIE ---
+2026-04-26 08:41:18,192 - ML.HyperStackTrainer - INFO - --- STARTING HYPERSTACK WALK-FORWARD TOURNAMENT ---
+2026-04-26 08:41:18,231 - ML.Loader - INFO - Loading SQL data...
+2026-04-26 08:41:23,117 - ML.Loader - INFO - Calculating historical statistics...
+2026-04-26 08:41:37,604 - ML.HyperStackTrainer - INFO - --- AutoML for Target: ATTELE ---
 Extension for Scikit-learn* enabled (https://github.com/uxlfoundation/scikit-learn-intelex)
-2026-04-23 08:17:10,845 - ML.HyperStackTrainer - INFO - [haie] WF Fold 1/4
-2026-04-23 08:17:19,818 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.7198 ROI=+6.7% count=694
-2026-04-23 08:17:19,819 - ML.HyperStackTrainer - INFO - [haie] WF Fold 2/4
-2026-04-23 08:17:33,578 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7355 ROI=+11.1% count=700
-2026-04-23 08:17:33,580 - ML.HyperStackTrainer - INFO - [haie] WF Fold 3/4
-2026-04-23 08:17:50,775 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7353 ROI=+7.5% count=695
-2026-04-23 08:17:50,776 - ML.HyperStackTrainer - INFO - [haie] WF Fold 4/4
-2026-04-23 08:18:06,379 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7285 ROI=+2.0% count=688
-2026-04-23 08:18:06,379 - ML.HyperStackTrainer - INFO - [haie] Walk-forward: AUC=0.7298 ROI=+6.8% ±3.3% (0 folds)
-2026-04-23 08:18:06,379 - ML.HyperStackTrainer - INFO - [haie] Entraînement modèle final avec Optuna...
-[I 2026-04-23 08:18:07,121] Using an existing study with name 'hs_haie_prod' instead of creating a new one.
-[I 2026-04-23 08:18:29,114] Trial 21 finished with value: -0.17556346381969076 and parameters: {'xgb_n_estimators': 379, 'xgb_max_depth': 4, 'xgb_lr': 0.016457448692659908, 'xgb_sub': 0.842940637480601, 'xgb_col': 0.7733509941274148, 'lgbm_n_estimators': 585, 'lgbm_max_depth': 5, 'lgbm_lr': 0.016985214542190756, 'lgbm_leaves': 20, 'cat_iter': 715, 'cat_depth': 5, 'cat_lr': 0.08384982022606481}. Best is trial 0 with value: -0.28035972621284594.
-[I 2026-04-23 08:18:48,811] Trial 22 finished with value: -0.16761565836298833 and parameters: {'xgb_n_estimators': 421, 'xgb_max_depth': 4, 'xgb_lr': 0.014553027743692644, 'xgb_sub': 0.8757531332537082, 'xgb_col': 0.8151005343309281, 'lgbm_n_estimators': 649, 'lgbm_max_depth': 5, 'lgbm_lr': 0.010100101353724604, 'lgbm_leaves': 34, 'cat_iter': 666, 'cat_depth': 4, 'cat_lr': 0.0638853125012964}. Best is trial 0 with value: -0.28035972621284594.
-[I 2026-04-23 08:19:18,434] Trial 23 finished with value: -0.1985468564650051 and parameters: {'xgb_n_estimators': 302, 'xgb_max_depth': 4, 'xgb_lr': 0.027998341349267614, 'xgb_sub': 0.8416088377802124, 'xgb_col': 0.7498569202550865, 'lgbm_n_estimators': 438, 'lgbm_max_depth': 5, 'lgbm_lr': 0.014453653987350724, 'lgbm_leaves': 40, 'cat_iter': 790, 'cat_depth': 5, 'cat_lr': 0.07124964182010175}. Best is trial 0 with value: -0.28035972621284594.
-2026-04-23 08:19:48,365 - ML.HyperStackTrainer - INFO - [haie] Final → AUC=0.7280 ROI=+1.2% count=688
-2026-04-23 08:19:48,379 - ML.HyperStackTrainer - INFO - --- AutoML for Target: STEEPLECHASE ---
-2026-04-23 08:19:50,081 - ML.HyperStackTrainer - INFO - [steeplechase] WF Fold 1/4
-2026-04-23 08:19:58,207 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.7236 ROI=+16.1% count=401
-2026-04-23 08:19:58,208 - ML.HyperStackTrainer - INFO - [steeplechase] WF Fold 2/4
-2026-04-23 08:20:07,230 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7104 ROI=-6.6% count=391
-2026-04-23 08:20:07,231 - ML.HyperStackTrainer - INFO - [steeplechase] WF Fold 3/4
-2026-04-23 08:20:17,079 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7310 ROI=+5.6% count=406
-2026-04-23 08:20:17,080 - ML.HyperStackTrainer - INFO - [steeplechase] WF Fold 4/4
-2026-04-23 08:20:31,959 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7626 ROI=+25.5% count=399
-2026-04-23 08:20:31,959 - ML.HyperStackTrainer - INFO - [steeplechase] Walk-forward: AUC=0.7319 ROI=+10.2% ±11.9% (0 folds)
-2026-04-23 08:20:31,959 - ML.HyperStackTrainer - INFO - [steeplechase] Entraînement modèle final avec Optuna...
-[I 2026-04-23 08:20:32,301] Using an existing study with name 'hs_steeplechase_prod' instead of creating a new one.
-[I 2026-04-23 08:20:51,921] Trial 18 finished with value: -0.259132189707366 and parameters: {'xgb_n_estimators': 534, 'xgb_max_depth': 4, 'xgb_lr': 0.014985313025844922, 'xgb_sub': 0.7820422664463874, 'xgb_col': 0.8133177296400798, 'lgbm_n_estimators': 909, 'lgbm_max_depth': 5, 'lgbm_lr': 0.010899053060364927, 'lgbm_leaves': 32, 'cat_iter': 519, 'cat_depth': 6, 'cat_lr': 0.032265487119487644}. Best is trial 0 with value: -0.3165649993916951.
-[I 2026-04-23 08:21:15,669] Trial 19 finished with value: -0.30968718466195794 and parameters: {'xgb_n_estimators': 959, 'xgb_max_depth': 5, 'xgb_lr': 0.010991437466191674, 'xgb_sub': 0.7365562373986242, 'xgb_col': 0.7192813237385248, 'lgbm_n_estimators': 913, 'lgbm_max_depth': 4, 'lgbm_lr': 0.07355461669464938, 'lgbm_leaves': 56, 'cat_iter': 798, 'cat_depth': 5, 'cat_lr': 0.0793683499015356}. Best is trial 0 with value: -0.3165649993916951.
-[I 2026-04-23 08:21:50,516] Trial 20 finished with value: -0.34818365287588243 and parameters: {'xgb_n_estimators': 970, 'xgb_max_depth': 5, 'xgb_lr': 0.011073884429915457, 'xgb_sub': 0.721091164701672, 'xgb_col': 0.7228117848619271, 'lgbm_n_estimators': 634, 'lgbm_max_depth': 3, 'lgbm_lr': 0.07601104617795203, 'lgbm_leaves': 43, 'cat_iter': 774, 'cat_depth': 7, 'cat_lr': 0.07774521579216022}. Best is trial 20 with value: -0.34818365287588243.
-2026-04-23 08:22:25,826 - ML.HyperStackTrainer - INFO - [steeplechase] Final → AUC=0.7636 ROI=+17.1% count=399
-2026-04-23 08:22:25,836 - ML.HyperStackTrainer - INFO - --- AutoML for Target: ATTELE ---
-2026-04-23 08:22:45,525 - ML.HyperStackTrainer - INFO - [attele] WF Fold 1/4
-2026-04-23 08:23:33,568 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.8243 ROI=+54.6% count=4089
-2026-04-23 08:23:33,569 - ML.HyperStackTrainer - INFO - [attele] WF Fold 2/4
-2026-04-23 08:24:24,895 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.8195 ROI=+48.1% count=4144
-2026-04-23 08:24:24,896 - ML.HyperStackTrainer - INFO - [attele] WF Fold 3/4
-2026-04-23 08:25:20,348 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.8283 ROI=+43.1% count=4213
-2026-04-23 08:25:20,349 - ML.HyperStackTrainer - INFO - [attele] WF Fold 4/4
-2026-04-23 08:26:28,331 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8176 ROI=+44.4% count=4232
-2026-04-23 08:26:28,331 - ML.HyperStackTrainer - INFO - [attele] Walk-forward: AUC=0.8224 ROI=+47.5% ±4.5% (0 folds)
-2026-04-23 08:26:28,331 - ML.HyperStackTrainer - INFO - [attele] Entraînement modèle final avec Optuna...
-[I 2026-04-23 08:26:30,590] Using an existing study with name 'hs_attele_prod' instead of creating a new one.
-[I 2026-04-23 08:28:01,427] Trial 20 finished with value: -0.488411503763143 and parameters: {'xgb_n_estimators': 512, 'xgb_max_depth': 4, 'xgb_lr': 0.026665275292946565, 'xgb_sub': 0.8315623300254951, 'xgb_col': 0.7254109576029384, 'lgbm_n_estimators': 496, 'lgbm_max_depth': 3, 'lgbm_lr': 0.09990719144423522, 'lgbm_leaves': 47, 'cat_iter': 676, 'cat_depth': 6, 'cat_lr': 0.04332580149650104}. Best is trial 0 with value: -0.612193922073042.
-[I 2026-04-23 08:29:40,848] Trial 21 finished with value: -0.48901460399740576 and parameters: {'xgb_n_estimators': 869, 'xgb_max_depth': 6, 'xgb_lr': 0.03795103053157719, 'xgb_sub': 0.8704591337223148, 'xgb_col': 0.7816668834411082, 'lgbm_n_estimators': 911, 'lgbm_max_depth': 6, 'lgbm_lr': 0.04246002178623283, 'lgbm_leaves': 56, 'cat_iter': 634, 'cat_depth': 7, 'cat_lr': 0.058633793259189215}. Best is trial 0 with value: -0.612193922073042.
-[I 2026-04-23 08:31:18,661] Trial 22 finished with value: -0.4833175497183847 and parameters: {'xgb_n_estimators': 358, 'xgb_max_depth': 5, 'xgb_lr': 0.06690243353541486, 'xgb_sub': 0.8225971052590758, 'xgb_col': 0.8516907650457498, 'lgbm_n_estimators': 497, 'lgbm_max_depth': 6, 'lgbm_lr': 0.010111386628806335, 'lgbm_leaves': 42, 'cat_iter': 702, 'cat_depth': 5, 'cat_lr': 0.015973635375797112}. Best is trial 0 with value: -0.612193922073042.
-2026-04-23 08:33:00,957 - ML.HyperStackTrainer - INFO - [attele] Final → AUC=0.8188 ROI=+43.9% count=4232
-2026-04-23 08:33:01,085 - ML.HyperStackTrainer - INFO - --- AutoML for Target: MONTE ---
-2026-04-23 08:33:04,856 - ML.HyperStackTrainer - INFO - [monte] WF Fold 1/4
-2026-04-23 08:33:30,911 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.8265 ROI=+55.6% count=904
-2026-04-23 08:33:30,911 - ML.HyperStackTrainer - INFO - [monte] WF Fold 2/4
-2026-04-23 08:34:00,747 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.8241 ROI=+65.4% count=910
-2026-04-23 08:34:00,747 - ML.HyperStackTrainer - INFO - [monte] WF Fold 3/4
-2026-04-23 08:34:33,156 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.8300 ROI=+57.1% count=875
-2026-04-23 08:34:33,157 - ML.HyperStackTrainer - INFO - [monte] WF Fold 4/4
-2026-04-23 08:35:07,017 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8339 ROI=+49.8% count=871
-2026-04-23 08:35:07,017 - ML.HyperStackTrainer - INFO - [monte] Walk-forward: AUC=0.8286 ROI=+57.0% ±5.6% (0 folds)
-2026-04-23 08:35:07,017 - ML.HyperStackTrainer - INFO - [monte] Entraînement modèle final avec Optuna...
-[I 2026-04-23 08:35:07,504] Using an existing study with name 'hs_monte_prod' instead of creating a new one.
-[I 2026-04-23 08:35:59,581] Trial 18 finished with value: -0.7855532551184701 and parameters: {'xgb_n_estimators': 402, 'xgb_max_depth': 5, 'xgb_lr': 0.08972729318595622, 'xgb_sub': 0.7380138354494467, 'xgb_col': 0.8370825776717489, 'lgbm_n_estimators': 932, 'lgbm_max_depth': 3, 'lgbm_lr': 0.02593891163271528, 'lgbm_leaves': 34, 'cat_iter': 702, 'cat_depth': 7, 'cat_lr': 0.03411360475224667}. Best is trial 18 with value: -0.7855532551184701.
-[I 2026-04-23 08:36:53,063] Trial 19 finished with value: -0.7368760064412223 and parameters: {'xgb_n_estimators': 400, 'xgb_max_depth': 5, 'xgb_lr': 0.08794826628238686, 'xgb_sub': 0.7035561261503247, 'xgb_col': 0.8382501704261661, 'lgbm_n_estimators': 768, 'lgbm_max_depth': 4, 'lgbm_lr': 0.023955272066796752, 'lgbm_leaves': 38, 'cat_iter': 713, 'cat_depth': 7, 'cat_lr': 0.015999053528605475}. Best is trial 18 with value: -0.7855532551184701.
-[I 2026-04-23 08:37:31,245] Trial 20 finished with value: -0.7847250977685739 and parameters: {'xgb_n_estimators': 573, 'xgb_max_depth': 6, 'xgb_lr': 0.07724442917665617, 'xgb_sub': 0.7313158903060271, 'xgb_col': 0.8233906588760941, 'lgbm_n_estimators': 928, 'lgbm_max_depth': 3, 'lgbm_lr': 0.026508481549466906, 'lgbm_leaves': 24, 'cat_iter': 729, 'cat_depth': 6, 'cat_lr': 0.03742000471907408}. Best is trial 18 with value: -0.7855532551184701.
-2026-04-23 08:38:28,767 - ML.HyperStackTrainer - INFO - [monte] Final → AUC=0.8336 ROI=+50.7% count=871
-2026-04-23 08:38:28,787 - ML.HyperStackTrainer - INFO - --- AutoML for Target: PLAT ---
-2026-04-23 08:38:49,656 - ML.HyperStackTrainer - INFO - [plat] WF Fold 1/4
-2026-04-23 08:39:37,001 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.7671 ROI=+5.4% count=3898
-2026-04-23 08:39:37,003 - ML.HyperStackTrainer - INFO - [plat] WF Fold 2/4
-2026-04-23 08:40:30,101 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7609 ROI=+2.5% count=3966
-2026-04-23 08:40:30,103 - ML.HyperStackTrainer - INFO - [plat] WF Fold 3/4
-2026-04-23 08:41:28,869 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7513 ROI=-1.6% count=3965
-2026-04-23 08:41:28,870 - ML.HyperStackTrainer - INFO - [plat] WF Fold 4/4
-2026-04-23 08:42:36,234 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7432 ROI=-9.0% count=3955
-2026-04-23 08:42:36,234 - ML.HyperStackTrainer - INFO - [plat] Walk-forward: AUC=0.7556 ROI=-0.7% ±5.4% (0 folds)
-2026-04-23 08:42:36,234 - ML.HyperStackTrainer - INFO - [plat] Entraînement modèle final avec Optuna...
-[I 2026-04-23 08:42:39,041] Using an existing study with name 'hs_plat_prod' instead of creating a new one.
-[I 2026-04-23 08:44:04,981] Trial 18 finished with value: -0.05892247043364129 and parameters: {'xgb_n_estimators': 576, 'xgb_max_depth': 4, 'xgb_lr': 0.07612244868771861, 'xgb_sub': 0.8429624576619951, 'xgb_col': 0.7685744808175937, 'lgbm_n_estimators': 405, 'lgbm_max_depth': 6, 'lgbm_lr': 0.015189430318625824, 'lgbm_leaves': 49, 'cat_iter': 635, 'cat_depth': 5, 'cat_lr': 0.06018552481398165}. Best is trial 18 with value: -0.05892247043364129.
-[I 2026-04-23 08:45:33,169] Trial 19 finished with value: -0.07716162943495515 and parameters: {'xgb_n_estimators': 598, 'xgb_max_depth': 3, 'xgb_lr': 0.07315258172095598, 'xgb_sub': 0.8043196833441102, 'xgb_col': 0.7691727905749117, 'lgbm_n_estimators': 444, 'lgbm_max_depth': 5, 'lgbm_lr': 0.03325229040605979, 'lgbm_leaves': 52, 'cat_iter': 664, 'cat_depth': 5, 'cat_lr': 0.06430013373776071}. Best is trial 19 with value: -0.07716162943495515.
-[I 2026-04-23 08:46:53,092] Trial 20 finished with value: -0.067852825229962 and parameters: {'xgb_n_estimators': 374, 'xgb_max_depth': 4, 'xgb_lr': 0.07019896047864321, 'xgb_sub': 0.8392384848927366, 'xgb_col': 0.7586921945388168, 'lgbm_n_estimators': 397, 'lgbm_max_depth': 5, 'lgbm_lr': 0.043482054322162365, 'lgbm_leaves': 54, 'cat_iter': 686, 'cat_depth': 5, 'cat_lr': 0.06346289175202557}. Best is trial 19 with value: -0.07716162943495515.
-2026-04-23 08:48:24,677 - ML.HyperStackTrainer - INFO - [plat] Final → AUC=0.7423 ROI=-7.5% count=3955
-2026-04-23 08:48:24,784 - ML.HyperStackTrainer - INFO - --- AutoML for Target: CROSS ---
-2026-04-23 08:48:25,361 - ML.HyperStackTrainer - INFO - [cross] WF Fold 1/4
-2026-04-23 08:48:30,893 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.7099 ROI=+13.1% count=54
-2026-04-23 08:48:30,894 - ML.HyperStackTrainer - INFO - [cross] WF Fold 2/4
-2026-04-23 08:48:36,860 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7197 ROI=+43.4% count=58
-2026-04-23 08:48:36,861 - ML.HyperStackTrainer - INFO - [cross] WF Fold 3/4
-2026-04-23 08:48:43,122 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7535 ROI=+8.0% count=60
-2026-04-23 08:48:43,122 - ML.HyperStackTrainer - INFO - [cross] WF Fold 4/4
-2026-04-23 08:48:49,541 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7837 ROI=+66.0% count=60
-2026-04-23 08:48:49,541 - ML.HyperStackTrainer - INFO - [cross] Walk-forward: AUC=0.7417 ROI=+32.6% ±23.5% (0 folds)
-2026-04-23 08:48:49,541 - ML.HyperStackTrainer - INFO - [cross] Entraînement modèle final avec Optuna...
-[I 2026-04-23 08:48:49,664] Using an existing study with name 'hs_cross_prod' instead of creating a new one.
-[I 2026-04-23 08:49:03,346] Trial 18 finished with value: -1.3657039711191339 and parameters: {'xgb_n_estimators': 418, 'xgb_max_depth': 6, 'xgb_lr': 0.010487006541287324, 'xgb_sub': 0.7427307854258681, 'xgb_col': 0.8429455190196306, 'lgbm_n_estimators': 564, 'lgbm_max_depth': 3, 'lgbm_lr': 0.010556369381575453, 'lgbm_leaves': 34, 'cat_iter': 581, 'cat_depth': 7, 'cat_lr': 0.03126233620500534}. Best is trial 18 with value: -1.3657039711191339.
-[I 2026-04-23 08:49:12,013] Trial 19 finished with value: -0.5732851985559565 and parameters: {'xgb_n_estimators': 425, 'xgb_max_depth': 6, 'xgb_lr': 0.01715324255135861, 'xgb_sub': 0.7081252222949534, 'xgb_col': 0.8405697509736848, 'lgbm_n_estimators': 362, 'lgbm_max_depth': 3, 'lgbm_lr': 0.010079296404181395, 'lgbm_leaves': 42, 'cat_iter': 487, 'cat_depth': 6, 'cat_lr': 0.031392827153206564}. Best is trial 18 with value: -1.3657039711191339.
-[I 2026-04-23 08:49:24,587] Trial 20 finished with value: -0.7779783393501807 and parameters: {'xgb_n_estimators': 410, 'xgb_max_depth': 6, 'xgb_lr': 0.010762118981491167, 'xgb_sub': 0.7348202406945626, 'xgb_col': 0.8620213516562831, 'lgbm_n_estimators': 556, 'lgbm_max_depth': 3, 'lgbm_lr': 0.010699278278837652, 'lgbm_leaves': 41, 'cat_iter': 564, 'cat_depth': 7, 'cat_lr': 0.02816195501831072}. Best is trial 18 with value: -1.3657039711191339.
-2026-04-23 08:49:38,288 - ML.HyperStackTrainer - INFO - [cross] Final → AUC=0.7779 ROI=+33.0% count=60
+2026-04-26 08:42:00,138 - ML.HyperStackTrainer - INFO - [attele] WF Fold 1/4
+2026-04-26 08:42:34,956 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.8246 ROI=+56.3% count=4089
+2026-04-26 08:42:34,957 - ML.HyperStackTrainer - INFO - [attele] WF Fold 2/4
+2026-04-26 08:43:19,123 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.8201 ROI=+46.6% count=4144
+2026-04-26 08:43:19,124 - ML.HyperStackTrainer - INFO - [attele] WF Fold 3/4
+2026-04-26 08:44:05,007 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.8298 ROI=+41.7% count=4213
+2026-04-26 08:44:05,010 - ML.HyperStackTrainer - INFO - [attele] WF Fold 4/4
+2026-04-26 08:44:59,733 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8184 ROI=+46.1% count=4232
+2026-04-26 08:44:59,734 - ML.HyperStackTrainer - INFO - [attele] Walk-forward: AUC=0.8232 ROI=+47.7% ±5.3% (4 folds)
+2026-04-26 08:44:59,734 - ML.HyperStackTrainer - INFO - [attele] Entraînement modèle final avec Optuna...
+[I 2026-04-26 08:45:02,976] Using an existing study with name 'hs_attele_d98b3b' instead of creating a new one.
+[I 2026-04-26 08:46:25,272] Trial 3 finished with value: -0.5052634202262851 and parameters: {'xgb_n_estimators': 974, 'xgb_max_depth': 4, 'xgb_lr': 0.07222314482209768, 'xgb_sub': 0.8073215045460851, 'xgb_col': 0.8774460713042479, 'lgbm_n_estimators': 367, 'lgbm_max_depth': 4, 'lgbm_lr': 0.04047977870555898, 'lgbm_leaves': 47, 'cat_iter': 662, 'cat_depth': 7, 'cat_lr': 0.07497706982055415}. Best is trial 0 with value: -0.5069630663410251.
+[I 2026-04-26 08:47:45,298] Trial 4 finished with value: -0.4959228430444076 and parameters: {'xgb_n_estimators': 827, 'xgb_max_depth': 6, 'xgb_lr': 0.08172408738499737, 'xgb_sub': 0.8950167597450425, 'xgb_col': 0.7479707722483949, 'lgbm_n_estimators': 952, 'lgbm_max_depth': 3, 'lgbm_lr': 0.04170312897923549, 'lgbm_leaves': 54, 'cat_iter': 678, 'cat_depth': 4, 'cat_lr': 0.024461522734819025}. Best is trial 0 with value: -0.5069630663410251.
+[I 2026-04-26 08:48:51,644] Trial 5 finished with value: -0.4774609978567492 and parameters: {'xgb_n_estimators': 816, 'xgb_max_depth': 6, 'xgb_lr': 0.029329045909846873, 'xgb_sub': 0.7573436535547017, 'xgb_col': 0.8685416649817383, 'lgbm_n_estimators': 488, 'lgbm_max_depth': 4, 'lgbm_lr': 0.014254273901756936, 'lgbm_leaves': 50, 'cat_iter': 345, 'cat_depth': 5, 'cat_lr': 0.03997142835044369}. Best is trial 0 with value: -0.5069630663410251.
+2026-04-26 08:50:28,258 - ML.HyperStackTrainer - INFO - [attele] Final → AUC=0.8182 ROI=+45.7% count=4232
+2026-04-26 08:50:28,462 - ML.HyperStackTrainer - INFO - --- AutoML for Target: MONTE ---
+2026-04-26 08:50:33,146 - ML.HyperStackTrainer - INFO - [monte] WF Fold 1/4
+2026-04-26 08:50:56,963 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.8267 ROI=+59.5% count=904
+2026-04-26 08:50:56,966 - ML.HyperStackTrainer - INFO - [monte] WF Fold 2/4
+2026-04-26 08:51:21,321 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.8309 ROI=+69.8% count=910
+2026-04-26 08:51:21,321 - ML.HyperStackTrainer - INFO - [monte] WF Fold 3/4
+2026-04-26 08:51:48,344 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.8312 ROI=+58.1% count=875
+2026-04-26 08:51:48,345 - ML.HyperStackTrainer - INFO - [monte] WF Fold 4/4
+2026-04-26 08:52:17,504 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.8335 ROI=+47.2% count=871
+2026-04-26 08:52:17,504 - ML.HyperStackTrainer - INFO - [monte] Walk-forward: AUC=0.8306 ROI=+58.7% ±8.0% (4 folds)
+2026-04-26 08:52:17,504 - ML.HyperStackTrainer - INFO - [monte] Entraînement modèle final avec Optuna...
+[I 2026-04-26 08:52:18,020] Using an existing study with name 'hs_monte_d98b3b' instead of creating a new one.
+[I 2026-04-26 08:52:48,678] Trial 3 finished with value: -0.738969404186793 and parameters: {'xgb_n_estimators': 994, 'xgb_max_depth': 3, 'xgb_lr': 0.06208328283388288, 'xgb_sub': 0.867426963257072, 'xgb_col': 0.8231763571888945, 'lgbm_n_estimators': 602, 'lgbm_max_depth': 3, 'lgbm_lr': 0.014326760067422865, 'lgbm_leaves': 59, 'cat_iter': 489, 'cat_depth': 4, 'cat_lr': 0.019346833772361686}. Best is trial 1 with value: -0.7432482171612584.
+[I 2026-04-26 08:53:24,211] Trial 4 finished with value: -0.7641591902461436 and parameters: {'xgb_n_estimators': 518, 'xgb_max_depth': 4, 'xgb_lr': 0.04709402937406093, 'xgb_sub': 0.8232520023401237, 'xgb_col': 0.74931441178096, 'lgbm_n_estimators': 753, 'lgbm_max_depth': 6, 'lgbm_lr': 0.044813735799967856, 'lgbm_leaves': 21, 'cat_iter': 607, 'cat_depth': 4, 'cat_lr': 0.02064315162678694}. Best is trial 4 with value: -0.7641591902461436.
+[I 2026-04-26 08:53:58,192] Trial 5 finished with value: -0.7363469059121205 and parameters: {'xgb_n_estimators': 805, 'xgb_max_depth': 3, 'xgb_lr': 0.09524080801699732, 'xgb_sub': 0.8848286631994072, 'xgb_col': 0.8911038525825054, 'lgbm_n_estimators': 353, 'lgbm_max_depth': 5, 'lgbm_lr': 0.02949933164156955, 'lgbm_leaves': 51, 'cat_iter': 473, 'cat_depth': 6, 'cat_lr': 0.014044116484281876}. Best is trial 4 with value: -0.7641591902461436.
+2026-04-26 08:54:35,293 - ML.HyperStackTrainer - INFO - [monte] Final → AUC=0.8339 ROI=+43.2% count=871
+2026-04-26 08:54:35,336 - ML.HyperStackTrainer - INFO - --- AutoML for Target: HAIE ---
+2026-04-26 08:54:39,053 - ML.HyperStackTrainer - INFO - [haie] WF Fold 1/4
+2026-04-26 08:54:51,341 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.7240 ROI=+7.3% count=694
+2026-04-26 08:54:51,342 - ML.HyperStackTrainer - INFO - [haie] WF Fold 2/4
+2026-04-26 08:55:14,521 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7345 ROI=+5.2% count=700
+2026-04-26 08:55:14,523 - ML.HyperStackTrainer - INFO - [haie] WF Fold 3/4
+2026-04-26 08:55:36,784 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7337 ROI=+3.7% count=695
+2026-04-26 08:55:36,786 - ML.HyperStackTrainer - INFO - [haie] WF Fold 4/4
+2026-04-26 08:56:02,813 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7257 ROI=+3.5% count=688
+2026-04-26 08:56:02,813 - ML.HyperStackTrainer - INFO - [haie] Walk-forward: AUC=0.7295 ROI=+4.9% ±1.5% (4 folds)
+2026-04-26 08:56:02,813 - ML.HyperStackTrainer - INFO - [haie] Entraînement modèle final avec Optuna...
+[I 2026-04-26 08:56:03,331] Using an existing study with name 'hs_haie_d98b3b' instead of creating a new one.
+[I 2026-04-26 08:56:53,811] Trial 3 finished with value: -0.2978054567022549 and parameters: {'xgb_n_estimators': 757, 'xgb_max_depth': 4, 'xgb_lr': 0.03517055913028931, 'xgb_sub': 0.782294244928021, 'xgb_col': 0.887735227530257, 'lgbm_n_estimators': 885, 'lgbm_max_depth': 3, 'lgbm_lr': 0.0529432887327168, 'lgbm_leaves': 36, 'cat_iter': 746, 'cat_depth': 7, 'cat_lr': 0.08765640377882811}. Best is trial 3 with value: -0.2978054567022549.
+[I 2026-04-26 08:57:26,180] Trial 4 finished with value: -0.18158362989323834 and parameters: {'xgb_n_estimators': 830, 'xgb_max_depth': 3, 'xgb_lr': 0.029949227681624363, 'xgb_sub': 0.7329890455710133, 'xgb_col': 0.7791141201914157, 'lgbm_n_estimators': 554, 'lgbm_max_depth': 6, 'lgbm_lr': 0.07793307026287644, 'lgbm_leaves': 38, 'cat_iter': 419, 'cat_depth': 6, 'cat_lr': 0.012197692407760316}. Best is trial 3 with value: -0.2978054567022549.
+[I 2026-04-26 08:57:56,540] Trial 5 finished with value: -0.13623962040332122 and parameters: {'xgb_n_estimators': 729, 'xgb_max_depth': 5, 'xgb_lr': 0.06924233706631226, 'xgb_sub': 0.7455651287292115, 'xgb_col': 0.8340505437528968, 'lgbm_n_estimators': 310, 'lgbm_max_depth': 4, 'lgbm_lr': 0.0163866825287665, 'lgbm_leaves': 21, 'cat_iter': 352, 'cat_depth': 7, 'cat_lr': 0.04994235957499783}. Best is trial 3 with value: -0.2978054567022549.
+2026-04-26 08:58:54,417 - ML.HyperStackTrainer - INFO - [haie] Final → AUC=0.7228 ROI=+4.3% count=688
+2026-04-26 08:58:54,444 - ML.HyperStackTrainer - INFO - --- AutoML for Target: STEEPLECHASE ---
+2026-04-26 08:58:56,589 - ML.HyperStackTrainer - INFO - [steeplechase] WF Fold 1/4
+2026-04-26 08:59:07,577 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.7275 ROI=+10.1% count=401
+2026-04-26 08:59:07,577 - ML.HyperStackTrainer - INFO - [steeplechase] WF Fold 2/4
+2026-04-26 08:59:18,180 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7065 ROI=-0.9% count=391
+2026-04-26 08:59:18,181 - ML.HyperStackTrainer - INFO - [steeplechase] WF Fold 3/4
+2026-04-26 08:59:29,747 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7281 ROI=+9.0% count=406
+2026-04-26 08:59:29,748 - ML.HyperStackTrainer - INFO - [steeplechase] WF Fold 4/4
+2026-04-26 08:59:52,077 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7635 ROI=+20.3% count=399
+2026-04-26 08:59:52,078 - ML.HyperStackTrainer - INFO - [steeplechase] Walk-forward: AUC=0.7314 ROI=+9.6% ±7.5% (4 folds)
+2026-04-26 08:59:52,078 - ML.HyperStackTrainer - INFO - [steeplechase] Entraînement modèle final avec Optuna...
+[I 2026-04-26 08:59:52,327] Using an existing study with name 'hs_steeplechase_d98b3b' instead of creating a new one.
+[I 2026-04-26 09:00:22,124] Trial 3 finished with value: -0.26992936427850633 and parameters: {'xgb_n_estimators': 715, 'xgb_max_depth': 4, 'xgb_lr': 0.06242227267508256, 'xgb_sub': 0.7252131323072084, 'xgb_col': 0.8524123099677543, 'lgbm_n_estimators': 666, 'lgbm_max_depth': 3, 'lgbm_lr': 0.08627578236506939, 'lgbm_leaves': 24, 'cat_iter': 669, 'cat_depth': 4, 'cat_lr': 0.02378715329846388}. Best is trial 1 with value: -0.2765893037336021.
+[I 2026-04-26 09:00:50,309] Trial 4 finished with value: -0.3142280524722501 and parameters: {'xgb_n_estimators': 947, 'xgb_max_depth': 6, 'xgb_lr': 0.059427990133873995, 'xgb_sub': 0.7429573252877676, 'xgb_col': 0.7198109781518741, 'lgbm_n_estimators': 872, 'lgbm_max_depth': 4, 'lgbm_lr': 0.015803460221270767, 'lgbm_leaves': 36, 'cat_iter': 752, 'cat_depth': 5, 'cat_lr': 0.08859181252747284}. Best is trial 4 with value: -0.3142280524722501.
+[I 2026-04-26 09:01:23,662] Trial 5 finished with value: -0.2505549949545915 and parameters: {'xgb_n_estimators': 425, 'xgb_max_depth': 5, 'xgb_lr': 0.052939500440657546, 'xgb_sub': 0.7119744854231097, 'xgb_col': 0.7586875746602364, 'lgbm_n_estimators': 357, 'lgbm_max_depth': 6, 'lgbm_lr': 0.03262532483803359, 'lgbm_leaves': 34, 'cat_iter': 546, 'cat_depth': 6, 'cat_lr': 0.018411227835565667}. Best is trial 4 with value: -0.3142280524722501.
+2026-04-26 09:01:53,956 - ML.HyperStackTrainer - INFO - [steeplechase] Final → AUC=0.7620 ROI=+14.0% count=399
+2026-04-26 09:01:53,978 - ML.HyperStackTrainer - INFO - --- AutoML for Target: PLAT ---
+2026-04-26 09:02:18,567 - ML.HyperStackTrainer - INFO - [plat] WF Fold 1/4
+2026-04-26 09:03:12,089 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.7662 ROI=+3.2% count=3898
+2026-04-26 09:03:12,090 - ML.HyperStackTrainer - INFO - [plat] WF Fold 2/4
+2026-04-26 09:04:11,036 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7607 ROI=+2.2% count=3966
+2026-04-26 09:04:11,037 - ML.HyperStackTrainer - INFO - [plat] WF Fold 3/4
+2026-04-26 09:05:14,130 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7513 ROI=-1.0% count=3965
+2026-04-26 09:05:14,134 - ML.HyperStackTrainer - INFO - [plat] WF Fold 4/4
+2026-04-26 09:06:30,459 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7425 ROI=-8.5% count=3955
+2026-04-26 09:06:30,459 - ML.HyperStackTrainer - INFO - [plat] Walk-forward: AUC=0.7552 ROI=-1.0% ±4.6% (4 folds)
+2026-04-26 09:06:30,459 - ML.HyperStackTrainer - INFO - [plat] Entraînement modèle final avec Optuna...
+[I 2026-04-26 09:06:33,298] Using an existing study with name 'hs_plat_d98b3b' instead of creating a new one.
+[I 2026-04-26 09:08:22,161] Trial 3 finished with value: -0.04491984231274707 and parameters: {'xgb_n_estimators': 812, 'xgb_max_depth': 3, 'xgb_lr': 0.014360824808540189, 'xgb_sub': 0.751275847472336, 'xgb_col': 0.7001756443416295, 'lgbm_n_estimators': 668, 'lgbm_max_depth': 5, 'lgbm_lr': 0.031351815674143614, 'lgbm_leaves': 45, 'cat_iter': 595, 'cat_depth': 7, 'cat_lr': 0.0999909367021243}. Best is trial 1 with value: -0.05953219448094662.
+[I 2026-04-26 09:09:52,385] Trial 4 finished with value: -0.06522996057818851 and parameters: {'xgb_n_estimators': 950, 'xgb_max_depth': 5, 'xgb_lr': 0.041742495512203555, 'xgb_sub': 0.8657844466091714, 'xgb_col': 0.8802157014098465, 'lgbm_n_estimators': 833, 'lgbm_max_depth': 6, 'lgbm_lr': 0.017068598972282575, 'lgbm_leaves': 54, 'cat_iter': 429, 'cat_depth': 6, 'cat_lr': 0.06462131415155471}. Best is trial 4 with value: -0.06522996057818851.
+[I 2026-04-26 09:11:15,194] Trial 5 finished with value: -0.05879632063075085 and parameters: {'xgb_n_estimators': 605, 'xgb_max_depth': 3, 'xgb_lr': 0.09872464245748647, 'xgb_sub': 0.8978179749452113, 'xgb_col': 0.7723363792047054, 'lgbm_n_estimators': 560, 'lgbm_max_depth': 5, 'lgbm_lr': 0.028213440098245092, 'lgbm_leaves': 55, 'cat_iter': 447, 'cat_depth': 5, 'cat_lr': 0.036685677464585356}. Best is trial 4 with value: -0.06522996057818851.
+2026-04-26 09:13:01,647 - ML.HyperStackTrainer - INFO - [plat] Final → AUC=0.7432 ROI=-7.2% count=3955
+2026-04-26 09:13:01,781 - ML.HyperStackTrainer - INFO - --- AutoML for Target: CROSS ---
+2026-04-26 09:13:02,414 - ML.HyperStackTrainer - INFO - [cross] WF Fold 1/4
+2026-04-26 09:13:08,476 - ML.HyperStackTrainer - INFO -   Fold 2022 → AUC=0.7102 ROI=-10.2% count=54
+2026-04-26 09:13:08,476 - ML.HyperStackTrainer - INFO - [cross] WF Fold 2/4
+2026-04-26 09:13:14,976 - ML.HyperStackTrainer - INFO -   Fold 2023 → AUC=0.7211 ROI=+28.1% count=58
+2026-04-26 09:13:14,976 - ML.HyperStackTrainer - INFO - [cross] WF Fold 3/4
+2026-04-26 09:13:21,875 - ML.HyperStackTrainer - INFO -   Fold 2024 → AUC=0.7655 ROI=-0.5% count=60
+2026-04-26 09:13:21,876 - ML.HyperStackTrainer - INFO - [cross] WF Fold 4/4
+2026-04-26 09:13:28,954 - ML.HyperStackTrainer - INFO -   Fold 2025 → AUC=0.7735 ROI=+70.0% count=60
+2026-04-26 09:13:28,954 - ML.HyperStackTrainer - INFO - [cross] Walk-forward: AUC=0.7426 ROI=+21.9% ±31.2% (4 folds)
+2026-04-26 09:13:28,956 - ML.HyperStackTrainer - INFO - [cross] Entraînement modèle final avec Optuna...
+[I 2026-04-26 09:13:29,133] Using an existing study with name 'hs_cross_d98b3b' instead of creating a new one.
+[I 2026-04-26 09:13:41,842] Trial 3 finished with value: -0.9382671480144403 and parameters: {'xgb_n_estimators': 970, 'xgb_max_depth': 6, 'xgb_lr': 0.08208533308666906, 'xgb_sub': 0.7249481990701415, 'xgb_col': 0.7887303058452007, 'lgbm_n_estimators': 726, 'lgbm_max_depth': 3, 'lgbm_lr': 0.028066563899054518, 'lgbm_leaves': 36, 'cat_iter': 670, 'cat_depth': 5, 'cat_lr': 0.0955394766368816}. Best is trial 1 with value: -1.1227436823104688.
+[I 2026-04-26 09:13:56,504] Trial 4 finished with value: -0.6797833935018053 and parameters: {'xgb_n_estimators': 947, 'xgb_max_depth': 3, 'xgb_lr': 0.07812569251283397, 'xgb_sub': 0.7810631037195969, 'xgb_col': 0.8367205671226738, 'lgbm_n_estimators': 729, 'lgbm_max_depth': 3, 'lgbm_lr': 0.054070773894305556, 'lgbm_leaves': 26, 'cat_iter': 487, 'cat_depth': 7, 'cat_lr': 0.016555882579018015}. Best is trial 1 with value: -1.1227436823104688.
+[I 2026-04-26 09:14:05,557] Trial 5 finished with value: -0.8433212996389896 and parameters: {'xgb_n_estimators': 339, 'xgb_max_depth': 3, 'xgb_lr': 0.014678294357938354, 'xgb_sub': 0.8645909492225248, 'xgb_col': 0.7732792836827296, 'lgbm_n_estimators': 351, 'lgbm_max_depth': 3, 'lgbm_lr': 0.0440767344000515, 'lgbm_leaves': 47, 'cat_iter': 716, 'cat_depth': 5, 'cat_lr': 0.012354964062930148}. Best is trial 1 with value: -1.1227436823104688.
+2026-04-26 09:14:19,776 - ML.HyperStackTrainer - INFO - [cross] Final → AUC=0.7715 ROI=+46.5% count=60
 
 Process finished with exit code 0

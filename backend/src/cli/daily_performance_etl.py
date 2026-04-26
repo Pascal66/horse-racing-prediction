@@ -1,6 +1,9 @@
 import logging
 import datetime
 from typing import Optional
+
+import pandas as pd
+
 from src.api.repositories import RaceRepository
 from src.api.backtest_service import BacktestService
 
@@ -65,7 +68,27 @@ def run_daily_performance_etl(target_date: Optional[datetime.date] = None):
     else:
         logger.warning(f"No performance data found for {target_date}. (Trainers found: {list(trainers.keys())})")
 
+def backfill_performance_etl(nb_day = 365):
+    """
+    Backfills historical performance data for a specified number of days.
+    """
+    logger.info(f"Starting backfill for the last {nb_day} days.")
+    for i in range(nb_day, 0, -1):
+        target_date = datetime.date.today() - datetime.timedelta(days=i)
+        try:
+            run_daily_performance_etl(target_date)
+        except Exception as e:
+            logger.error(f"Failed backfill for {target_date}: {e}")
+    logger.info("Backfill completed.")
+
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    run_daily_performance_etl() #datetime.date.today()) #
+    run_daily_performance_etl()
+    # Fetch only since 01 january of last year
+    # last_year = pd.Timestamp.today().year - 1
+    # start_date = pd.Timestamp(f'{last_year}-01-01')
+    # nb_days = (pd.Timestamp.today() - start_date).days
+    # backfill_performance_etl(nb_days)
+

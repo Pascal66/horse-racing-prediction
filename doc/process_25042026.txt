@@ -1,0 +1,4 @@
+1- Entrainement des modeles 'trainer_'.py sur 6 ans de données MANUELLEMENT
+2- backfill_predictions.py start 01012025 --end 25042026 --model-dir F:\git\horse-racing-prediction\data MANUELLEMENT
+3- (optionnel) daily_performance_etl.py -> backfill_performance_etl() sur 1 an + année en cours MANUELLEMENT
+4-  

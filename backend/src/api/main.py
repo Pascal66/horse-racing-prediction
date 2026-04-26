@@ -285,3 +285,13 @@ def run_backtest(force: bool = False, repository: RaceRepository = Depends(get_r
     except Exception as e:
         logger.error(f"Backtest failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Backtest failure.")
+
+@app.get("/portfolio", tags=["ML Metrics"])
+def get_portfolio(days: int = 365, repository: RaceRepository = Depends(get_repository)) -> List[Dict[str, Any]]:
+    """Retrieves portfolio data from ml_daily_performance table."""
+    try:
+        history = repository.get_performance_history(days)
+        return history
+    except Exception as e:
+        logger.error(f"Portfolio fetch failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to fetch portfolio data.")

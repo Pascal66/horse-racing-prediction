@@ -339,7 +339,7 @@ class GPTTrainer:
         feature_names = preprocessor.get_feature_names_out()
 
         # Initialisation et entraînement du wrapper GPT
-        wrapper = GPTModelWrapper(epochs=15, feature_names=feature_names)
+        wrapper = GPTModelWrapper(epochs=45, feature_names=feature_names)
         wrapper.fit(X_train_enc, y_train, groups=train_groups)
 
         full_pipeline = Pipeline([

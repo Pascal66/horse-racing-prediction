@@ -6,6 +6,7 @@ from ui.sniper import render_sniper_section
 from ui.race import render_race_grid
 from ui.admin import render_admin_dashboard
 from ui.backtest import render_backtest_tab
+from ui.portfolio import render_portfolio_tab
 
 from state.store import init_session
 
@@ -51,7 +52,9 @@ def main():
     render_sidebar()
 
     # 3. Render Main Content (Reading State)
-    tab_predictor, tab_backtest, tab_admin = st.tabs(["🏇 Predictor", "📈 Backtesting", "⚙️ Admin & Sched"])
+    tab_predictor, tab_backtest, tab_portfolio, tab_admin = st.tabs([
+        "🏇 Predictor", "📈 Backtesting", "💼 Portfolio", "⚙️ Admin & Sched"
+    ])
 
     with tab_predictor:
         render_sniper_section()
@@ -59,6 +62,9 @@ def main():
 
     with tab_backtest:
         render_backtest_tab()
+
+    with tab_portfolio:
+        render_portfolio_tab()
 
     with tab_admin:
         render_admin_dashboard()

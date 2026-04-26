@@ -86,6 +86,20 @@ class MockRaceRepository:
     def get_best_model_for_context(self, discipline, month):
         return "mock_tabnet"
 
+    def get_performance_history(self, days):
+        return [
+            {
+                "performance_date": "2025-01-01",
+                "model_version": "mock_v1",
+                "discipline": "ATTELE",
+                "bet_type": "SG",
+                "nb_bets": 10,
+                "nb_wins": 2,
+                "roi": 15.0,
+                "avg_odds": 5.0
+            }
+        ]
+
 
 class MockPredictor:
     """Simulates the ML Model."""

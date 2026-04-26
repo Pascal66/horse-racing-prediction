@@ -67,7 +67,7 @@ class BacktestService:
                 p_nums = list(top3['program_number'].astype(int))
 
                 # 1. Simple (3 mises par course)
-                stats['SG']["staked"] += 3;
+                stats['SG']["staked"] += 3
                 stats['SP']["staked"] += 3
                 race_won_sg, race_won_sp = False, False
 
@@ -127,8 +127,7 @@ class BacktestService:
                     "return": s["return"],
                     "nb_bets": int(s["staked"]),
                     "nb_wins": int(s["wins"]),
-                    "roi": self._safe_float((s["return"] - s["staked"]) / s["staked"] * 100) if s[
-                                                                                                    "staked"] > 0 else 0.0,
+                    "roi": self._safe_float((s["return"] - s["staked"]) / s["staked"] * 100) if s["staked"] > 0 else 0.0,
                     "avg_odds": self._safe_float(s["sum_odds"] / s["staked"]) if s["staked"] > 0 else 0.0
                 }
                 for bt, s in stats.items() if s["staked"] > 0
@@ -249,3 +248,21 @@ class BacktestService:
         with open(CACHE_FILE, "w") as f:
             json.dump(final_results, f, default=str)
         return final_results
+
+    def update_today_etl(self):
+        """
+        Only update the today part of the json CACHE_FILE
+        """
+        raw_data = RaceRepository.get_backtest_data()
+        if not raw_data: return  {"error": "No data"}
+        df = self._prepare_df(pd.DataFrame(raw_data))
+        # race_divs = self._index_divs(df)
+        today = datetime.date.today()
+        final_results = {"today": self.get_period_stats(today, today)}
+        with open(CACHE_FILE, 'r') as fr:
+            data = json.load(fr)
+            data.update(final_results)
+            with open(CACHE_FILE, "w") as fw:
+                json.dump(data, fw, default=str)
+            return final_results
+

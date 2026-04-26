@@ -45,6 +45,19 @@ class RaceRepository:
         finally:
             self.db_manager.release_connection(conn)
 
+    def get_performance_history(self, days: int = 365) -> List[Dict[str, Any]]:
+        query = "SELECT * FROM ml_daily_performance WHERE performance_date >= CURRENT_DATE - (INTERVAL '1 day' * %s) ORDER BY performance_date ASC"
+        conn = self.db_manager.get_connection()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute(query, (days,))
+                return cur.fetchall()
+        except Exception as exc:
+            logger.error(f"Error fetching performance history: {exc}")
+            return []
+        finally:
+            self.db_manager.release_connection(conn)
+
     def get_backtest_data(self, date_start: Optional[dt.date] = None, date_end: Optional[dt.date] = None) -> List[Dict[str, Any]]:
         query = """
             SELECT 
